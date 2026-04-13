@@ -78,6 +78,9 @@ class _TweakAiScreenState extends ConsumerState<TweakAiScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 color: message.isUser ? AppTheme.accentSoft : AppTheme.card,
+                border: Border.all(
+                  color: message.isUser ? AppTheme.accentSoft : AppTheme.border,
+                ),
               ),
               child: Text(message.text),
             ),

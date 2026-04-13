@@ -17,8 +17,6 @@ class ShoppingListScreen extends ConsumerWidget {
       title: 'Shopping List',
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddItemSheet(context, controller),
-        backgroundColor: AppTheme.accent,
-        foregroundColor: AppTheme.background,
         icon: const Icon(Icons.add),
         label: const Text('Add item'),
       ),
@@ -32,30 +30,34 @@ class ShoppingListScreen extends ConsumerWidget {
                   children: [
                     Text(
                       'Trip progress',
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '${controller.shoppingItems.where((item) => item.checked).length} of ${controller.shoppingItems.length} checked off',
+                      '${controller.shoppingItems.where((item) => item.checked).length} of ${controller.shoppingItems.length} checked off. Grouped by aisle so the trip stays fast.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],
                 ),
               ),
-              ElevatedButton(
-                onPressed: controller.shoppingItems.any((item) => item.checked)
-                    ? controller.moveCheckedItemsToPantry
-                    : null,
-                child: const Text('Move to pantry'),
-              ),
             ],
           ),
         ),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: controller.shoppingItems.any((item) => item.checked)
+                ? controller.moveCheckedItemsToPantry
+                : null,
+            child: const Text('Move checked items to pantry'),
+          ),
+        ),
+        const SizedBox(height: 18),
         for (final entry in controller.groupedItems.entries) ...[
           SectionHeader(
             title: entry.key.title,
             subtitle:
-                '${entry.value.length} item${entry.value.length == 1 ? '' : 's'}',
+                '${entry.value.length} item${entry.value.length == 1 ? '' : 's'} in this aisle',
           ),
           for (final item in entry.value) _ShoppingItemTile(item: item),
         ],
@@ -222,6 +224,21 @@ class _ShoppingItemTile extends ConsumerWidget {
               ],
             ),
           ),
+          if (item.pantryLinked)
+            Container(
+              margin: const EdgeInsets.only(right: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: AppTheme.oliveSoft,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                'Pantry',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelMedium?.copyWith(color: AppTheme.olive),
+              ),
+            ),
           IconButton(
             onPressed: () => _showQuantityDialog(context, controller, item),
             icon: const Icon(Icons.tune),

@@ -94,6 +94,7 @@ class _AppShell extends StatelessWidget {
       body: child,
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
+          color: AppTheme.backgroundAlt,
           border: Border(top: BorderSide(color: AppTheme.border)),
         ),
         child: BottomNavigationBar(

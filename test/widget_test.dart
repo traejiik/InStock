@@ -19,7 +19,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('InStock'), findsOneWidget);
-    expect(find.text('Tonight at a glance'), findsOneWidget);
-    expect(find.text('Frequent items'), findsOneWidget);
+    expect(
+      find.text('Plan tonight with less kitchen guesswork.'),
+      findsOneWidget,
+    );
+    expect(find.text('Build list'), findsOneWidget);
+    expect(find.text('Get AI help'), findsOneWidget);
   });
 }

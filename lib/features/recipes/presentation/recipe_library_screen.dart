@@ -35,14 +35,30 @@ class _RecipeLibraryScreenState extends ConsumerState<RecipeLibraryScreen> {
     return AppScreen(
       title: 'Recipe Library',
       children: [
-        TextField(
-          decoration: const InputDecoration(
-            prefixIcon: Icon(Icons.search),
-            hintText: 'Search recipes',
+        GlassCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Browse what fits the kitchen you already have.',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Search, filter, and pull recipes into your list without losing sight of pantry reality.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  hintText: 'Search recipes',
+                ),
+                onChanged: (value) => setState(() => query = value),
+              ),
+            ],
           ),
-          onChanged: (value) => setState(() => query = value),
         ),
-        const SizedBox(height: 16),
         SizedBox(
           height: 42,
           child: ListView(
@@ -156,13 +172,13 @@ class _MetaBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: AppTheme.background.withValues(alpha: 0.6),
+        color: AppTheme.surfaceTint,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: AppTheme.accent),
+          Icon(icon, size: 14, color: AppTheme.accentStrong),
           const SizedBox(width: 6),
           Text(label),
         ],

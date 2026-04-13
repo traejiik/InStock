@@ -21,6 +21,7 @@ class AppScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       floatingActionButton: floatingActionButton,
       appBar: AppBar(
         automaticallyImplyLeading: showBack,
@@ -36,7 +37,7 @@ class AppScreen extends StatelessWidget {
           ),
         ),
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 112),
           children: children,
         ),
       ),
@@ -62,18 +63,14 @@ class GlassCard extends StatelessWidget {
       margin: margin,
       padding: padding,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppTheme.border),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppTheme.cardAlt, AppTheme.card],
-        ),
+        color: AppTheme.card,
         boxShadow: const [
           BoxShadow(
-            color: Color(0x33000000),
-            blurRadius: 24,
-            offset: Offset(0, 14),
+            color: AppTheme.shadow,
+            blurRadius: 20,
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -97,8 +94,9 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 12, top: 4),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: Column(

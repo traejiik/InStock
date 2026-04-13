@@ -24,7 +24,7 @@ class AiPreviewScreen extends ConsumerWidget {
         showBack: true,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(24),
             child: Stack(
               children: [
                 Image.network(
@@ -72,7 +72,8 @@ class AiPreviewScreen extends ConsumerWidget {
           Container(
             decoration: BoxDecoration(
               color: AppTheme.card,
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: AppTheme.border),
             ),
             child: const TabBar(
               indicatorColor: AppTheme.accent,
@@ -180,7 +181,7 @@ class AiPreviewScreen extends ConsumerWidget {
                       child: TextButton.icon(
                         onPressed: () => context.push('/ai/tweak/$draftId'),
                         icon: const Icon(Icons.chat_bubble_outline),
-                        label: const Text('Tweak with AI'),
+                        label: const Text('Refine'),
                       ),
                     ),
                   ],

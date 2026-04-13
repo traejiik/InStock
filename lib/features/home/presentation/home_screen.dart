@@ -16,6 +16,12 @@ class HomeScreen extends ConsumerWidget {
     final topFrequent = controller.frequentItems.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     final recentRecipes = controller.recentRecipes.take(3).toList();
+    final checkedCount = controller.shoppingItems
+        .where((item) => item.checked)
+        .length;
+    final pantryLinkedCount = controller.shoppingItems
+        .where((item) => item.pantryLinked)
+        .length;
 
     return AppScreen(
       title: 'InStock',
@@ -25,32 +31,37 @@ class HomeScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Tonight at a glance',
+                'Plan tonight with less kitchen guesswork.',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 10),
               Text(
-                'Your current list is ${(controller.progress * 100).round()}% complete, and your pantry still covers the basics.',
+                'Your pantry, active list, and recent recipes are lined up so the next meal feels obvious instead of improvised.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
               ClipRRect(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(999),
                 child: LinearProgressIndicator(
-                  minHeight: 10,
+                  minHeight: 9,
                   value: controller.progress,
-                  backgroundColor: AppTheme.background,
+                  backgroundColor: AppTheme.cardAlt,
                   valueColor: const AlwaysStoppedAnimation<Color>(
                     AppTheme.accent,
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+              Text(
+                '${(controller.progress * 100).round()}% of this trip is already checked off.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
               const SizedBox(height: 18),
               Row(
                 children: [
                   _MetricPill(
-                    label: 'Active items',
-                    value: '${controller.shoppingItems.length}',
+                    label: 'Items left',
+                    value: '${controller.shoppingItems.length - checkedCount}',
                   ),
                   const SizedBox(width: 10),
                   _MetricPill(
@@ -59,12 +70,47 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  _MetricPill(
+                    label: 'Recipes saved',
+                    value: '${controller.recipes.length}',
+                  ),
+                  const SizedBox(width: 10),
+                  _MetricPill(
+                    label: 'Linked items',
+                    value: '$pantryLinkedCount',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        GlassCard(
+          child: Row(
+            children: [
+              Expanded(
+                child: _QuickActionButton(
+                  icon: Icons.playlist_add_rounded,
+                  label: 'Build list',
+                  onTap: () => context.go('/list'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _QuickActionButton(
+                  icon: Icons.auto_awesome_rounded,
+                  label: 'Get AI help',
+                  onTap: () => context.go('/ai'),
+                ),
+              ),
             ],
           ),
         ),
         const SectionHeader(
-          title: 'Frequent items',
-          subtitle: 'Fast add staples based on your local shopping rhythm.',
+          title: 'Frequent staples',
+          subtitle: 'Fast-add the items your kitchen keeps asking for.',
         ),
         Wrap(
           spacing: 10,
@@ -88,13 +134,15 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   );
                 },
+                backgroundColor: AppTheme.card,
+                side: const BorderSide(color: AppTheme.border),
               ),
           ],
         ),
         const SizedBox(height: 22),
         SectionHeader(
-          title: 'Quick recipe access',
-          subtitle: 'Jump back into meals you viewed recently.',
+          title: 'Cook from what is already here',
+          subtitle: 'Recent recipes stay close to the planning loop.',
           trailing: TextButton(
             onPressed: () => context.go('/recipes'),
             child: const Text('See all'),
@@ -110,8 +158,8 @@ class HomeScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(20),
                     child: Image.network(
                       recipe.imageUrl,
-                      width: 92,
-                      height: 92,
+                      width: 96,
+                      height: 112,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) =>
                           _ImageFallback(title: recipe.title),
@@ -166,7 +214,7 @@ class _MetricPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
-          color: AppTheme.background.withValues(alpha: 0.4),
+          color: AppTheme.surfaceTint,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,6 +229,41 @@ class _MetricPill extends StatelessWidget {
   }
 }
 
+class _QuickActionButton extends StatelessWidget {
+  const _QuickActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppTheme.surfaceTint,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: AppTheme.olive),
+              const SizedBox(width: 8),
+              Text(label, style: Theme.of(context).textTheme.titleMedium),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ImageFallback extends StatelessWidget {
   const _ImageFallback({required this.title});
 
@@ -189,8 +272,8 @@ class _ImageFallback extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 92,
-      height: 92,
+      width: 96,
+      height: 112,
       color: AppTheme.cardAlt,
       alignment: Alignment.center,
       child: Text(

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:instock/core/data/app_controller.dart';
 import 'package:instock/core/models/app_models.dart';
 import 'package:instock/core/theme/app_theme.dart';
+import 'package:instock/core/widgets/app_scaffold.dart';
 
 class AiLoadingScreen extends ConsumerStatefulWidget {
   const AiLoadingScreen({super.key, required this.draftId});
@@ -84,24 +85,55 @@ class _AiLoadingScreenState extends ConsumerState<AiLoadingScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return Container(
-                    width: 200 + (_controller.value * 20),
-                    height: 200 + (_controller.value * 20),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          AppTheme.accent.withValues(alpha: 0.55),
-                          AppTheme.accentStrong.withValues(alpha: 0.22),
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                  );
-                },
+              GlassCard(
+                margin: EdgeInsets.zero,
+                child: AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    return Column(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: AppTheme.cardAlt,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: progress.clamp(0, 1),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Color.lerp(
+                                  AppTheme.accent,
+                                  AppTheme.accentStrong,
+                                  _controller.value,
+                                ),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceTint,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            'Kitchen assistant in progress',
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(color: AppTheme.olive),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
               const SizedBox(height: 32),
               Text(
@@ -113,18 +145,6 @@ class _AiLoadingScreenState extends ConsumerState<AiLoadingScreen>
                 statusText,
                 style: Theme.of(context).textTheme.bodyLarge,
                 textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 12,
-                  backgroundColor: AppTheme.card,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppTheme.accent,
-                  ),
-                ),
               ),
             ],
           ),

@@ -17,8 +17,6 @@ class PantryScreen extends ConsumerWidget {
       title: 'Pantry',
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showPantryEditor(context, controller),
-        backgroundColor: AppTheme.accent,
-        foregroundColor: AppTheme.background,
         icon: const Icon(Icons.add),
         label: const Text('Stock item'),
       ),
@@ -32,11 +30,11 @@ class PantryScreen extends ConsumerWidget {
                   children: [
                     Text(
                       'Inventory health',
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'You currently track ${controller.pantryItems.length} pantry items locally.',
+                      'You currently track ${controller.pantryItems.length} pantry items locally across ${controller.pantryItems.map((item) => item.category).toSet().length} categories.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],
@@ -48,10 +46,15 @@ class PantryScreen extends ConsumerWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: AppTheme.background.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(999),
+                  color: AppTheme.oliveSoft,
                 ),
-                child: const Text('Offline'),
+                child: Text(
+                  'Stable stock',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelMedium?.copyWith(color: AppTheme.olive),
+                ),
               ),
             ],
           ),
@@ -73,6 +76,11 @@ class PantryScreen extends ConsumerWidget {
                       Text(
                         '${item.quantity} ${item.unit.shortLabel} • ${item.category.title}',
                       ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Updated ${_formatUpdatedAt(item.updatedAt)}',
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
                     ],
                   ),
                 ),
@@ -90,6 +98,13 @@ class PantryScreen extends ConsumerWidget {
           ),
       ],
     );
+  }
+
+  String _formatUpdatedAt(DateTime updatedAt) {
+    final difference = DateTime.now().difference(updatedAt).inDays;
+    if (difference <= 0) return 'today';
+    if (difference == 1) return 'yesterday';
+    return '$difference days ago';
   }
 
   Future<void> _showPantryEditor(

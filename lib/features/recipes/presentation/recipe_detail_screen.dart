@@ -37,7 +37,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
       showBack: true,
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(24),
           child: Image.network(
             recipe.imageUrl,
             height: 230,
@@ -59,6 +59,11 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(
+                recipe.title,
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   _StatBlock(
@@ -234,7 +239,19 @@ class _IngredientTile extends StatelessWidget {
               ],
             ),
           ),
-          Text(status.label),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              status.label,
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(color: color),
+            ),
+          ),
         ],
       ),
     );
@@ -253,7 +270,7 @@ class _StatBlock extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppTheme.background.withValues(alpha: 0.45),
+          color: AppTheme.surfaceTint,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(

@@ -35,12 +35,12 @@ class _AiImportScreenState extends ConsumerState<AiImportScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Bring any recipe into your flow',
+                'Bring AI into the kitchen without letting it take over the room.',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 10),
               Text(
-                'Paste a URL for import or describe a meal using the ingredients you already have.',
+                'Use a prompt when you want pantry-aware help. Use a link when you already trust the recipe and just want it inside your flow.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],
@@ -49,49 +49,8 @@ class _AiImportScreenState extends ConsumerState<AiImportScreen> {
         Container(
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF2E1D4B), Color(0xFF181224)],
-            ),
-            border: Border.all(color: AppTheme.accentSoft),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Import from URL',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _urlController,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.link_rounded),
-                    hintText: 'https://example.com/recipe',
-                  ),
-                ),
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _working ? null : _startUrlFlow,
-                    child: const Text('Import recipe'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF311954), Color(0xFF130F1D)],
-            ),
+            borderRadius: BorderRadius.circular(24),
+            color: AppTheme.card,
             border: Border.all(color: AppTheme.border),
           ),
           child: Padding(
@@ -102,6 +61,11 @@ class _AiImportScreenState extends ConsumerState<AiImportScreen> {
                 Text(
                   'Generate from a prompt',
                   style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Best when you want a pantry-aware dinner idea or a smarter starting point.',
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -119,6 +83,46 @@ class _AiImportScreenState extends ConsumerState<AiImportScreen> {
                     onPressed: _working ? null : _startPromptFlow,
                     icon: const Icon(Icons.auto_awesome),
                     label: const Text('Generate recipe'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            color: AppTheme.card,
+            border: Border.all(color: AppTheme.border),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Import from URL',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Use this when you already know the recipe source and just need a clean handoff.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _urlController,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.link_rounded),
+                    hintText: 'https://example.com/recipe',
+                  ),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: _working ? null : _startUrlFlow,
+                    child: const Text('Import recipe'),
                   ),
                 ),
               ],
