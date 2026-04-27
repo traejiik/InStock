@@ -1,4 +1,9 @@
+import 'package:instock/data/models/app_models.dart';
+
 class UnitConverter {
+  static const _weightUnits = {'g', 'kg', 'oz', 'lb', 'lbs'};
+  static const _volumeUnits = {'ml', 'l', 'cup', 'cups', 'tbsp', 'tsp', 'fl oz'};
+
   static double toGrams(double value, String unit) {
     return switch (unit.toLowerCase()) {
       'kg' => value * 1000,
@@ -14,8 +19,8 @@ class UnitConverter {
       'l' => value * 1000,
       'ml' => value,
       'cup' || 'cups' => value * 240,
-      'tbsp' => value * 14.787,
-      'tsp' => value * 4.929,
+      'tbsp' => value * 15,
+      'tsp' => value * 5,
       'fl oz' => value * 29.5735,
       _ => value,
     };
@@ -29,5 +34,42 @@ class UnitConverter {
   static double scaleQuantity(double qty, int originalServings, int newServings) {
     if (originalServings == 0) return qty;
     return qty * newServings / originalServings;
+  }
+
+  // Returns the stock status comparing pantry quantity/unit against needed quantity/unit.
+  // Normalises weight↔weight and volume↔volume; returns low for cross-system units so
+  // inStock is never falsely reported when units are incompatible.
+  static StockStatus calculateStockStatus(
+    double pantryQty,
+    String pantryUnit,
+    double neededQty,
+    String neededUnit,
+  ) {
+    if (pantryQty == 0) return StockStatus.need;
+
+    final pUnit = pantryUnit.toLowerCase().trim();
+    final nUnit = neededUnit.toLowerCase().trim();
+
+    final pIsWeight = _weightUnits.contains(pUnit);
+    final nIsWeight = _weightUnits.contains(nUnit);
+    final pIsVolume = _volumeUnits.contains(pUnit);
+    final nIsVolume = _volumeUnits.contains(nUnit);
+
+    double pantryNorm = pantryQty;
+    double neededNorm = neededQty;
+
+    if (pIsWeight && nIsWeight) {
+      pantryNorm = toGrams(pantryQty, pUnit);
+      neededNorm = toGrams(neededQty, nUnit);
+    } else if (pIsVolume && nIsVolume) {
+      pantryNorm = toMilliliters(pantryQty, pUnit);
+      neededNorm = toMilliliters(neededQty, nUnit);
+    } else if (pUnit != nUnit) {
+      // Incompatible unit systems — never report inStock; caller must verify manually
+      return StockStatus.low;
+    }
+
+    if (pantryNorm >= neededNorm) return StockStatus.inStock;
+    return StockStatus.low;
   }
 }

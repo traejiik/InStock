@@ -123,6 +123,13 @@ class _WriteTabState extends State<_WriteTab> {
   final List<TextEditingController> _ingCtrl = [TextEditingController()];
   final List<TextEditingController> _stepCtrl = [TextEditingController()];
 
+  String? _titleError;
+  String? _servingsError;
+  String? _ingredientsError;
+  String? _stepsError;
+  final Map<int, String?> _ingRowErrors = {};
+  final Map<int, String?> _stepRowErrors = {};
+
   @override
   void dispose() {
     _titleCtrl.dispose();
@@ -137,31 +144,89 @@ class _WriteTabState extends State<_WriteTab> {
     super.dispose();
   }
 
+  bool _validate() {
+    final title = _titleCtrl.text.trim();
+    final servings = int.tryParse(_servingsCtrl.text);
+    final ings = _ingCtrl.map((c) => c.text.trim()).toList();
+    final steps = _stepCtrl.map((c) => c.text.trim()).toList();
+    bool valid = true;
+
+    setState(() {
+      _titleError = title.length < 3 ? 'Title must be at least 3 characters' : null;
+      _servingsError = (servings == null || servings <= 0)
+          ? 'Servings must be a whole number greater than 0'
+          : null;
+
+      final filledIngs = ings.where((s) => s.isNotEmpty).toList();
+      _ingredientsError = filledIngs.isEmpty ? 'Add at least one ingredient' : null;
+      for (var i = 0; i < ings.length; i++) {
+        _ingRowErrors[i] = ings[i].isEmpty ? 'Required' : null;
+      }
+
+      final filledSteps = steps.where((s) => s.isNotEmpty).toList();
+      _stepsError = filledSteps.isEmpty ? 'Add at least one step' : null;
+      for (var i = 0; i < steps.length; i++) {
+        if (steps[i].isEmpty) {
+          _stepRowErrors[i] = 'Required';
+        } else if (steps[i].length < 10) {
+          _stepRowErrors[i] = 'Step must be at least 10 characters';
+        } else {
+          _stepRowErrors[i] = null;
+        }
+      }
+    });
+
+    if (title.length < 3) valid = false;
+    if (servings == null || servings <= 0) valid = false;
+    if (ings.every((s) => s.isEmpty)) valid = false;
+    if (steps.every((s) => s.isEmpty)) valid = false;
+    if (_ingRowErrors.values.any((e) => e != null)) valid = false;
+    if (_stepRowErrors.values.any((e) => e != null)) valid = false;
+
+    return valid;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _field(_titleCtrl, 'Title'),
+        _field(_titleCtrl, 'Title', errorText: _titleError),
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: _field(_servingsCtrl, 'Servings', type: TextInputType.number)),
+            Expanded(child: _field(_servingsCtrl, 'Servings',
+                type: TextInputType.number, errorText: _servingsError)),
             const SizedBox(width: 10),
             Expanded(child: _field(_timeCtrl, 'Time (min)', type: TextInputType.number)),
           ],
         ),
         const SizedBox(height: 20),
-        Text('Ingredients', style: AppTextStyles.headingSm),
+        Row(
+          children: [
+            Text('Ingredients', style: AppTextStyles.headingSm),
+            if (_ingredientsError != null) ...[
+              const SizedBox(width: 10),
+              Text(_ingredientsError!, style: AppTextStyles.caption.copyWith(color: AppColors.red)),
+            ],
+          ],
+        ),
         const SizedBox(height: 8),
         ..._ingCtrl.asMap().entries.map((e) => Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Row(
             children: [
-              Expanded(child: _field(e.value, 'Ingredient ${e.key + 1}')),
+              Expanded(child: _field(e.value, 'Ingredient ${e.key + 1}',
+                  errorText: _ingRowErrors[e.key])),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: () => setState(() { if (_ingCtrl.length > 1) _ingCtrl.removeAt(e.key); }),
+                onTap: () => setState(() {
+                  if (_ingCtrl.length > 1) {
+                    _ingCtrl[e.key].dispose();
+                    _ingCtrl.removeAt(e.key);
+                    _ingRowErrors.remove(e.key);
+                  }
+                }),
                 child: const Icon(Icons.remove_circle_outline, color: AppColors.textTertiary, size: 20),
               ),
             ],
@@ -169,7 +234,15 @@ class _WriteTabState extends State<_WriteTab> {
         )),
         _AddRow(label: '+ Ingredient', onTap: () => setState(() => _ingCtrl.add(TextEditingController()))),
         const SizedBox(height: 20),
-        Text('Steps', style: AppTextStyles.headingSm),
+        Row(
+          children: [
+            Text('Steps', style: AppTextStyles.headingSm),
+            if (_stepsError != null) ...[
+              const SizedBox(width: 10),
+              Text(_stepsError!, style: AppTextStyles.caption.copyWith(color: AppColors.red)),
+            ],
+          ],
+        ),
         const SizedBox(height: 8),
         ..._stepCtrl.asMap().entries.map((e) => Padding(
           padding: const EdgeInsets.only(bottom: 8),
@@ -186,10 +259,17 @@ class _WriteTabState extends State<_WriteTab> {
                 ),
                 child: Center(child: Text('${e.key + 1}', style: AppTextStyles.caption.copyWith(fontSize: 10))),
               ),
-              Expanded(child: _field(e.value, 'Step ${e.key + 1}', maxLines: 3)),
+              Expanded(child: _field(e.value, 'Step ${e.key + 1}',
+                  maxLines: 3, errorText: _stepRowErrors[e.key])),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: () => setState(() { if (_stepCtrl.length > 1) _stepCtrl.removeAt(e.key); }),
+                onTap: () => setState(() {
+                  if (_stepCtrl.length > 1) {
+                    _stepCtrl[e.key].dispose();
+                    _stepCtrl.removeAt(e.key);
+                    _stepRowErrors.remove(e.key);
+                  }
+                }),
                 child: const Padding(
                   padding: EdgeInsets.only(top: 12),
                   child: Icon(Icons.remove_circle_outline, color: AppColors.textTertiary, size: 20),
@@ -210,7 +290,12 @@ class _WriteTabState extends State<_WriteTab> {
           onChanged: widget.onAiToggle,
         ),
         const SizedBox(height: 16),
-        _PrimaryButton(label: 'Save Recipe', onTap: () => Navigator.pop(context)),
+        _PrimaryButton(
+          label: 'Save Recipe',
+          onTap: () {
+            if (_validate()) Navigator.pop(context);
+          },
+        ),
       ],
     );
   }
@@ -422,13 +507,13 @@ class _AiTab extends StatelessWidget {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 Widget _field(TextEditingController ctrl, String label,
-    {TextInputType? type, int? maxLines}) {
+    {TextInputType? type, int? maxLines, String? errorText}) {
   return TextField(
     controller: ctrl,
     keyboardType: type,
     maxLines: maxLines ?? 1,
     style: const TextStyle(color: AppColors.textPrimary),
-    decoration: InputDecoration(labelText: label),
+    decoration: InputDecoration(labelText: label, errorText: errorText),
   );
 }
 

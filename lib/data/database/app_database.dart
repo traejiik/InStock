@@ -3,9 +3,19 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../models/app_models.dart';
+import '../../core/utils/unit_converter.dart';
 
 const _kStateKey = 'fridge_state_v1';
 const _uuid = Uuid();
+
+// Canonical alias upgrades applied on every load so existing saves stay current.
+const _aliasUpgrades = <String, List<String>>{
+  'ing-chicken': ['chicken', 'boneless chicken', 'boneless chicken breast', 'chicken fillet'],
+  'ing-garlic': ['garlic cloves', 'fresh garlic', 'minced garlic'],
+  'ing-onion': ['onion', 'brown onion', 'white onion'],
+  'ing-milk': ['milk', 'full fat milk', 'full cream milk'],
+  'ing-rice': ['rice', 'basmati', 'long grain rice'],
+};
 
 class AppDatabase extends ChangeNotifier {
   AppState _state = AppState.empty;
@@ -42,6 +52,7 @@ class AppDatabase extends ChangeNotifier {
     if (raw != null) {
       try {
         _state = AppState.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+        _applyMigrations();
       } catch (_) {
         await _seed(prefs);
       }
@@ -60,6 +71,57 @@ class AppDatabase extends ChangeNotifier {
     _state = next;
     notifyListeners();
     _save();
+  }
+
+  // Applies alias upgrades to existing persisted state so known synonyms stay current.
+  void _applyMigrations() {
+    bool changed = false;
+    final updated = _state.ingredients.map((ing) {
+      final upgrade = _aliasUpgrades[ing.id];
+      if (upgrade == null) return ing;
+      final current = Set<String>.from(ing.aliases);
+      final target = Set<String>.from(upgrade);
+      if (target.difference(current).isEmpty) return ing;
+      changed = true;
+      return Ingredient(
+        id: ing.id,
+        canonicalName: ing.canonicalName,
+        category: ing.category,
+        aliases: upgrade,
+        createdAt: ing.createdAt,
+      );
+    }).toList();
+    if (changed) {
+      _state = _state.copyWith(ingredients: updated);
+      _save();
+    }
+  }
+
+  // ─── Ingredient matching ──────────────────────────────────────────────────
+
+  // Finds an existing ingredient by canonical name or alias (case-insensitive),
+  // or creates a new one if no match exists.
+  Ingredient findOrCreateIngredient(String name) {
+    final normalized = name.trim().toLowerCase();
+    final byCanonical = _state.ingredients.where(
+      (i) => i.canonicalName.toLowerCase() == normalized,
+    ).firstOrNull;
+    if (byCanonical != null) return byCanonical;
+
+    final byAlias = _state.ingredients.where(
+      (i) => i.aliases.any((a) => a.toLowerCase() == normalized),
+    ).firstOrNull;
+    if (byAlias != null) return byAlias;
+
+    final newIng = Ingredient(
+      id: 'ing-${normalized.replaceAll(' ', '-')}-${DateTime.now().millisecondsSinceEpoch}',
+      canonicalName: name.trim(),
+      category: IngredientCategory.custom,
+      aliases: [],
+      createdAt: DateTime.now(),
+    );
+    _update(_state.copyWith(ingredients: [..._state.ingredients, newIng]));
+    return newIng;
   }
 
   // ─── Shopping mutations ───────────────────────────────────────────────────
@@ -95,25 +157,59 @@ class AppDatabase extends ChangeNotifier {
     _update(_state.copyWith(shoppingItems: [..._state.shoppingItems, item]));
   }
 
-  void addMissingToShopping(String recipeId) {
+  // Adds missing recipe ingredients to the shopping list. Returns the number of
+  // items added or incremented. Existing unchecked items are incremented rather
+  // than duplicated. Quantity is scaled to the requested servings count.
+  int addMissingToShopping(String recipeId, int servings) {
+    final recipe = recipeById(recipeId);
+    if (recipe == null) return 0;
     final ingredients = ingredientsForRecipe(recipeId);
+    final now = DateTime.now();
+    int added = 0;
+    var state = _state;
+
     for (final ri in ingredients) {
       if (ri.isOptional) continue;
       final status = _matchStatus(ri.ingredientId, ri.quantity, ri.unit);
       if (status == PantryMatchStatus.missing || status == PantryMatchStatus.partial) {
-        final alreadyQueued = _state.shoppingItems.any(
+        final scaledQty = UnitConverter.scaleQuantity(ri.quantity, recipe.servings, servings);
+        final existingIdx = state.shoppingItems.indexWhere(
           (s) => s.ingredientId == ri.ingredientId && !s.checked,
         );
-        if (!alreadyQueued) {
-          addShoppingItem(
-            ingredientId: ri.ingredientId,
-            quantity: ri.quantity,
-            unit: ri.unit,
-            sourceRecipeId: recipeId,
+        if (existingIdx != -1) {
+          final existing = state.shoppingItems[existingIdx];
+          final updated = ShoppingItem(
+            id: existing.id,
+            ingredientId: existing.ingredientId,
+            quantity: existing.quantity + scaledQty,
+            unit: existing.unit,
+            checked: false,
+            sourceRecipeId: existing.sourceRecipeId,
+            addedAt: existing.addedAt,
+            updatedAt: now,
           );
+          final items = List<ShoppingItem>.from(state.shoppingItems);
+          items[existingIdx] = updated;
+          state = state.copyWith(shoppingItems: items);
+        } else {
+          final item = ShoppingItem(
+            id: _uuid.v4(),
+            ingredientId: ri.ingredientId,
+            quantity: scaledQty,
+            unit: ri.unit,
+            checked: false,
+            sourceRecipeId: recipeId,
+            addedAt: now,
+            updatedAt: now,
+          );
+          state = state.copyWith(shoppingItems: [...state.shoppingItems, item]);
         }
+        added++;
       }
     }
+
+    if (added > 0) _update(state);
+    return added;
   }
 
   // ─── Pantry mutations ─────────────────────────────────────────────────────
@@ -121,9 +217,11 @@ class AppDatabase extends ChangeNotifier {
   void _addOrIncrementPantryInternal(String ingredientId, double qty, String unit) {
     final existing = pantryItemForIngredient(ingredientId);
     if (existing != null) {
+      final newQty = existing.quantity + qty;
       final updated = existing.copyWith(
-        quantity: existing.quantity + qty,
+        quantity: newQty,
         lastVerifiedAt: DateTime.now(),
+        depletedAt: newQty > 0 ? null : existing.depletedAt,
       );
       final items = _state.pantryItems
           .map((p) => p.id == existing.id ? updated : p)
@@ -149,21 +247,25 @@ class AppDatabase extends ChangeNotifier {
   }
 
   void updatePantryQuantity(String pantryItemId, double newQty) {
+    final clamped = newQty.clamp(0.0, double.infinity);
+    final now = DateTime.now();
     final items = _state.pantryItems.map((p) {
       if (p.id != pantryItemId) return p;
       return p.copyWith(
-        quantity: newQty,
-        initialQuantity: newQty > p.initialQuantity ? newQty : p.initialQuantity,
-        lastVerifiedAt: DateTime.now(),
+        quantity: clamped,
+        initialQuantity: clamped > p.initialQuantity ? clamped : p.initialQuantity,
+        lastVerifiedAt: now,
+        depletedAt: clamped == 0 ? (p.depletedAt ?? now) : p.depletedAt,
       );
     }).toList();
     _update(_state.copyWith(pantryItems: items));
   }
 
   void markPantryItemOut(String pantryItemId) {
+    final now = DateTime.now();
     final items = _state.pantryItems.map((p) {
       if (p.id != pantryItemId) return p;
-      return p.copyWith(quantity: 0, lastVerifiedAt: DateTime.now());
+      return p.copyWith(quantity: 0, lastVerifiedAt: now, depletedAt: p.depletedAt ?? now);
     }).toList();
     _update(_state.copyWith(pantryItems: items));
   }
@@ -180,6 +282,7 @@ class AppDatabase extends ChangeNotifier {
     final recipeIngrs = ingredientsForRecipe(recipeId);
     final recipe = recipeById(recipeId);
     if (recipe == null) return;
+    final now = DateTime.now();
 
     var pantry = List<PantryItem>.from(_state.pantryItems);
     for (final ri in recipeIngrs) {
@@ -189,11 +292,12 @@ class AppDatabase extends ChangeNotifier {
         (p) => p.ingredientId == ri.ingredientId && p.deletedAt == null,
       );
       if (idx == -1) continue;
-      final updated = pantry[idx].copyWith(
-        quantity: (pantry[idx].quantity - scaledQty).clamp(0.0, double.infinity),
-        lastVerifiedAt: DateTime.now(),
+      final newQty = (pantry[idx].quantity - scaledQty).clamp(0.0, double.infinity);
+      pantry[idx] = pantry[idx].copyWith(
+        quantity: newQty,
+        lastVerifiedAt: now,
+        depletedAt: newQty == 0 ? (pantry[idx].depletedAt ?? now) : pantry[idx].depletedAt,
       );
-      pantry[idx] = updated;
     }
     _update(_state.copyWith(pantryItems: pantry));
   }
@@ -202,9 +306,15 @@ class AppDatabase extends ChangeNotifier {
 
   PantryMatchStatus _matchStatus(String ingredientId, double required, String unit) {
     final pantry = pantryItemForIngredient(ingredientId);
-    if (pantry == null || pantry.quantity == 0) return PantryMatchStatus.missing;
-    if (pantry.quantity >= required) return PantryMatchStatus.enough;
-    return PantryMatchStatus.partial;
+    if (pantry == null) return PantryMatchStatus.missing;
+    final status = UnitConverter.calculateStockStatus(
+      pantry.quantity, pantry.unit, required, unit,
+    );
+    return switch (status) {
+      StockStatus.inStock => PantryMatchStatus.enough,
+      StockStatus.low => PantryMatchStatus.partial,
+      StockStatus.need => PantryMatchStatus.missing,
+    };
   }
 
   PantryMatchStatus matchStatus(String ingredientId, double required, String unit) =>
@@ -231,6 +341,19 @@ class AppDatabase extends ChangeNotifier {
     return StockStatus.inStock;
   }
 
+  // Returns the canonical name of the first non-optional ingredient that is
+  // absent or zeroed out in the pantry, or null if everything is present.
+  String? firstMissingNonOptional(String recipeId) {
+    for (final ri in ingredientsForRecipe(recipeId)) {
+      if (ri.isOptional) continue;
+      final pantry = pantryItemForIngredient(ri.ingredientId);
+      if (pantry == null || pantry.quantity == 0) {
+        return ingredientById(ri.ingredientId)?.canonicalName ?? 'an ingredient';
+      }
+    }
+    return null;
+  }
+
   bool get needsVerification {
     final cutoff = DateTime.now().subtract(const Duration(days: 10));
     return pantryItems.any(
@@ -250,7 +373,6 @@ class AppDatabase extends ChangeNotifier {
   Future<void> _seed(SharedPreferences prefs) async {
     final now = DateTime.now();
 
-    // Ingredient IDs
     const iMilk = 'ing-milk';
     const iYogurt = 'ing-yogurt';
     const iGarlic = 'ing-garlic';
@@ -274,7 +396,6 @@ class AppDatabase extends ChangeNotifier {
     const iBroccoli = 'ing-broccoli';
     const iTeriyaki = 'ing-teriyaki';
 
-    // Recipe IDs
     const rButterChicken = 'rec-butter-chicken';
     const rRamen = 'rec-ramen';
     const rSalad = 'rec-asian-salad';
@@ -282,28 +403,50 @@ class AppDatabase extends ChangeNotifier {
     const rTeriyaki = 'rec-teriyaki';
 
     final ingredients = [
-      Ingredient(id: iMilk, canonicalName: 'Whole Milk', category: IngredientCategory.dairy, aliases: ['milk'], createdAt: now),
-      Ingredient(id: iYogurt, canonicalName: 'Greek Yogurt', category: IngredientCategory.dairy, aliases: ['yogurt'], createdAt: now),
-      Ingredient(id: iGarlic, canonicalName: 'Garlic', category: IngredientCategory.produce, aliases: ['garlic cloves'], createdAt: now),
-      Ingredient(id: iOnion, canonicalName: 'Yellow Onion', category: IngredientCategory.produce, aliases: ['onion'], createdAt: now),
-      Ingredient(id: iRice, canonicalName: 'Basmati Rice', category: IngredientCategory.grain, aliases: ['rice'], createdAt: now),
-      Ingredient(id: iEggs, canonicalName: 'Eggs', category: IngredientCategory.produce, aliases: ['egg'], createdAt: now),
-      Ingredient(id: iPassata, canonicalName: 'Tomato Passata', category: IngredientCategory.produce, aliases: ['passata', 'tomato sauce'], createdAt: now),
-      Ingredient(id: iGaram, canonicalName: 'Garam Masala', category: IngredientCategory.spice, aliases: ['garam masala spice'], createdAt: now),
-      Ingredient(id: iParmesan, canonicalName: 'Parmesan', category: IngredientCategory.dairy, aliases: ['parmigiano'], createdAt: now),
-      Ingredient(id: iChicken, canonicalName: 'Chicken Breast', category: IngredientCategory.meat, aliases: ['chicken'], createdAt: now),
-      Ingredient(id: iSalmon, canonicalName: 'Salmon Fillet', category: IngredientCategory.meat, aliases: ['salmon'], createdAt: now),
-      Ingredient(id: iCream, canonicalName: 'Heavy Cream', category: IngredientCategory.dairy, aliases: ['cream', 'double cream'], createdAt: now),
-      Ingredient(id: iPanko, canonicalName: 'Panko Breadcrumbs', category: IngredientCategory.grain, aliases: ['breadcrumbs', 'panko'], createdAt: now),
-      Ingredient(id: iButter, canonicalName: 'Butter', category: IngredientCategory.dairy, aliases: [], createdAt: now),
-      Ingredient(id: iPasta, canonicalName: 'Spaghetti', category: IngredientCategory.grain, aliases: ['pasta', 'spaghetti'], createdAt: now),
-      Ingredient(id: iRamen, canonicalName: 'Ramen Noodles', category: IngredientCategory.grain, aliases: ['noodles'], createdAt: now),
-      Ingredient(id: iSoy, canonicalName: 'Soy Sauce', category: IngredientCategory.spice, aliases: ['soy'], createdAt: now),
-      Ingredient(id: iMiso, canonicalName: 'Miso Paste', category: IngredientCategory.spice, aliases: ['miso'], createdAt: now),
-      Ingredient(id: iGreens, canonicalName: 'Mixed Greens', category: IngredientCategory.produce, aliases: ['salad leaves', 'greens'], createdAt: now),
-      Ingredient(id: iSesame, canonicalName: 'Sesame Seeds', category: IngredientCategory.spice, aliases: ['sesame'], createdAt: now),
-      Ingredient(id: iBroccoli, canonicalName: 'Broccoli', category: IngredientCategory.produce, aliases: [], createdAt: now),
-      Ingredient(id: iTeriyaki, canonicalName: 'Teriyaki Sauce', category: IngredientCategory.spice, aliases: ['teriyaki'], createdAt: now),
+      Ingredient(id: iMilk, canonicalName: 'Whole Milk', category: IngredientCategory.dairy,
+          aliases: ['milk', 'full fat milk', 'full cream milk'], createdAt: now),
+      Ingredient(id: iYogurt, canonicalName: 'Greek Yogurt', category: IngredientCategory.dairy,
+          aliases: ['yogurt'], createdAt: now),
+      Ingredient(id: iGarlic, canonicalName: 'Garlic', category: IngredientCategory.produce,
+          aliases: ['garlic cloves', 'fresh garlic', 'minced garlic'], createdAt: now),
+      Ingredient(id: iOnion, canonicalName: 'Yellow Onion', category: IngredientCategory.produce,
+          aliases: ['onion', 'brown onion', 'white onion'], createdAt: now),
+      Ingredient(id: iRice, canonicalName: 'Basmati Rice', category: IngredientCategory.grain,
+          aliases: ['rice', 'basmati', 'long grain rice'], createdAt: now),
+      Ingredient(id: iEggs, canonicalName: 'Eggs', category: IngredientCategory.produce,
+          aliases: ['egg'], createdAt: now),
+      Ingredient(id: iPassata, canonicalName: 'Tomato Passata', category: IngredientCategory.produce,
+          aliases: ['passata', 'tomato sauce'], createdAt: now),
+      Ingredient(id: iGaram, canonicalName: 'Garam Masala', category: IngredientCategory.spice,
+          aliases: ['garam masala spice'], createdAt: now),
+      Ingredient(id: iParmesan, canonicalName: 'Parmesan', category: IngredientCategory.dairy,
+          aliases: ['parmigiano'], createdAt: now),
+      Ingredient(id: iChicken, canonicalName: 'Chicken Breast', category: IngredientCategory.meat,
+          aliases: ['chicken', 'boneless chicken', 'boneless chicken breast', 'chicken fillet'], createdAt: now),
+      Ingredient(id: iSalmon, canonicalName: 'Salmon Fillet', category: IngredientCategory.meat,
+          aliases: ['salmon'], createdAt: now),
+      Ingredient(id: iCream, canonicalName: 'Heavy Cream', category: IngredientCategory.dairy,
+          aliases: ['cream', 'double cream'], createdAt: now),
+      Ingredient(id: iPanko, canonicalName: 'Panko Breadcrumbs', category: IngredientCategory.grain,
+          aliases: ['breadcrumbs', 'panko'], createdAt: now),
+      Ingredient(id: iButter, canonicalName: 'Butter', category: IngredientCategory.dairy,
+          aliases: [], createdAt: now),
+      Ingredient(id: iPasta, canonicalName: 'Spaghetti', category: IngredientCategory.grain,
+          aliases: ['pasta', 'spaghetti'], createdAt: now),
+      Ingredient(id: iRamen, canonicalName: 'Ramen Noodles', category: IngredientCategory.grain,
+          aliases: ['noodles'], createdAt: now),
+      Ingredient(id: iSoy, canonicalName: 'Soy Sauce', category: IngredientCategory.spice,
+          aliases: ['soy'], createdAt: now),
+      Ingredient(id: iMiso, canonicalName: 'Miso Paste', category: IngredientCategory.spice,
+          aliases: ['miso'], createdAt: now),
+      Ingredient(id: iGreens, canonicalName: 'Mixed Greens', category: IngredientCategory.produce,
+          aliases: ['salad leaves', 'greens'], createdAt: now),
+      Ingredient(id: iSesame, canonicalName: 'Sesame Seeds', category: IngredientCategory.spice,
+          aliases: ['sesame'], createdAt: now),
+      Ingredient(id: iBroccoli, canonicalName: 'Broccoli', category: IngredientCategory.produce,
+          aliases: [], createdAt: now),
+      Ingredient(id: iTeriyaki, canonicalName: 'Teriyaki Sauce', category: IngredientCategory.spice,
+          aliases: ['teriyaki'], createdAt: now),
     ];
 
     final pantryItems = [
@@ -324,9 +467,7 @@ class AppDatabase extends ChangeNotifier {
 
     final recipes = [
       Recipe(
-        id: rButterChicken,
-        title: 'Butter Chicken',
-        emoji: '🍛',
+        id: rButterChicken, title: 'Butter Chicken', emoji: '🍛',
         instructions: [
           'Marinate chicken in yogurt, garlic, and garam masala for 30 minutes.',
           'Sear chicken pieces in butter until golden.',
@@ -335,17 +476,11 @@ class AppDatabase extends ChangeNotifier {
           'Stir in cream and return chicken to pan.',
           'Simmer 15 minutes until sauce thickens. Serve over basmati rice.',
         ],
-        servings: 4,
-        cookMinutes: 45,
-        difficulty: 'Medium',
-        tags: ['dinner', 'indian'],
-        createdAt: now,
-        updatedAt: now,
+        servings: 4, cookMinutes: 45, difficulty: 'Medium',
+        tags: ['dinner', 'indian'], createdAt: now, updatedAt: now,
       ),
       Recipe(
-        id: rRamen,
-        title: 'Ramen Bowl',
-        emoji: '🍜',
+        id: rRamen, title: 'Ramen Bowl', emoji: '🍜',
         instructions: [
           'Bring broth to a boil with miso paste and soy sauce.',
           'Cook ramen noodles according to package instructions.',
@@ -353,33 +488,21 @@ class AppDatabase extends ChangeNotifier {
           'Divide noodles into bowls, ladle broth over.',
           'Top with soft-boiled egg and spring onions.',
         ],
-        servings: 2,
-        cookMinutes: 30,
-        difficulty: 'Easy',
-        tags: ['dinner', 'asian'],
-        createdAt: now,
-        updatedAt: now,
+        servings: 2, cookMinutes: 30, difficulty: 'Easy',
+        tags: ['dinner', 'asian'], createdAt: now, updatedAt: now,
       ),
       Recipe(
-        id: rSalad,
-        title: 'Asian Salad',
-        emoji: '🥗',
+        id: rSalad, title: 'Asian Salad', emoji: '🥗',
         instructions: [
           'Whisk together soy sauce, sesame oil and a pinch of sugar.',
           'Toss mixed greens with the dressing.',
           'Top with sesame seeds and serve immediately.',
         ],
-        servings: 2,
-        cookMinutes: 15,
-        difficulty: 'Easy',
-        tags: ['lunch', 'asian', 'vegetarian'],
-        createdAt: now,
-        updatedAt: now,
+        servings: 2, cookMinutes: 15, difficulty: 'Easy',
+        tags: ['lunch', 'asian', 'vegetarian'], createdAt: now, updatedAt: now,
       ),
       Recipe(
-        id: rCarbonara,
-        title: 'Carbonara',
-        emoji: '🍝',
+        id: rCarbonara, title: 'Carbonara', emoji: '🍝',
         instructions: [
           'Cook spaghetti in well-salted boiling water until al dente.',
           'Fry guanciale or pancetta until crispy.',
@@ -387,17 +510,11 @@ class AppDatabase extends ChangeNotifier {
           'Toss hot pasta off heat with egg mixture and pancetta.',
           'Add pasta water to achieve a silky sauce. Season generously.',
         ],
-        servings: 2,
-        cookMinutes: 25,
-        difficulty: 'Medium',
-        tags: ['dinner', 'italian'],
-        createdAt: now,
-        updatedAt: now,
+        servings: 2, cookMinutes: 25, difficulty: 'Medium',
+        tags: ['dinner', 'italian'], createdAt: now, updatedAt: now,
       ),
       Recipe(
-        id: rTeriyaki,
-        title: 'Teriyaki Bowl',
-        emoji: '🍱',
+        id: rTeriyaki, title: 'Teriyaki Bowl', emoji: '🍱',
         instructions: [
           'Marinate salmon in teriyaki sauce for 15 minutes.',
           'Cook rice according to package instructions.',
@@ -405,12 +522,8 @@ class AppDatabase extends ChangeNotifier {
           'Sear salmon in a hot pan for 3–4 minutes each side.',
           'Serve salmon over rice with broccoli.',
         ],
-        servings: 2,
-        cookMinutes: 20,
-        difficulty: 'Easy',
-        tags: ['dinner', 'asian'],
-        createdAt: now,
-        updatedAt: now,
+        servings: 2, cookMinutes: 20, difficulty: 'Easy',
+        tags: ['dinner', 'asian'], createdAt: now, updatedAt: now,
       ),
     ];
 

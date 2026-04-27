@@ -65,7 +65,9 @@ class PantryItemRow extends StatelessWidget {
               children: [
                 Text(
                   UnitConverter.formatQty(item.quantity, item.unit),
-                  style: AppTextStyles.bodySm.copyWith(color: AppColors.textPrimary),
+                  style: AppTextStyles.bodySm.copyWith(
+                    color: item.quantity == 0 ? AppColors.red : AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 QuantityBar(fillLevel: item.fillLevel),

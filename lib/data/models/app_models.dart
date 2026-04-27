@@ -85,6 +85,8 @@ class PantryItem {
   final DateTime? lastVerifiedAt;
   final DateTime? deletedAt;
 
+  final DateTime? depletedAt;
+
   const PantryItem({
     required this.id,
     required this.ingredientId,
@@ -94,6 +96,7 @@ class PantryItem {
     required this.addedAt,
     this.lastVerifiedAt,
     this.deletedAt,
+    this.depletedAt,
   });
 
   PantryItem copyWith({
@@ -101,6 +104,7 @@ class PantryItem {
     double? initialQuantity,
     DateTime? lastVerifiedAt,
     DateTime? deletedAt,
+    DateTime? depletedAt,
   }) =>
       PantryItem(
         id: id,
@@ -111,6 +115,7 @@ class PantryItem {
         addedAt: addedAt,
         lastVerifiedAt: lastVerifiedAt ?? this.lastVerifiedAt,
         deletedAt: deletedAt ?? this.deletedAt,
+        depletedAt: depletedAt ?? this.depletedAt,
       );
 
   double get fillLevel =>
@@ -125,6 +130,7 @@ class PantryItem {
         'addedAt': addedAt.millisecondsSinceEpoch,
         'lastVerifiedAt': lastVerifiedAt?.millisecondsSinceEpoch,
         'deletedAt': deletedAt?.millisecondsSinceEpoch,
+        'depletedAt': depletedAt?.millisecondsSinceEpoch,
       };
 
   factory PantryItem.fromJson(Map<String, dynamic> j) => PantryItem(
@@ -139,6 +145,9 @@ class PantryItem {
             : null,
         deletedAt: j['deletedAt'] != null
             ? DateTime.fromMillisecondsSinceEpoch(j['deletedAt'] as int)
+            : null,
+        depletedAt: j['depletedAt'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(j['depletedAt'] as int)
             : null,
       );
 }

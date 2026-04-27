@@ -76,25 +76,44 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                     ),
                   ),
                 ),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (ctx, i) {
-                        final ri = recipeIngredients[i];
-                        final ing = db.ingredientById(ri.ingredientId);
-                        if (ing == null) return const SizedBox.shrink();
-                        return IngredientRow(
-                          recipeIngredient: ri,
-                          ingredient: ing,
-                          matchStatus: db.matchStatus(ri.ingredientId, ri.quantity, ri.unit),
-                          scaledQuantity: UnitConverter.scaleQuantity(ri.quantity, recipe.servings, _servings),
-                        );
-                      },
-                      childCount: recipeIngredients.length,
+                if (recipeIngredients.isEmpty)
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverToBoxAdapter(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Text(
+                          'No ingredients added yet — tap ✎ to edit',
+                          style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (ctx, i) {
+                          final ri = recipeIngredients[i];
+                          final ing = db.ingredientById(ri.ingredientId);
+                          if (ing == null) return const SizedBox.shrink();
+                          return IngredientRow(
+                            recipeIngredient: ri,
+                            ingredient: ing,
+                            matchStatus: db.matchStatus(ri.ingredientId, ri.quantity, ri.unit),
+                            scaledQuantity: UnitConverter.scaleQuantity(ri.quantity, recipe.servings, _servings),
+                          );
+                        },
+                        childCount: recipeIngredients.length,
+                      ),
                     ),
                   ),
-                ),
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                   sliver: SliverToBoxAdapter(
@@ -118,18 +137,41 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             recipe: recipe,
             servings: _servings,
             missingCount: missingCount,
-            onAddMissing: () => ref.read(appDatabaseProvider).addMissingToShopping(recipe.id),
+            onAddMissing: () {
+              final count = ref.read(appDatabaseProvider).addMissingToShopping(recipe.id, _servings);
+              final msg = count == 0
+                  ? 'You already have everything for this recipe'
+                  : '$count item${count == 1 ? '' : 's'} added to your shopping list';
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(msg, style: AppTextStyles.bodySm.copyWith(color: AppColors.textPrimary)),
+                backgroundColor: AppColors.surface2,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ));
+            },
             onCooked: () {
-              ref.read(appDatabaseProvider).decrementPantryForRecipe(recipe.id, _servings);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Pantry updated for ${recipe.title} ✓',
-                      style: AppTextStyles.bodySm.copyWith(color: AppColors.textPrimary)),
-                  backgroundColor: AppColors.surface2,
+              final db = ref.read(appDatabaseProvider);
+              final missing = db.firstMissingNonOptional(recipe.id);
+              if (missing != null) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(
+                    "You're missing $missing. Add it to your pantry first, or mark it as optional.",
+                    style: AppTextStyles.bodySm.copyWith(color: AppColors.background),
+                  ),
+                  backgroundColor: AppColors.amber,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              );
+                ));
+                return;
+              }
+              db.decrementPantryForRecipe(recipe.id, _servings);
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Pantry updated — enjoy your meal! 🍳',
+                    style: AppTextStyles.bodySm.copyWith(color: AppColors.textPrimary)),
+                backgroundColor: AppColors.surface2,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ));
             },
             onAI: () => AiTinkerSheet.show(context, recipeName: recipe.title),
           ),

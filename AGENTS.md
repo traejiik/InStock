@@ -126,3 +126,26 @@ Rules:
 - Before answering architecture or codebase questions, read `graphify-out/GRAPH_REPORT.md` for god nodes and community structure.
 - If `graphify-out/wiki/index.md` exists, navigate it instead of reading raw files.
 - After modifying code files in this session, run `graphify update .` to keep the graph current. This is AST-only and has no API cost.
+
+
+<claude-mem-context>
+# Memory Context
+
+# [InStock] recent context, 2026-04-27 12:03pm GMT+2
+
+Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
+Format: ID TIME TYPE TITLE
+Fetch details: get_observations([IDs]) | Search: mem-search skill
+
+Stats: 6 obs (3,383t read) | 69,780t work | 95% savings
+
+### Apr 22, 2026
+178 3:06p 🟣 Fridge Flutter app — full greenfield scaffold spec defined
+179 3:14p ⚖️ Fridge Flutter App — Full Scaffold Specification
+180 " 🟣 Fridge App — Project scaffold initiated on InStock repo
+181 3:15p 🟣 Fridge Design System — Typography, Theme, and Unit Converter implemented
+182 " 🟣 Fridge — Complete domain model layer in app_models.dart
+183 3:17p ⚖️ AppDatabase implemented as ChangeNotifier over SharedPreferences, not Drift
+
+Access 70k tokens of past work via get_observations([IDs]) or mem-search skill.
+</claude-mem-context>

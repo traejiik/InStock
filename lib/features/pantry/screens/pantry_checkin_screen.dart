@@ -17,6 +17,7 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
   List<PantryItem> _items = [];
   List<Ingredient> _ingredients = [];
   int _currentIndex = 0;
+  int _verifiedCount = 0;
   bool _showUpdate = false;
   bool _isDone = false;
   final _qtyCtrl = TextEditingController();
@@ -58,7 +59,25 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
   PantryItem? get _currentItem =>
       _currentIndex < _items.length ? _items[_currentIndex] : null;
 
+  // Advance to next item after a verified action (stillGood / saveUpdate / markOut).
   void _advance() {
+    if (_currentIndex + 1 >= _items.length) {
+      setState(() {
+        _verifiedCount++;
+        _isDone = true;
+      });
+    } else {
+      setState(() {
+        _verifiedCount++;
+        _currentIndex++;
+        _showUpdate = false;
+        _slideCtrl.reset();
+      });
+    }
+  }
+
+  // Skip current item without updating lastVerifiedAt; progress bar does not fill.
+  void _skip() {
     if (_currentIndex + 1 >= _items.length) {
       setState(() => _isDone = true);
     } else {
@@ -107,7 +126,11 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
     }
 
     if (_isDone) {
-      return _DoneState(onClose: () => Navigator.pop(context));
+      return _DoneState(
+        verifiedCount: _verifiedCount,
+        totalCount: _items.length,
+        onClose: () => Navigator.pop(context),
+      );
     }
 
     final item = _currentItem;
@@ -143,115 +166,132 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              _ProgressBar(total: _items.length, current: _currentIndex),
+              _ProgressBar(total: _items.length, verified: _verifiedCount),
               const SizedBox(height: 28),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(28),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.border),
+                    // Dismissible handles left-swipe-to-skip with built-in animation.
+                    Dismissible(
+                      key: ValueKey('checkin-$_currentIndex'),
+                      direction: DismissDirection.endToStart,
+                      onDismissed: (_) => _skip(),
+                      background: const SizedBox.shrink(),
+                      secondaryBackground: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.surface3,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 28),
+                        child: const Icon(Icons.skip_next_rounded,
+                            color: AppColors.textSecondary, size: 28),
                       ),
-                      child: Column(
-                        children: [
-                          Text(ing.category.emoji,
-                              style: const TextStyle(fontSize: 56)),
-                          const SizedBox(height: 12),
-                          Text(ing.canonicalName, style: AppTextStyles.headingLg, textAlign: TextAlign.center),
-                          const SizedBox(height: 6),
-                          if (daysAgo != null)
-                            Text(
-                              'Last verified: ${daysAgo == 0 ? 'today' : '$daysAgo days ago'}',
-                              style: AppTextStyles.caption,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(28),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(ing.category.emoji,
+                                style: const TextStyle(fontSize: 56)),
+                            const SizedBox(height: 12),
+                            Text(ing.canonicalName, style: AppTextStyles.headingLg, textAlign: TextAlign.center),
+                            const SizedBox(height: 6),
+                            if (daysAgo != null)
+                              Text(
+                                'Last verified: ${daysAgo == 0 ? 'today' : '$daysAgo days ago'}',
+                                style: AppTextStyles.caption,
+                              ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface3,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'Recorded: ${item.quantity} ${item.unit}',
+                                style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
+                              ),
                             ),
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface3,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              'Recorded: ${item.quantity} ${item.unit}',
-                              style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          if (!_showUpdate) ...[
-                            Text('Still accurate?', style: AppTextStyles.label.copyWith(color: AppColors.textSecondary)),
-                            const SizedBox(height: 14),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _ActionButton(
-                                    label: '✓ Still good',
-                                    color: AppColors.green,
-                                    bg: AppColors.greenDim,
-                                    onTap: _stillGood,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: _ActionButton(
-                                    label: '✎ Update',
-                                    color: AppColors.textPrimary,
-                                    bg: AppColors.surface3,
-                                    onTap: _showUpdatePanel,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text('Swipe left to skip',
-                                style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
-                          ],
-                          if (_showUpdate) ...[
-                            SlideTransition(
-                              position: _slideAnim,
-                              child: Column(
+                            const SizedBox(height: 24),
+                            if (!_showUpdate) ...[
+                              Text('Still accurate?', style: AppTextStyles.label.copyWith(color: AppColors.textSecondary)),
+                              const SizedBox(height: 14),
+                              Row(
                                 children: [
-                                  TextField(
-                                    controller: _qtyCtrl,
-                                    keyboardType: TextInputType.number,
-                                    autofocus: true,
-                                    style: const TextStyle(color: AppColors.textPrimary),
-                                    decoration: InputDecoration(
-                                      labelText: 'New quantity (${item.unit})',
+                                  Expanded(
+                                    child: _ActionButton(
+                                      label: '✓ Still good',
+                                      color: AppColors.green,
+                                      bg: AppColors.greenDim,
+                                      onTap: _stillGood,
                                     ),
                                   ),
-                                  const SizedBox(height: 14),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 2,
-                                        child: _ActionButton(
-                                          label: 'Save & Next →',
-                                          color: AppColors.green,
-                                          bg: AppColors.greenDim,
-                                          onTap: _saveUpdate,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: _ActionButton(
-                                          label: 'Out',
-                                          color: AppColors.red,
-                                          bg: AppColors.redDim,
-                                          onTap: _markOut,
-                                        ),
-                                      ),
-                                    ],
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: _ActionButton(
+                                      label: '✎ Update',
+                                      color: AppColors.textPrimary,
+                                      bg: AppColors.surface3,
+                                      onTap: _showUpdatePanel,
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
+                              const SizedBox(height: 10),
+                              Text('← Swipe left to skip',
+                                  style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
+                            ],
+                            if (_showUpdate) ...[
+                              SlideTransition(
+                                position: _slideAnim,
+                                child: Column(
+                                  children: [
+                                    TextField(
+                                      controller: _qtyCtrl,
+                                      keyboardType: TextInputType.number,
+                                      autofocus: true,
+                                      style: const TextStyle(color: AppColors.textPrimary),
+                                      decoration: InputDecoration(
+                                        labelText: 'New quantity (${item.unit})',
+                                      ),
+                                    ),
+                                    const SizedBox(height: 14),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 2,
+                                          child: _ActionButton(
+                                            label: 'Save & Next →',
+                                            color: AppColors.green,
+                                            bg: AppColors.greenDim,
+                                            onTap: _saveUpdate,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: _ActionButton(
+                                            label: 'Out',
+                                            color: AppColors.red,
+                                            bg: AppColors.redDim,
+                                            onTap: _markOut,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     ),
                   ],
@@ -259,7 +299,7 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
               ),
               const SizedBox(height: 16),
               Text(
-                '$_currentIndex of ${_items.length} reviewed · ~${_items.length - _currentIndex} min to finish',
+                '$_verifiedCount of ${_items.length} verified · ~${_items.length - _currentIndex} remaining',
                 style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
                 textAlign: TextAlign.center,
               ),
@@ -305,22 +345,15 @@ class _ActionButton extends StatelessWidget {
 
 class _ProgressBar extends StatelessWidget {
   final int total;
-  final int current;
+  final int verified;
 
-  const _ProgressBar({required this.total, required this.current});
+  const _ProgressBar({required this.total, required this.verified});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: List.generate(total, (i) {
-        Color color;
-        if (i < current) {
-          color = AppColors.green;
-        } else if (i == current) {
-          color = AppColors.greenDim;
-        } else {
-          color = AppColors.border;
-        }
+        final color = i < verified ? AppColors.green : AppColors.border;
         return Expanded(
           child: Container(
             height: 4,
@@ -373,11 +406,19 @@ class _EmptyState extends StatelessWidget {
 }
 
 class _DoneState extends StatelessWidget {
+  final int verifiedCount;
+  final int totalCount;
   final VoidCallback onClose;
-  const _DoneState({required this.onClose});
+
+  const _DoneState({
+    required this.verifiedCount,
+    required this.totalCount,
+    required this.onClose,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isPartial = verifiedCount < totalCount;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -385,12 +426,16 @@ class _DoneState extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('🎉', style: TextStyle(fontSize: 56)),
+              Text(isPartial ? '👍' : '🎉', style: const TextStyle(fontSize: 56)),
               const SizedBox(height: 16),
               Text('Check-in complete!', style: AppTextStyles.headingLg),
               const SizedBox(height: 8),
-              Text('Pantry is up to date.',
-                  style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary)),
+              Text(
+                isPartial
+                    ? '$verifiedCount of $totalCount items verified'
+                    : 'Pantry is up to date.',
+                style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+              ),
               const SizedBox(height: 28),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(

@@ -7,8 +7,11 @@ import 'package:instock/data/database/app_database.dart';
 import 'package:instock/data/models/app_models.dart';
 import 'package:instock/features/shopping/providers/shopping_provider.dart';
 import 'package:instock/shared/widgets/segment_control.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/category_divider.dart';
 import '../widgets/pantry_item_row.dart';
+
+const _kPredefinedUnits = ['g', 'kg', 'ml', 'L', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'pcs'];
 
 class PantryScreen extends ConsumerStatefulWidget {
   const PantryScreen({super.key});
@@ -89,10 +92,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
             const SliverToBoxAdapter(child: SizedBox(height: 12)),
             if (items.isEmpty)
               SliverFillRemaining(
-                child: Center(
-                  child: Text('No pantry items yet 🥦',
-                      style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary)),
-                ),
+                child: _PantryEmptyState(onAdd: () => _showAddSheet(context)),
               )
             else
               SliverPadding(
@@ -280,78 +280,144 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
   void _showAddSheet(BuildContext context) {
     final nameCtrl = TextEditingController();
     final qtyCtrl = TextEditingController(text: '1');
-    var unit = 'pcs';
+    final unitCtrl = TextEditingController(text: 'pcs');
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Add to Pantry', style: AppTextStyles.headingMd),
-            const SizedBox(height: 16),
-            TextField(
-              controller: nameCtrl,
-              autofocus: true,
-              style: const TextStyle(color: AppColors.textPrimary),
-              decoration: const InputDecoration(labelText: 'Ingredient name'),
-            ),
-            const SizedBox(height: 12),
-            Row(
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) {
+          String? nameError;
+          String? qtyError;
+          String? unitError;
+
+          void submit() {
+            final name = nameCtrl.text.trim();
+            final qty = double.tryParse(qtyCtrl.text);
+            final unit = unitCtrl.text.trim();
+            bool valid = true;
+
+            setLocal(() {
+              nameError = name.length < 2 ? 'Name must be at least 2 characters' : null;
+              qtyError = (qtyCtrl.text.isEmpty || qty == null || qty <= 0)
+                  ? 'Enter a valid quantity greater than 0'
+                  : null;
+              unitError = unit.isEmpty ? 'Unit is required' : null;
+            });
+
+            if (name.length < 2 || qty == null || qty <= 0 || unit.isEmpty) {
+              valid = false;
+            }
+            if (!valid) return;
+
+            final db = ref.read(appDatabaseProvider);
+            final ing = db.findOrCreateIngredient(name);
+            db.addOrIncrementPantry(ing.id, qty!, unit);
+            Navigator.pop(ctx);
+          }
+
+          return Padding(
+            padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: qtyCtrl,
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(color: AppColors.textPrimary),
-                    decoration: const InputDecoration(labelText: 'Quantity'),
+                Text('Add to Pantry', style: AppTextStyles.headingMd),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: nameCtrl,
+                  autofocus: true,
+                  style: const TextStyle(color: AppColors.textPrimary),
+                  decoration: InputDecoration(
+                    labelText: 'Ingredient name',
+                    errorText: nameError,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    onChanged: (v) => unit = v,
-                    style: const TextStyle(color: AppColors.textPrimary),
-                    decoration: InputDecoration(labelText: 'Unit', hintText: unit),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: qtyCtrl,
+                        keyboardType: TextInputType.number,
+                        style: const TextStyle(color: AppColors.textPrimary),
+                        decoration: InputDecoration(
+                          labelText: 'Quantity',
+                          errorText: qtyError,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextField(
+                        controller: unitCtrl,
+                        style: const TextStyle(color: AppColors.textPrimary),
+                        decoration: InputDecoration(
+                          labelText: 'Unit',
+                          hintText: _kPredefinedUnits.join(', '),
+                          errorText: unitError,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.green,
+                      foregroundColor: AppColors.background,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: submit,
+                    child: Text('Add', style: AppTextStyles.label.copyWith(color: AppColors.background)),
                   ),
                 ),
               ],
             ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _PantryEmptyState extends StatelessWidget {
+  final VoidCallback onAdd;
+  const _PantryEmptyState({required this.onAdd});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(LucideIcons.package, size: 56, color: AppColors.textTertiary),
             const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.green,
-                  foregroundColor: AppColors.background,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                onPressed: () {
-                  final name = nameCtrl.text.trim();
-                  if (name.isEmpty) return;
-                  final qty = double.tryParse(qtyCtrl.text) ?? 1.0;
-                  final db = ref.read(appDatabaseProvider);
-                  var ing = db.ingredients.where(
-                    (i) => i.canonicalName.toLowerCase() == name.toLowerCase(),
-                  ).firstOrNull;
-                  ing ??= Ingredient(
-                    id: 'ing-${name.toLowerCase().replaceAll(' ', '-')}-${DateTime.now().millisecondsSinceEpoch}',
-                    canonicalName: name,
-                    category: IngredientCategory.custom,
-                    aliases: [],
-                    createdAt: DateTime.now(),
-                  );
-                  db.addOrIncrementPantry(ing.id, qty, unit);
-                  Navigator.pop(ctx);
-                },
-                child: Text('Add', style: AppTextStyles.label.copyWith(color: AppColors.background)),
+            Text('Your pantry is empty', style: AppTextStyles.headingMd),
+            const SizedBox(height: 8),
+            Text(
+              'Add items as you stock up or check off your shopping list',
+              style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 28),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.green,
+                foregroundColor: AppColors.background,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               ),
+              onPressed: onAdd,
+              child: Text('Add Item', style: AppTextStyles.label.copyWith(color: AppColors.background)),
             ),
           ],
         ),

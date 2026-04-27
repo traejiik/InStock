@@ -9,6 +9,7 @@ import 'package:instock/features/shopping/providers/shopping_provider.dart';
 import 'package:instock/shared/widgets/fab_menu.dart';
 import 'package:instock/shared/widgets/sort_chip_row.dart';
 import 'package:instock/shared/widgets/toggle_row.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/recipe_card.dart';
 
 class RecipesScreen extends ConsumerStatefulWidget {
@@ -98,13 +99,11 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
             const SliverToBoxAdapter(child: SizedBox(height: 16)),
             if (recipes.isEmpty)
               SliverFillRemaining(
-                child: Center(
-                  child: Text(
-                    _makeableOnly ? 'No makeable recipes with current pantry 😔' : 'No recipes yet 📖',
-                    style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+                child: _makeableOnly
+                    ? _MakeableEmptyState(
+                        onClearFilter: () => setState(() => _makeableOnly = false),
+                      )
+                    : _RecipesEmptyState(onNavigate: (path) => context.push(path)),
               )
             else
               SliverPadding(
@@ -164,6 +163,119 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
             onTap: (r) => context.push('/recipes/${r.id}'),
           ),
       ]),
+    );
+  }
+}
+
+class _RecipesEmptyState extends StatelessWidget {
+  final void Function(String path) onNavigate;
+  const _RecipesEmptyState({required this.onNavigate});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(LucideIcons.bookOpen, size: 56, color: AppColors.textTertiary),
+            const SizedBox(height: 20),
+            Text('No recipes yet', style: AppTextStyles.headingMd),
+            const SizedBox(height: 8),
+            Text(
+              'Write one, import from a URL, or generate with AI',
+              style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 28),
+            _EmptyActionButton(emoji: '✍️', label: 'Write recipe', onTap: () => onNavigate('/recipes/import')),
+            const SizedBox(height: 10),
+            _EmptyActionButton(emoji: '🔗', label: 'Import URL', onTap: () => onNavigate('/recipes/import')),
+            const SizedBox(height: 10),
+            _EmptyActionButton(
+              emoji: '✨',
+              label: 'AI Generate',
+              bg: AppColors.purpleDim,
+              fg: AppColors.purple,
+              onTap: () => onNavigate('/recipes/import'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MakeableEmptyState extends StatelessWidget {
+  final VoidCallback onClearFilter;
+  const _MakeableEmptyState({required this.onClearFilter});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(LucideIcons.chefHat, size: 56, color: AppColors.textTertiary),
+            const SizedBox(height: 20),
+            Text('Nothing makeable right now', style: AppTextStyles.headingMd, textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            Text(
+              "You're missing ingredients for all your recipes",
+              style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 28),
+            _EmptyActionButton(
+              emoji: '🛒',
+              label: "See What's Missing",
+              bg: AppColors.amberDim,
+              fg: AppColors.amber,
+              onTap: onClearFilter,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyActionButton extends StatelessWidget {
+  final String emoji;
+  final String label;
+  final Color bg;
+  final Color fg;
+  final VoidCallback onTap;
+
+  const _EmptyActionButton({
+    required this.emoji,
+    required this.label,
+    required this.onTap,
+    this.bg = AppColors.surface2,
+    this.fg = AppColors.textPrimary,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 13),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Text(
+          '$emoji  $label',
+          textAlign: TextAlign.center,
+          style: AppTextStyles.label.copyWith(color: fg),
+        ),
+      ),
     );
   }
 }
