@@ -8,10 +8,9 @@ import 'package:instock/data/database/app_database.dart';
 import 'package:instock/data/models/app_models.dart';
 import 'package:instock/features/shopping/providers/shopping_provider.dart';
 import 'package:instock/shared/widgets/segment_control.dart';
+import 'package:instock/shared/widgets/unit_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/shopping_list_item.dart';
-
-const _kShoppingUnits = ['g', 'kg', 'ml', 'L', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'pcs'];
 
 class ShoppingScreen extends ConsumerStatefulWidget {
   const ShoppingScreen({super.key});
@@ -134,7 +133,10 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
     final db = ref.read(appDatabaseProvider);
     final nameCtrl = TextEditingController();
     final qtyCtrl = TextEditingController(text: '1');
-    final unitCtrl = TextEditingController(text: 'pcs');
+    String selectedUnit = 'g';
+    String? nameError;
+    String? qtyError;
+    String? pantryHint;
 
     showModalBottomSheet(
       context: context,
@@ -145,11 +147,6 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
       ),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) {
-          String? nameError;
-          String? qtyError;
-          String? unitError;
-          String? pantryHint;
-
           void checkPantryHint(String value) {
             final name = value.trim();
             if (name.length < 2) {
@@ -177,20 +174,22 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
           void submit() {
             final name = nameCtrl.text.trim();
             final qty = double.tryParse(qtyCtrl.text);
-            final unit = unitCtrl.text.trim();
 
             setLocal(() {
               nameError = name.length < 2 ? 'Name must be at least 2 characters' : null;
               qtyError = (qtyCtrl.text.isEmpty || qty == null || qty <= 0)
                   ? 'Enter a valid quantity greater than 0'
                   : null;
-              unitError = unit.isEmpty ? 'Unit is required' : null;
             });
 
-            if (name.length < 2 || qty == null || qty <= 0 || unit.isEmpty) return;
+            if (name.length < 2 || qty == null || qty <= 0) return;
 
             final ing = db.findOrCreateIngredient(name);
-            db.addShoppingItem(ingredientId: ing.id, quantity: qty, unit: unit);
+            db.addOrIncrementShopping(
+              ingredientId: ing.id,
+              quantity: qty,
+              unit: selectedUnit,
+            );
             Navigator.pop(ctx);
           }
 
@@ -218,32 +217,20 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
                       style: AppTextStyles.caption.copyWith(color: AppColors.amber)),
                 ],
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: qtyCtrl,
-                        keyboardType: TextInputType.number,
-                        style: const TextStyle(color: AppColors.textPrimary),
-                        decoration: InputDecoration(
-                          labelText: 'Quantity',
-                          errorText: qtyError,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                        controller: unitCtrl,
-                        style: const TextStyle(color: AppColors.textPrimary),
-                        decoration: InputDecoration(
-                          labelText: 'Unit',
-                          hintText: _kShoppingUnits.join(', '),
-                          errorText: unitError,
-                        ),
-                      ),
-                    ),
-                  ],
+                TextField(
+                  controller: qtyCtrl,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(color: AppColors.textPrimary),
+                  decoration: InputDecoration(
+                    labelText: 'Quantity',
+                    errorText: qtyError,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                UnitPicker(
+                  selectedUnit: selectedUnit,
+                  onChanged: (u) => setLocal(() => selectedUnit = u),
+                  allowCustom: true,
                 ),
                 const SizedBox(height: 20),
                 SizedBox(

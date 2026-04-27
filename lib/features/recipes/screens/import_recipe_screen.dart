@@ -3,6 +3,7 @@ import 'package:instock/core/theme/app_colors.dart';
 import 'package:instock/core/theme/app_text_styles.dart';
 import 'package:instock/shared/widgets/segment_control.dart';
 import 'package:instock/shared/widgets/toggle_row.dart';
+import 'package:instock/shared/widgets/unit_picker.dart';
 
 class ImportRecipeScreen extends StatefulWidget {
   const ImportRecipeScreen({super.key});
@@ -121,6 +122,7 @@ class _WriteTabState extends State<_WriteTab> {
   final _servingsCtrl = TextEditingController(text: '4');
   final _timeCtrl = TextEditingController(text: '30');
   final List<TextEditingController> _ingCtrl = [TextEditingController()];
+  final List<String> _ingUnits = ['g'];
   final List<TextEditingController> _stepCtrl = [TextEditingController()];
 
   String? _titleError;
@@ -213,26 +215,44 @@ class _WriteTabState extends State<_WriteTab> {
         ),
         const SizedBox(height: 8),
         ..._ingCtrl.asMap().entries.map((e) => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Row(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _field(e.value, 'Ingredient ${e.key + 1}',
-                  errorText: _ingRowErrors[e.key])),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () => setState(() {
-                  if (_ingCtrl.length > 1) {
-                    _ingCtrl[e.key].dispose();
-                    _ingCtrl.removeAt(e.key);
-                    _ingRowErrors.remove(e.key);
-                  }
-                }),
-                child: const Icon(Icons.remove_circle_outline, color: AppColors.textTertiary, size: 20),
+              Row(
+                children: [
+                  Expanded(child: _field(e.value, 'Ingredient ${e.key + 1}',
+                      errorText: _ingRowErrors[e.key])),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => setState(() {
+                      if (_ingCtrl.length > 1) {
+                        _ingCtrl[e.key].dispose();
+                        _ingCtrl.removeAt(e.key);
+                        _ingUnits.removeAt(e.key);
+                        _ingRowErrors.remove(e.key);
+                      }
+                    }),
+                    child: const Icon(Icons.remove_circle_outline, color: AppColors.textTertiary, size: 20),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              UnitPicker(
+                selectedUnit: _ingUnits[e.key],
+                onChanged: (u) => setState(() => _ingUnits[e.key] = u),
+                allowCustom: true,
               ),
             ],
           ),
         )),
-        _AddRow(label: '+ Ingredient', onTap: () => setState(() => _ingCtrl.add(TextEditingController()))),
+        _AddRow(
+          label: '+ Ingredient',
+          onTap: () => setState(() {
+            _ingCtrl.add(TextEditingController());
+            _ingUnits.add('g');
+          }),
+        ),
         const SizedBox(height: 20),
         Row(
           children: [

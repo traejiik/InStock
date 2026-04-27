@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,11 +8,10 @@ import 'package:instock/data/database/app_database.dart';
 import 'package:instock/data/models/app_models.dart';
 import 'package:instock/features/shopping/providers/shopping_provider.dart';
 import 'package:instock/shared/widgets/segment_control.dart';
+import 'package:instock/shared/widgets/unit_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/category_divider.dart';
 import '../widgets/pantry_item_row.dart';
-
-const _kPredefinedUnits = ['g', 'kg', 'ml', 'L', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'pcs'];
 
 class PantryScreen extends ConsumerStatefulWidget {
   const PantryScreen({super.key});
@@ -58,17 +58,41 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Pantry', style: AppTextStyles.displayLg),
-                          Text(
-                            '${items.length} items',
-                            style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onLongPress: () {
+                          if (!kDebugMode) return;
+                          ref.read(appDatabaseProvider).debugResetVerification();
+                          ref.invalidate(pantryVerificationStatusProvider);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Debug: pantry marked as overdue'),
+                              backgroundColor: AppColors.surface3,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('Pantry', style: AppTextStyles.displayLg),
+                              Text(
+                                '${items.length} items',
+                                style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
+                    _CheckInButton(
+                      isOverdue: needsCheck,
+                      onTap: () => context.push('/pantry/checkin'),
+                    ),
+                    const SizedBox(width: 4),
                     IconButton(
                       onPressed: () => _showSearch(),
                       icon: const Icon(Icons.search, color: AppColors.textSecondary),
@@ -77,8 +101,6 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                 ),
               ),
             ),
-            if (needsCheck)
-              SliverToBoxAdapter(child: _VerificationBanner(onTap: () => context.push('/pantry/checkin'))),
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverToBoxAdapter(
@@ -280,7 +302,9 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
   void _showAddSheet(BuildContext context) {
     final nameCtrl = TextEditingController();
     final qtyCtrl = TextEditingController(text: '1');
-    final unitCtrl = TextEditingController(text: 'pcs');
+    String selectedUnit = 'g';
+    String? nameError;
+    String? qtyError;
 
     showModalBottomSheet(
       context: context,
@@ -290,32 +314,22 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) {
-          String? nameError;
-          String? qtyError;
-          String? unitError;
-
           void submit() {
             final name = nameCtrl.text.trim();
             final qty = double.tryParse(qtyCtrl.text);
-            final unit = unitCtrl.text.trim();
-            bool valid = true;
 
             setLocal(() {
               nameError = name.length < 2 ? 'Name must be at least 2 characters' : null;
               qtyError = (qtyCtrl.text.isEmpty || qty == null || qty <= 0)
                   ? 'Enter a valid quantity greater than 0'
                   : null;
-              unitError = unit.isEmpty ? 'Unit is required' : null;
             });
 
-            if (name.length < 2 || qty == null || qty <= 0 || unit.isEmpty) {
-              valid = false;
-            }
-            if (!valid) return;
+            if (name.length < 2 || qty == null || qty <= 0) return;
 
             final db = ref.read(appDatabaseProvider);
             final ing = db.findOrCreateIngredient(name);
-            db.addOrIncrementPantry(ing.id, qty!, unit);
+            db.addOrIncrementPantry(ing.id, qty, selectedUnit);
             Navigator.pop(ctx);
           }
 
@@ -337,32 +351,20 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: qtyCtrl,
-                        keyboardType: TextInputType.number,
-                        style: const TextStyle(color: AppColors.textPrimary),
-                        decoration: InputDecoration(
-                          labelText: 'Quantity',
-                          errorText: qtyError,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                        controller: unitCtrl,
-                        style: const TextStyle(color: AppColors.textPrimary),
-                        decoration: InputDecoration(
-                          labelText: 'Unit',
-                          hintText: _kPredefinedUnits.join(', '),
-                          errorText: unitError,
-                        ),
-                      ),
-                    ),
-                  ],
+                TextField(
+                  controller: qtyCtrl,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(color: AppColors.textPrimary),
+                  decoration: InputDecoration(
+                    labelText: 'Quantity',
+                    errorText: qtyError,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                UnitPicker(
+                  selectedUnit: selectedUnit,
+                  onChanged: (u) => setLocal(() => selectedUnit = u),
+                  allowCustom: true,
                 ),
                 const SizedBox(height: 20),
                 SizedBox(
@@ -426,39 +428,49 @@ class _PantryEmptyState extends StatelessWidget {
   }
 }
 
-class _VerificationBanner extends StatelessWidget {
+class _CheckInButton extends StatelessWidget {
+  final bool isOverdue;
   final VoidCallback onTap;
-  const _VerificationBanner({required this.onTap});
+
+  const _CheckInButton({required this.isOverdue, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: AppColors.amberDim,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.amber),
+    return GestureDetector(
+      onTap: onTap,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: isOverdue ? AppColors.amberDim : AppColors.surface3,
+              shape: BoxShape.circle,
+              border: isOverdue
+                  ? Border.all(color: AppColors.amber.withValues(alpha: 0.25))
+                  : null,
+            ),
+            child: Icon(
+              LucideIcons.clipboardCheck,
+              size: 18,
+              color: isOverdue ? AppColors.amber : AppColors.textSecondary,
+            ),
           ),
-          child: Row(
-            children: [
-              const Icon(Icons.notifications_outlined, color: AppColors.amber, size: 18),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Some items haven\'t been verified in a while',
-                  style: AppTextStyles.bodySm.copyWith(color: AppColors.amber),
+          if (isOverdue)
+            Positioned(
+              top: -2,
+              right: -2,
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: AppColors.amber,
+                  shape: BoxShape.circle,
                 ),
               ),
-              Text('Quick check-in →',
-                  style: AppTextStyles.bodySm.copyWith(
-                      color: AppColors.amber, fontWeight: FontWeight.w600)),
-            ],
-          ),
-        ),
+            ),
+        ],
       ),
     );
   }

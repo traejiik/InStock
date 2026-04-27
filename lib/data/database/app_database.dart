@@ -212,6 +212,42 @@ class AppDatabase extends ChangeNotifier {
     return added;
   }
 
+  // Adds a shopping item, or increments the quantity of an existing unchecked
+  // item for the same ingredient rather than creating a duplicate row.
+  void addOrIncrementShopping({
+    required String ingredientId,
+    required double quantity,
+    required String unit,
+    String? sourceRecipeId,
+  }) {
+    final now = DateTime.now();
+    final existingIdx = _state.shoppingItems.indexWhere(
+      (s) => s.ingredientId == ingredientId && !s.checked,
+    );
+    if (existingIdx != -1) {
+      final existing = _state.shoppingItems[existingIdx];
+      final items = List<ShoppingItem>.from(_state.shoppingItems);
+      items[existingIdx] = ShoppingItem(
+        id: existing.id,
+        ingredientId: existing.ingredientId,
+        quantity: existing.quantity + quantity,
+        unit: existing.unit,
+        checked: false,
+        sourceRecipeId: existing.sourceRecipeId,
+        addedAt: existing.addedAt,
+        updatedAt: now,
+      );
+      _update(_state.copyWith(shoppingItems: items));
+    } else {
+      addShoppingItem(
+        ingredientId: ingredientId,
+        quantity: quantity,
+        unit: unit,
+        sourceRecipeId: sourceRecipeId,
+      );
+    }
+  }
+
   // ─── Pantry mutations ─────────────────────────────────────────────────────
 
   void _addOrIncrementPantryInternal(String ingredientId, double qty, String unit) {
@@ -275,6 +311,15 @@ class AppDatabase extends ChangeNotifier {
       if (p.id != pantryItemId) return p;
       return p.copyWith(lastVerifiedAt: DateTime.now());
     }).toList();
+    _update(_state.copyWith(pantryItems: items));
+  }
+
+  void debugResetVerification() {
+    if (!kDebugMode) return;
+    final staleDate = DateTime.now().subtract(const Duration(days: 14));
+    final items = _state.pantryItems
+        .map((p) => p.copyWith(lastVerifiedAt: staleDate))
+        .toList();
     _update(_state.copyWith(pantryItems: items));
   }
 
