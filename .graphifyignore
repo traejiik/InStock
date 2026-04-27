@@ -1,0 +1,13 @@
+# .graphifyignore
+vendor/
+node_modules/
+dist/
+*.generated.py
+.dart_tool/
+.idea/
+build/
+ios/
+linux/
+macos/
+web/
+windows/
