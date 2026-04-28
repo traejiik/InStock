@@ -120,6 +120,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'pantry_fab',
         onPressed: () => _showAddSheet(context),
         backgroundColor: AppColors.green,
         foregroundColor: AppColors.background,

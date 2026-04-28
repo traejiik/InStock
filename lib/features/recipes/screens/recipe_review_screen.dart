@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -30,13 +29,13 @@ class _RecipeReviewScreenState extends ConsumerState<RecipeReviewScreen> {
   @override
   void initState() {
     super.initState();
-    final form = ref.read(recipeFormProvider.notifier);
-    form.loadFromParsed(widget.parsed);
-    final state = ref.read(recipeFormProvider);
-    _titleCtrl = TextEditingController(text: state.title);
+    _titleCtrl = TextEditingController(text: widget.parsed.title);
     _cookTimeCtrl = TextEditingController(
-      text: state.cookTimeMinutes?.toString() ?? '',
+      text: widget.parsed.cookTimeMinutes?.toString() ?? '',
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(recipeFormProvider.notifier).loadFromParsed(widget.parsed);
+    });
   }
 
   @override
@@ -122,10 +121,13 @@ class _RecipeReviewScreenState extends ConsumerState<RecipeReviewScreen> {
               height: 160,
               width: double.infinity,
               child: state.imageUrl != null
-                  ? CachedNetworkImage(
-                      imageUrl: state.imageUrl!,
+                  ? Image.network(
+                      state.imageUrl!,
                       fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) => const _ImageFallback(),
+                      width: double.infinity,
+                      errorBuilder: (_, __, ___) => const _ImageFallback(),
+                      loadingBuilder: (_, child, progress) =>
+                          progress == null ? child : const _ImageFallback(),
                     )
                   : const _ImageFallback(),
             ),

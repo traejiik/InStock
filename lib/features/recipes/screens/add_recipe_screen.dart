@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -624,18 +623,22 @@ class _RecipePreviewCard extends StatelessWidget {
             height: 120,
             width: double.infinity,
             child: parsed.imageUrl != null
-                ? CachedNetworkImage(
-                    imageUrl: parsed.imageUrl!,
+                ? Image.network(
+                    parsed.imageUrl!,
                     fit: BoxFit.cover,
-                    errorWidget: (_, __, ___) => const _ImageFallback(),
-                    placeholder: (_, __) => Container(
-                      color: AppColors.surface3,
-                      alignment: Alignment.center,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(AppColors.textTertiary),
-                      ),
-                    ),
+                    width: double.infinity,
+                    errorBuilder: (_, __, ___) => const _ImageFallback(),
+                    loadingBuilder: (_, child, progress) {
+                      if (progress == null) return child;
+                      return Container(
+                        color: AppColors.surface3,
+                        alignment: Alignment.center,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(AppColors.textTertiary),
+                        ),
+                      );
+                    },
                   )
                 : const _ImageFallback(),
           ),

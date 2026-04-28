@@ -58,6 +58,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'shopping_fab',
         onPressed: () => _showAddSheet(context),
         backgroundColor: AppColors.green,
         foregroundColor: AppColors.background,

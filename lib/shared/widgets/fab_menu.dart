@@ -106,6 +106,7 @@ class _FabMenuState extends State<FabMenu> with SingleTickerProviderStateMixin {
           );
         }),
         FloatingActionButton(
+          heroTag: 'recipes_fab',
           onPressed: _toggle,
           backgroundColor: AppColors.green,
           foregroundColor: AppColors.background,
