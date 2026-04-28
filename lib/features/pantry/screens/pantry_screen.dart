@@ -58,33 +58,18 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onLongPress: () {
-                          if (!kDebugMode) return;
-                          ref.read(appDatabaseProvider).debugResetVerification();
-                          ref.invalidate(pantryVerificationStatusProvider);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Debug: pantry marked as overdue'),
-                              backgroundColor: AppColors.surface3,
-                              behavior: SnackBarBehavior.floating,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('Pantry', style: AppTextStyles.displayLg),
+                            Text(
+                              '${items.length} items',
+                              style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
                             ),
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text('Pantry', style: AppTextStyles.displayLg),
-                              Text(
-                                '${items.length} items',
-                                style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
                       ),
                     ),
@@ -101,6 +86,14 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                 ),
               ),
             ),
+            if (kDebugMode)
+              SliverToBoxAdapter(
+                child: GestureDetector(
+                  onLongPress: _handleDebugLongPress,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(height: 4, color: Colors.transparent),
+                ),
+              ),
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverToBoxAdapter(
@@ -134,6 +127,22 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
         child: const Icon(Icons.add, size: 26),
       ),
     );
+  }
+
+  void _handleDebugLongPress() {
+    if (!kDebugMode) return;
+    ref.read(appDatabaseProvider).debugResetVerification();
+    ref.invalidate(pantryVerificationStatusProvider);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Debug: pantry marked as overdue'),
+          backgroundColor: AppColors.surface3,
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   void _showSearch() {
