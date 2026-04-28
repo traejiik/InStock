@@ -156,6 +156,7 @@ class Recipe {
   final String id;
   final String title;
   final String emoji;
+  final String? imageUrl;
   final List<String> instructions;
   final int servings;
   final int cookMinutes;
@@ -170,6 +171,7 @@ class Recipe {
     required this.id,
     required this.title,
     required this.emoji,
+    this.imageUrl,
     required this.instructions,
     required this.servings,
     required this.cookMinutes,
@@ -185,6 +187,7 @@ class Recipe {
         'id': id,
         'title': title,
         'emoji': emoji,
+        'imageUrl': imageUrl,
         'instructions': instructions,
         'servings': servings,
         'cookMinutes': cookMinutes,
@@ -200,6 +203,7 @@ class Recipe {
         id: j['id'] as String,
         title: j['title'] as String,
         emoji: j['emoji'] as String? ?? '🍽️',
+        imageUrl: j['imageUrl'] as String?,
         instructions: List<String>.from(j['instructions'] as List),
         servings: j['servings'] as int,
         cookMinutes: j['cookMinutes'] as int? ?? 30,

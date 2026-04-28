@@ -413,6 +413,77 @@ class AppDatabase extends ChangeNotifier {
         .toList();
   }
 
+  // ─── Recipe mutations ────────────────────────────────────────────────────
+
+  String saveRecipe({
+    required String title,
+    required int servings,
+    required int cookMinutes,
+    required String difficulty,
+    required List<String> instructions,
+    required List<({String name, double quantity, String unit, bool isOptional})> ingredients,
+    String? sourceUrl,
+    String? imageUrl,
+    String? emoji,
+  }) {
+    final now = DateTime.now();
+    final recipeId = _uuid.v4();
+    var workingState = _state;
+
+    final newRecipeIngredients = <RecipeIngredient>[];
+    for (final ing in ingredients) {
+      final normalized = ing.name.trim().toLowerCase();
+      var ingredient = workingState.ingredients.where((i) {
+        return i.canonicalName.toLowerCase() == normalized ||
+            i.aliases.any((a) => a.toLowerCase() == normalized);
+      }).firstOrNull;
+
+      if (ingredient == null) {
+        ingredient = Ingredient(
+          id: 'ing-${normalized.replaceAll(' ', '-')}-${now.millisecondsSinceEpoch}',
+          canonicalName: ing.name.trim(),
+          category: IngredientCategory.custom,
+          aliases: [],
+          createdAt: now,
+        );
+        workingState = workingState.copyWith(
+          ingredients: [...workingState.ingredients, ingredient],
+        );
+      }
+
+      newRecipeIngredients.add(RecipeIngredient(
+        id: _uuid.v4(),
+        recipeId: recipeId,
+        ingredientId: ingredient.id,
+        quantity: ing.quantity,
+        unit: ing.unit,
+        isOptional: ing.isOptional,
+      ));
+    }
+
+    final recipe = Recipe(
+      id: recipeId,
+      title: title,
+      emoji: emoji ?? '🍽️',
+      imageUrl: imageUrl,
+      instructions: instructions,
+      servings: servings,
+      cookMinutes: cookMinutes,
+      difficulty: difficulty,
+      sourceUrl: sourceUrl,
+      tags: [],
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    _update(workingState.copyWith(
+      recipes: [...workingState.recipes, recipe],
+      recipeIngredients: [...workingState.recipeIngredients, ...newRecipeIngredients],
+    ));
+
+    return recipeId;
+  }
+
   // ─── Seed ─────────────────────────────────────────────────────────────────
 
   Future<void> _seed(SharedPreferences prefs) async {

@@ -6,6 +6,9 @@ import 'package:instock/features/pantry/screens/pantry_checkin_screen.dart';
 import 'package:instock/features/recipes/screens/recipes_screen.dart';
 import 'package:instock/features/recipes/screens/recipe_detail_screen.dart';
 import 'package:instock/features/recipes/screens/import_recipe_screen.dart';
+import 'package:instock/features/recipes/screens/add_recipe_screen.dart';
+import 'package:instock/features/recipes/screens/recipe_review_screen.dart';
+import 'package:instock/features/recipes/services/recipe_scraper.dart';
 import 'package:instock/features/settings/screens/settings_screen.dart';
 import 'package:instock/shared/widgets/app_shell.dart';
 
@@ -35,6 +38,19 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/recipes/import',
       builder: (c, s) => const ImportRecipeScreen(),
+    ),
+    GoRoute(
+      path: '/recipes/add',
+      builder: (c, s) {
+        final tab = int.tryParse(s.uri.queryParameters['tab'] ?? '') ?? 1;
+        return AddRecipeScreen(initialTab: tab);
+      },
+    ),
+    GoRoute(
+      path: '/recipes/review',
+      builder: (c, s) => RecipeReviewScreen(
+        parsed: s.extra as ParsedRecipe,
+      ),
     ),
     GoRoute(
       path: '/recipes/:id',
