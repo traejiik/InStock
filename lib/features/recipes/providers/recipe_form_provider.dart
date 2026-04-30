@@ -88,6 +88,7 @@ class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
                 name: i.name,
                 quantity: i.quantity,
                 unit: i.unit,
+                isOptional: i.isOptional,
               ))
           .toList(),
       steps: List<String>.from(parsed.steps),

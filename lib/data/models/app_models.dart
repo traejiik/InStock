@@ -183,6 +183,35 @@ class Recipe {
     this.deletedAt,
   });
 
+  Recipe copyWith({
+    String? title,
+    String? emoji,
+    String? imageUrl,
+    List<String>? instructions,
+    int? servings,
+    int? cookMinutes,
+    String? difficulty,
+    String? sourceUrl,
+    List<String>? tags,
+    DateTime? updatedAt,
+    DateTime? deletedAt,
+  }) =>
+      Recipe(
+        id: id,
+        title: title ?? this.title,
+        emoji: emoji ?? this.emoji,
+        imageUrl: imageUrl ?? this.imageUrl,
+        instructions: instructions ?? this.instructions,
+        servings: servings ?? this.servings,
+        cookMinutes: cookMinutes ?? this.cookMinutes,
+        difficulty: difficulty ?? this.difficulty,
+        sourceUrl: sourceUrl ?? this.sourceUrl,
+        tags: tags ?? this.tags,
+        createdAt: createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        deletedAt: deletedAt ?? this.deletedAt,
+      );
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,

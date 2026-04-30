@@ -49,7 +49,14 @@ class IngredientRow extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(ingredient.canonicalName, style: AppTextStyles.label),
+                    Expanded(
+                      child: Text(
+                        ingredient.canonicalName,
+                        style: AppTextStyles.label,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
+                      ),
+                    ),
                     if (recipeIngredient.isOptional) ...[
                       const SizedBox(width: 6),
                       Container(

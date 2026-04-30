@@ -34,13 +34,32 @@ class RecipeCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            Center(
-              child: Text(recipe.emoji, style: const TextStyle(fontSize: 64)),
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: _CardHero(recipe: recipe, height: 180, iconSize: 56),
+              ),
             ),
+            if (recipe.imageUrl != null)
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0x00000000), Color(0xCC000000)],
+                    ),
+                  ),
+                ),
+              ),
             Positioned(
               top: 12,
               right: 12,
-              child: _MakeableBadge(isMakeable: isMakeable, missingCount: missingCount),
+              child: _MakeableBadge(
+                isMakeable: isMakeable,
+                missingCount: missingCount,
+              ),
             ),
             Positioned(
               left: 16,
@@ -81,6 +100,7 @@ class RecipeCardSm extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        height: 130,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: const LinearGradient(
@@ -92,16 +112,33 @@ class RecipeCardSm extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            SizedBox(
-              height: 130,
-              child: Center(
-                child: Text(recipe.emoji, style: const TextStyle(fontSize: 48)),
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: _CardHero(recipe: recipe, height: 130, iconSize: 44),
               ),
             ),
+            if (recipe.imageUrl != null)
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0x00000000), Color(0xCC000000)],
+                    ),
+                  ),
+                ),
+              ),
             Positioned(
               top: 8,
               right: 8,
-              child: _MakeableBadge(isMakeable: isMakeable, missingCount: missingCount, small: true),
+              child: _MakeableBadge(
+                isMakeable: isMakeable,
+                missingCount: missingCount,
+                small: true,
+              ),
             ),
             Positioned(
               left: 12,
@@ -110,10 +147,12 @@ class RecipeCardSm extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(recipe.title,
-                      style: AppTextStyles.headingSm,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  Text(
+                    recipe.title,
+                    style: AppTextStyles.headingSm,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 3),
                   Text(
                     '${recipe.cookMinutes}m · ${recipe.servings} servings',
@@ -148,7 +187,9 @@ class _MakeableBadge extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: small ? 6 : 8, vertical: small ? 3 : 4),
+        horizontal: small ? 6 : 8,
+        vertical: small ? 3 : 4,
+      ),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(6),
@@ -160,6 +201,58 @@ class _MakeableBadge extends StatelessWidget {
           color: fg,
           fontWeight: FontWeight.w600,
           fontSize: small ? 10 : 11,
+        ),
+      ),
+    );
+  }
+}
+
+class _CardHero extends StatelessWidget {
+  final Recipe recipe;
+  final double height;
+  final double iconSize;
+
+  const _CardHero({
+    required this.recipe,
+    required this.height,
+    required this.iconSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      child: recipe.imageUrl != null
+          ? Image.network(
+              recipe.imageUrl!,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              errorBuilder: (_, __, ___) =>
+                  _Placeholder(height: height, iconSize: iconSize),
+              loadingBuilder: (_, child, progress) => progress == null
+                  ? child
+                  : _Placeholder(height: height, iconSize: iconSize),
+            )
+          : _Placeholder(height: height, iconSize: iconSize),
+    );
+  }
+}
+
+class _Placeholder extends StatelessWidget {
+  final double height;
+  final double iconSize;
+
+  const _Placeholder({required this.height, required this.iconSize});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      child: Center(
+        child: Icon(
+          Icons.restaurant_menu_outlined,
+          size: iconSize,
+          color: AppColors.textTertiary,
         ),
       ),
     );
@@ -178,19 +271,27 @@ class _MetaRow extends StatelessWidget {
       children: [
         const Icon(Icons.schedule, size: 12, color: AppColors.textTertiary),
         const SizedBox(width: 4),
-        Text('${recipe.cookMinutes}m',
-            style: AppTextStyles.caption),
+        Text('${recipe.cookMinutes}m', style: AppTextStyles.caption),
         const SizedBox(width: 10),
-        const Icon(Icons.people_outline, size: 12, color: AppColors.textTertiary),
+        const Icon(
+          Icons.people_outline,
+          size: 12,
+          color: AppColors.textTertiary,
+        ),
         const SizedBox(width: 4),
-        Text('${recipe.servings}',
-            style: AppTextStyles.caption),
+        Text('${recipe.servings}', style: AppTextStyles.caption),
         if (missingCount > 0) ...[
           const SizedBox(width: 10),
-          const Icon(Icons.warning_amber_outlined, size: 12, color: AppColors.amber),
+          const Icon(
+            Icons.warning_amber_outlined,
+            size: 12,
+            color: AppColors.amber,
+          ),
           const SizedBox(width: 4),
-          Text('$missingCount missing',
-              style: AppTextStyles.caption.copyWith(color: AppColors.amber)),
+          Text(
+            '$missingCount missing',
+            style: AppTextStyles.caption.copyWith(color: AppColors.amber),
+          ),
         ],
       ],
     );

@@ -16,18 +16,26 @@ class ParsedIngredient {
   final String name;
   final double quantity;
   final String? unit;
+  final bool isOptional;
 
   const ParsedIngredient({
     required this.name,
     required this.quantity,
     this.unit,
+    this.isOptional = false,
   });
 
-  ParsedIngredient copyWith({String? name, double? quantity, String? unit}) =>
+  ParsedIngredient copyWith({
+    String? name,
+    double? quantity,
+    String? unit,
+    bool? isOptional,
+  }) =>
       ParsedIngredient(
         name: name ?? this.name,
         quantity: quantity ?? this.quantity,
         unit: unit ?? this.unit,
+        isOptional: isOptional ?? this.isOptional,
       );
 }
 
@@ -295,8 +303,13 @@ class RecipeScraper {
   }
 
   ParsedIngredient _parseIngredientString(String raw) {
+    // ── 1. Detect optional before any mutation ───────────────────────────────
+    final isOptional =
+        RegExp(r'\boptional\b', caseSensitive: false).hasMatch(raw);
+
     var text = raw.trim();
 
+    // ── 2. Fraction substitution ──────────────────────────────────────────────
     for (final entry in _fractions.entries) {
       text = text.replaceAll(entry.key, '${entry.value}');
     }
@@ -310,6 +323,7 @@ class RecipeScraper {
       },
     );
 
+    // ── 3. Quantity parsing ───────────────────────────────────────────────────
     double quantity = 1;
     final qtyMatch = RegExp(r'^(\d+(?:\.\d+)?)').firstMatch(text);
     if (qtyMatch != null) {
@@ -322,6 +336,7 @@ class RecipeScraper {
       }
     }
 
+    // ── 4. Unit parsing ───────────────────────────────────────────────────────
     String? unit;
     for (final u in _knownUnits) {
       final pattern = RegExp('^${RegExp.escape(u)}\\b', caseSensitive: false);
@@ -332,12 +347,37 @@ class RecipeScraper {
       }
     }
 
-    final name = text.replaceFirst(RegExp(r'^[,\s\-]+'), '').trim();
+    // ── 5. Name cleaner ───────────────────────────────────────────────────────
+    // Strip double parentheticals: ((anything))
+    text = text.replaceAll(RegExp(r'\(\([^)]*\)\)', dotAll: true), '').trim();
 
+    // Strip single parentheticals: (anything)
+    text = text.replaceAll(RegExp(r'\([^)]*\)'), '').trim();
+
+    // Strip the word "optional" (already detected above)
+    text = text.replaceAll(RegExp(r'\boptional\b', caseSensitive: false), '').trim();
+
+    // Strip leading punctuation, dashes, commas
+    text = text.replaceFirst(RegExp(r'^[,;\-\s]+'), '').trim();
+
+    // Strip trailing commas, conjunctions, prepositions
+    text = text.replaceFirst(
+      RegExp(r'[,;\s]+(and|or|to|with|plus|more|for)?[,;\s]*$',
+          caseSensitive: false),
+      '',
+    ).trim();
+
+    // Capitalise first letter
+    final name = text.isNotEmpty
+        ? text[0].toUpperCase() + text.substring(1)
+        : raw.trim();
+
+    // ── 6. Return ─────────────────────────────────────────────────────────────
     return ParsedIngredient(
       name: name.isNotEmpty ? name : raw.trim(),
       quantity: quantity,
       unit: unit,
+      isOptional: isOptional,
     );
   }
 

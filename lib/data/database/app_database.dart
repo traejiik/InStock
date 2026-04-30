@@ -41,6 +41,13 @@ class AppDatabase extends ChangeNotifier {
   List<RecipeIngredient> ingredientsForRecipe(String recipeId) =>
       _state.recipeIngredients.where((ri) => ri.recipeId == recipeId).toList();
 
+  void deleteRecipe(String recipeId) {
+    final updated = _state.recipes.map((r) {
+      return r.id == recipeId ? r.copyWith(deletedAt: DateTime.now()) : r;
+    }).toList();
+    _update(_state.copyWith(recipes: updated));
+  }
+
   PantryItem? pantryItemForIngredient(String ingredientId) =>
       pantryItems.where((p) => p.ingredientId == ingredientId).firstOrNull;
 

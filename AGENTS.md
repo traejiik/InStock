@@ -119,33 +119,88 @@ For documentation-only changes, tests are usually unnecessary, but still inspect
 
 ## graphify
 
-This project has a graphify knowledge graph at `graphify-out/`.
+This project has a graphify knowledge graph at graphify-out/.
 
 Rules:
-
-- Before answering architecture or codebase questions, read `graphify-out/GRAPH_REPORT.md` for god nodes and community structure.
-- If `graphify-out/wiki/index.md` exists, navigate it instead of reading raw files.
-- After modifying code files in this session, run `graphify update .` to keep the graph current. This is AST-only and has no API cost.
+- Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
+- If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
+- After modifying code files in this session, run `graphify update .` to keep the graph current (AST-only, no API cost)
 
 
 <claude-mem-context>
 # Memory Context
 
-# [InStock] recent context, 2026-04-27 12:03pm GMT+2
+# [InStock] recent context, 2026-04-29 11:55pm GMT+2
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 6 obs (3,383t read) | 69,780t work | 95% savings
+Stats: 50 obs (19,986t read) | 1,294,603t work | 98% savings
 
-### Apr 22, 2026
-178 3:06p 🟣 Fridge Flutter app — full greenfield scaffold spec defined
-179 3:14p ⚖️ Fridge Flutter App — Full Scaffold Specification
-180 " 🟣 Fridge App — Project scaffold initiated on InStock repo
-181 3:15p 🟣 Fridge Design System — Typography, Theme, and Unit Converter implemented
-182 " 🟣 Fridge — Complete domain model layer in app_models.dart
-183 3:17p ⚖️ AppDatabase implemented as ChangeNotifier over SharedPreferences, not Drift
+### Apr 27, 2026
+S37 Flutter InStock app: fix duplicate shopping/pantry list rows + add UnitPicker chip widget with full integration (Apr 27 at 6:35 PM)
+S38 Flutter InStock app — Fix B: Add persistent check-in trigger button to Pantry screen header, replacing amber notification pill (Apr 27 at 6:35 PM)
+201 7:37p 🔴 Color.withOpacity Replaced with Color.withValues for Flutter Analyze Compliance
+202 " 🔴 Pantry Title Long-Press Not Firing — Root Cause: Missing HitTestBehavior.opaque
+203 " 🟣 UnitPicker Chips — Size-Aware Shape System (Circle/Pill) with AnimatedContainer
+S39 Fix C: Pantry title long-press not firing (HitTestBehavior.opaque fix) + UnitPicker size-aware chip shapes (Apr 27 at 7:37 PM)
+S40 Complete Phase 2 implementation of recipe creation functionality for Flutter Fridge app and verify code quality and compilation (Apr 27 at 8:15 PM)
+204 8:15p 🔴 Long-press Debug Trigger Fixed with HitTestBehavior.opaque on Full Expanded Column
+205 8:16p 🔄 _debugResetVerification() Method Removed — Dead Code After Inline Closure Migration
+206 " 🟣 UnitPicker Rewritten with Size-Aware _buildChip() and _UnitChipSize Enum
+### Apr 28, 2026
+207 8:50p ⚖️ Fridge App Phase 2: Recipe Import Architecture Specified
+208 8:52p 🔵 InStock/Fridge Uses SharedPreferences + ChangeNotifier, NOT Drift SQLite
+209 " 🔵 ImportRecipeScreen Already Exists with Mock Behavior — Phase 2 Must Replace It
+210 " ✅ Added HTTP scraping and image caching dependencies for recipe import
+211 9:05p ✅ Extended Recipe model to support imageUrl field for scraped recipe images
+212 " 🟣 Implemented recipe scraper with JSON-LD and DOM fallback parsing
+213 9:06p 🟣 Created recipe import Riverpod provider for async scrape state management
+214 " 🟣 Implemented recipe form state provider with full ingredient and step management
+215 " 🟣 Created inline ingredient edit row widget with unit picker modal
+S41 Complete Phase 2 recipe creation implementation for Flutter Fridge app with code quality verification, build testing, and final quality assurance checks (Apr 28 at 9:06 PM)
+216 9:07p 🟣 Created step edit row widget for recipe instruction editing
+S43 Fix C: Defer RecipeFormNotifier.loadFromParsed() to post-frame callback — bug fixed and verified; session now moving to new work (Apr 28 at 9:11 PM)
+### Apr 29, 2026
+217 12:29a 🔴 Riverpod Provider Mutation During Build Phase Fixed in Recipe Review Screen
+218 " 🔵 Riverpod Violation Located: loadFromParsed Called Synchronously in initState
+219 12:30a 🔴 RecipeReviewScreen initState Fixed: loadFromParsed Deferred to Post-Frame Callback
+220 " 🔵 AddRecipeScreen Already Follows Post-Frame Pattern; flutter analyze Passes Clean
+S42 Fix C: Defer RecipeFormNotifier.loadFromParsed() to post-frame callback in InStock (Fridge) Flutter app to resolve Riverpod "provider modified during widget build" exception (Apr 29 at 12:30 AM)
+S44 Two bugs fixed in InStock Flutter app: (1) Riverpod provider-mutation-during-build in RecipeReviewScreen; (2) FloatingActionButton heroTag conflicts across all three FAB screens (Apr 29 at 12:30 AM)
+221 12:31a 🔴 FloatingActionButton heroTag Conflicts Fixed — Unique Tags Added to Prevent Hero Animation Crash
+S45 Fix D — Four bugs in Fridge Flutter app: ingredient name cleaner, isOptional detection, overflow layout, and hero image display (Apr 29 at 12:32 AM)
+222 12:35a ⚖️ Fix B: Replace CachedNetworkImage with Image.network to Eliminate sqflite MissingPluginException
+223 " 🔵 CachedNetworkImage Usage Mapped: Two Call Sites, Both Already Have _ImageFallback Widgets
+224 " 🔴 CachedNetworkImage Replaced with Image.network in Both Recipe Screens to Fix MissingPluginException
+225 12:36a 🔴 Fix B Complete: All CachedNetworkImage Usages Replaced with Image.network, flutter analyze Passes Clean
+226 5:20a 🔴 Ingredient Name Cleaner Added to RecipeScraper
+227 " 🔴 isOptional Flag Wired from Scraper Through to IngredientFormRow
+228 " 🔴 IngredientRow Text Overflow Fixed with Expanded Widget
+229 " 🔴 RecipeDetailScreen Hero Area Now Shows Scraped Network Image
+230 " 🔴 ParsedIngredient Gains isOptional Field and Name Cleaner Applied in RecipeScraper
+231 " 🔵 ingredient_row.dart and recipe_form_provider.dart Already Had isOptional Before Fixes Applied
+232 5:21a 🔴 Three Remaining Fixes Applied: isOptional Propagation, Text Overflow, and Hero Image
+233 " 🔴 Dart const Correctness Fix on Gradient Scrim in _HeroArea
+234 " 🔵 flutter analyze Passes Clean After All Fix D Changes
+235 " 🟣 New Feature Request: Recipe Deletion and Image on Recipe Cards
+236 5:27a 🔵 Recipe Model Already Has deletedAt and imageUrl Fields — Soft-Delete Pattern Pre-Exists
+237 5:28a 🔵 Recipe Model Has deletedAt But No deleteRecipe() Method or copyWith()
+238 " 🟣 Implementation Plan: Recipe Delete + Card Images + Icon Placeholder
+239 5:36a 🟣 Recipe.copyWith() Added to app_models.dart
+240 " 🟣 deleteRecipe() Implemented in AppDatabase
+241 " 🟣 Recipe Cards Now Show Network Images with Icon Placeholder
+S46 Add delete recipe, render recipe card images, and show icon placeholder instead of emoji — InStock Flutter app (Apr 29 at 5:37 AM)
+242 9:41p 🔵 InStock Git Author Identity Mismatch — AnoAtHive vs traejiik/Anotida
+243 " 🔵 InStock Flutter App — Architecture and Feature Map
+244 9:42p 🔵 InStock Full Commit Timeline and Measurable Contribution Stats
+245 " 🔵 InStock Tech Stack and Dependency Profile
+246 " 🔵 InStock Domain Model Design — Ingredient, PantryItem, Recipe
+247 9:43p 🔵 AppDatabase Uses SharedPreferences JSON — Not SQLite Despite the Name
+248 " 🟣 Recipe Web Scraper with JSON-LD + Heuristic Fallback and Metric Conversion
+249 " 🔵 Smart Cross-Feature Business Logic: Pantry-Recipe Matching and Serving-Scaled Shopping
+250 " 🔵 Uncommitted Changes and Active Work-in-Progress Fix
 
-Access 70k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 1295k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

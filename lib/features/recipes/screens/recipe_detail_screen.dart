@@ -22,6 +22,38 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   late int _servings;
   bool _servingsInitialized = false;
 
+  Future<void> _confirmDelete(String recipeId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text('Delete recipe?', style: AppTextStyles.headingMd),
+        content: Text(
+          'This cannot be undone.',
+          style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel', style: AppTextStyles.label),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              'Delete',
+              style: AppTextStyles.label.copyWith(color: AppColors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      ref.read(appDatabaseProvider).deleteRecipe(recipeId);
+      // ignore: use_build_context_synchronously
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final db = ref.watch(appDatabaseProvider);
@@ -32,7 +64,12 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
         backgroundColor: AppColors.background,
         appBar: AppBar(backgroundColor: AppColors.background, elevation: 0),
         body: Center(
-          child: Text('Recipe not found', style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary)),
+          child: Text(
+            'Recipe not found',
+            style: AppTextStyles.bodyMd.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
         ),
       );
     }
@@ -53,24 +90,31 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
           Expanded(
             child: CustomScrollView(
               slivers: [
-                SliverToBoxAdapter(child: _HeroArea(recipe: recipe, isMakeable: isMakeable, missingCount: missingCount)),
+                SliverToBoxAdapter(
+                  child: _HeroArea(
+                    recipe: recipe,
+                    isMakeable: isMakeable,
+                    missingCount: missingCount,
+                    servings: _servings,
+                    onDelete: () => _confirmDelete(recipe.id),
+                    onServingsDecrement: () => setState(
+                      () => _servings = (_servings - 1).clamp(1, 99),
+                    ),
+                    onServingsIncrement: () => setState(
+                      () => _servings = (_servings + 1).clamp(1, 99),
+                    ),
+                  ),
+                ),
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                   sliver: SliverToBoxAdapter(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(recipe.title, style: AppTextStyles.headingLg),
-                        const SizedBox(height: 10),
-                        _MetaChips(recipe: recipe),
-                        const SizedBox(height: 16),
-                        _ServingsControl(
-                          servings: _servings,
-                          onDecrement: () => setState(() => _servings = (_servings - 1).clamp(1, 99)),
-                          onIncrement: () => setState(() => _servings = (_servings + 1).clamp(1, 99)),
+                        _SectionHeader(
+                          title: 'Ingredients',
+                          count: recipeIngredients.length,
                         ),
-                        const SizedBox(height: 24),
-                        _SectionHeader(title: 'Ingredients', count: recipeIngredients.length),
                         const SizedBox(height: 10),
                       ],
                     ),
@@ -81,7 +125,10 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     sliver: SliverToBoxAdapter(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(10),
@@ -89,7 +136,9 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                         ),
                         child: Text(
                           'No ingredients added yet — tap ✎ to edit',
-                          style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
+                          style: AppTextStyles.bodySm.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ),
                     ),
@@ -98,26 +147,34 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (ctx, i) {
-                          final ri = recipeIngredients[i];
-                          final ing = db.ingredientById(ri.ingredientId);
-                          if (ing == null) return const SizedBox.shrink();
-                          return IngredientRow(
-                            recipeIngredient: ri,
-                            ingredient: ing,
-                            matchStatus: db.matchStatus(ri.ingredientId, ri.quantity, ri.unit),
-                            scaledQuantity: UnitConverter.scaleQuantity(ri.quantity, recipe.servings, _servings),
-                          );
-                        },
-                        childCount: recipeIngredients.length,
-                      ),
+                      delegate: SliverChildBuilderDelegate((ctx, i) {
+                        final ri = recipeIngredients[i];
+                        final ing = db.ingredientById(ri.ingredientId);
+                        if (ing == null) return const SizedBox.shrink();
+                        return IngredientRow(
+                          recipeIngredient: ri,
+                          ingredient: ing,
+                          matchStatus: db.matchStatus(
+                            ri.ingredientId,
+                            ri.quantity,
+                            ri.unit,
+                          ),
+                          scaledQuantity: UnitConverter.scaleQuantity(
+                            ri.quantity,
+                            recipe.servings,
+                            _servings,
+                          ),
+                        );
+                      }, childCount: recipeIngredients.length),
                     ),
                   ),
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                   sliver: SliverToBoxAdapter(
-                    child: _SectionHeader(title: 'Instructions', count: recipe.instructions.length),
+                    child: _SectionHeader(
+                      title: 'Instructions',
+                      count: recipe.instructions.length,
+                    ),
                   ),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 10)),
@@ -125,7 +182,10 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (ctx, i) => StepRow(stepNumber: i + 1, text: recipe.instructions[i]),
+                      (ctx, i) => StepRow(
+                        stepNumber: i + 1,
+                        text: recipe.instructions[i],
+                      ),
                       childCount: recipe.instructions.length,
                     ),
                   ),
@@ -138,40 +198,65 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             servings: _servings,
             missingCount: missingCount,
             onAddMissing: () {
-              final count = ref.read(appDatabaseProvider).addMissingToShopping(recipe.id, _servings);
+              final count = ref
+                  .read(appDatabaseProvider)
+                  .addMissingToShopping(recipe.id, _servings);
               final msg = count == 0
                   ? 'You already have everything for this recipe'
                   : '$count item${count == 1 ? '' : 's'} added to your shopping list';
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(msg, style: AppTextStyles.bodySm.copyWith(color: AppColors.textPrimary)),
-                backgroundColor: AppColors.surface2,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    msg,
+                    style: AppTextStyles.bodySm.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  backgroundColor: AppColors.surface2,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              );
             },
             onCooked: () {
               final db = ref.read(appDatabaseProvider);
               final missing = db.firstMissingNonOptional(recipe.id);
               if (missing != null) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(
-                    "You're missing $missing. Add it to your pantry first, or mark it as optional.",
-                    style: AppTextStyles.bodySm.copyWith(color: AppColors.background),
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      "You're missing $missing. Add it to your pantry first, or mark it as optional.",
+                      style: AppTextStyles.bodySm.copyWith(
+                        color: AppColors.background,
+                      ),
+                    ),
+                    backgroundColor: AppColors.amber,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                  backgroundColor: AppColors.amber,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ));
+                );
                 return;
               }
               db.decrementPantryForRecipe(recipe.id, _servings);
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text('Pantry updated — enjoy your meal! 🍳',
-                    style: AppTextStyles.bodySm.copyWith(color: AppColors.textPrimary)),
-                backgroundColor: AppColors.surface2,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Pantry updated — enjoy your meal! 🍳',
+                    style: AppTextStyles.bodySm.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  backgroundColor: AppColors.surface2,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              );
             },
             onAI: () => AiTinkerSheet.show(context, recipeName: recipe.title),
           ),
@@ -185,33 +270,92 @@ class _HeroArea extends StatelessWidget {
   final Recipe recipe;
   final bool isMakeable;
   final int missingCount;
+  final int servings;
+  final VoidCallback onDelete;
+  final VoidCallback onServingsDecrement;
+  final VoidCallback onServingsIncrement;
 
-  const _HeroArea({required this.recipe, required this.isMakeable, required this.missingCount});
+  const _HeroArea({
+    required this.recipe,
+    required this.isMakeable,
+    required this.missingCount,
+    required this.servings,
+    required this.onDelete,
+    required this.onServingsDecrement,
+    required this.onServingsIncrement,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final headerHeight = (screenHeight * 0.48).clamp(360.0, 430.0);
+
     return SizedBox(
-      height: 160,
+      height: headerHeight,
       child: Stack(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [AppColors.surface2, AppColors.background],
+          // Background / image
+          Positioned.fill(
+            child: recipe.imageUrl != null
+                ? Image.network(
+                    recipe.imageUrl!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    errorBuilder: (_, __, ___) => const _RecipePlaceholder(),
+                    loadingBuilder: (_, child, progress) =>
+                        progress == null ? child : const _RecipePlaceholder(),
+                  )
+                : const _RecipePlaceholder(),
+          ),
+
+          // Gradient scrim so the back button stays readable over photos
+          if (recipe.imageUrl != null)
+            const Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0x99000000),
+                      Color(0x22000000),
+                      AppColors.background,
+                    ],
+                    stops: [0.0, 0.46, 1.0],
+                  ),
+                ),
               ),
             ),
-          ),
-          Center(child: Text(recipe.emoji, style: const TextStyle(fontSize: 72))),
+
+          // Back button
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
             left: 16,
             child: _CircleButton(
               onTap: () => Navigator.pop(context),
-              child: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 20),
+              child: const Icon(
+                Icons.arrow_back,
+                color: AppColors.textPrimary,
+                size: 20,
+              ),
             ),
           ),
+
+          // Delete button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            left: 60,
+            child: _CircleButton(
+              onTap: onDelete,
+              child: const Icon(
+                Icons.delete_outline,
+                color: AppColors.red,
+                size: 20,
+              ),
+            ),
+          ),
+
+          // Makeable badge
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
             right: 16,
@@ -234,7 +378,63 @@ class _HeroArea extends StatelessWidget {
               ),
             ),
           ),
+
+          Positioned(
+            left: 20,
+            right: 20,
+            bottom: 0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  recipe.title,
+                  style: AppTextStyles.displayLg.copyWith(
+                    color: AppColors.textPrimary,
+                    shadows: const [
+                      Shadow(
+                        blurRadius: 16,
+                        color: Color(0xCC000000),
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _MetaChips(recipe: recipe),
+                const SizedBox(height: 16),
+                _ServingsControl(
+                  servings: servings,
+                  onDecrement: onServingsDecrement,
+                  onIncrement: onServingsIncrement,
+                ),
+              ],
+            ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _RecipePlaceholder extends StatelessWidget {
+  const _RecipePlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppColors.surface2, AppColors.background],
+        ),
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.restaurant_menu_outlined,
+          size: 72,
+          color: AppColors.textTertiary,
+        ),
       ),
     );
   }
@@ -274,7 +474,10 @@ class _MetaChips extends StatelessWidget {
       spacing: 8,
       children: [
         _Chip(icon: Icons.schedule, label: '${recipe.cookMinutes} min'),
-        _Chip(icon: Icons.local_fire_department_outlined, label: recipe.difficulty),
+        _Chip(
+          icon: Icons.local_fire_department_outlined,
+          label: recipe.difficulty,
+        ),
         if (recipe.sourceUrl != null)
           const _Chip(icon: Icons.link, label: 'Source'),
       ],
@@ -411,7 +614,12 @@ class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        12,
+        20,
+        MediaQuery.of(context).padding.bottom + 12,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
         border: Border(top: BorderSide(color: AppColors.border)),
@@ -474,9 +682,11 @@ class _BarButton extends StatelessWidget {
           color: bg,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Text(label,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.label.copyWith(color: fg)),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.label.copyWith(color: fg),
+        ),
       ),
     );
   }
