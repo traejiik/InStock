@@ -34,6 +34,36 @@ dev_dependencies:
   drift_dev: ^2.18.0
   riverpod_generator: ^2.4.0
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.3
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/brand/
+
+flutter_launcher_icons:
+  image_path: "assets/brand/icon.png"
+  ios: true
+  remove_alpha_ios: true
+  android: true
+  adaptive_icon_background: "#1B1D22"
+  adaptive_icon_foreground: "assets/brand/icon.png"
+  platforms:
+    - android
+    - ios
+  min_sdk_android: 21
+
+flutter_native_splash:
+  color: "#111214"
+  image: assets/brand/splash.png
+  android: true
+  ios: true
+  android_12:
+    color: "#111214"
+    image: assets/brand/splash.png
+    icon_background_color: "#111214"
+  android_gravity: center
+  ios_content_mode: center
+  fullscreen: false
+  web: false
