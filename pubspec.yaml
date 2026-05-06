@@ -1,5 +1,5 @@
 name: instock
-description: "Fridge — grocery shopping list and pantry manager with recipe support."
+description: "InStock — grocery shopping list and pantry manager with recipe support."
 publish_to: 'none'
 
 version: 1.0.0+1

@@ -5,7 +5,8 @@ import 'package:uuid/uuid.dart';
 import '../models/app_models.dart';
 import '../../core/utils/unit_converter.dart';
 
-const _kStateKey = 'fridge_state_v1';
+const _kLegacyStateKey = 'fridge_state_v1';
+const _kStateKey = 'instock_state_v1';
 const _uuid = Uuid();
 
 // Canonical alias upgrades applied on every load so existing saves stay current.
@@ -55,6 +56,16 @@ class AppDatabase extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
+
+    // One-time migration: move data from old fridge_state_v1 key to instock_state_v1.
+    if (prefs.containsKey(_kLegacyStateKey) && !prefs.containsKey(_kStateKey)) {
+      final legacyData = prefs.getString(_kLegacyStateKey);
+      if (legacyData != null) {
+        await prefs.setString(_kStateKey, legacyData);
+      }
+      await prefs.remove(_kLegacyStateKey);
+    }
+
     final raw = prefs.getString(_kStateKey);
     if (raw != null) {
       try {

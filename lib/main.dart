@@ -15,7 +15,7 @@ void main() async {
       overrides: [
         appDatabaseProvider.overrideWith((ref) => db),
       ],
-      child: const FridgeApp(),
+      child: const InStockApp(),
     ),
   );
 }

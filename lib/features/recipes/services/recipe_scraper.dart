@@ -101,7 +101,7 @@ class RecipeScraper {
     final http.Response response;
     try {
       response = await http.get(uri, headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; FridgeApp/1.0)',
+        'User-Agent': 'Mozilla/5.0 (compatible; InStockApp/1.0)',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       }).timeout(const Duration(seconds: 15));
     } catch (e) {
