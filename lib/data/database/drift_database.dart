@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:drift_flutter/drift_flutter.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
 part 'drift_database.g.dart';
 
@@ -84,8 +87,21 @@ class ShoppingItems extends Table {
 @DriftDatabase(
   tables: [Ingredients, PantryItems, Recipes, RecipeIngredients, ShoppingItems],
 )
+QueryExecutor _openDatabase() {
+  return LazyDatabase(() async {
+    // On Android, use the bundled sqlite3 from sqlite3_flutter_libs.
+    // On iOS, use the system SQLite (avoids objective_c.framework dependency).
+    if (Platform.isAndroid) {
+      await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
+    }
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dir.path, 'instock.db'));
+    return NativeDatabase(file);
+  });
+}
+
 class InStockDriftDb extends _$InStockDriftDb {
-  InStockDriftDb() : super(driftDatabase(name: 'instock.db'));
+  InStockDriftDb() : super(_openDatabase());
 
   InStockDriftDb.memory() : super(NativeDatabase.memory());
 
