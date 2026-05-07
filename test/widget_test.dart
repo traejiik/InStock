@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:instock/data/models/app_models.dart';
 import 'package:instock/features/recipes/widgets/recipe_card.dart';
+import 'package:instock/shared/widgets/category_picker.dart';
 
 void main() {
   testWidgets('RecipeCardSm lays out inside a row with unbounded height', (
@@ -48,4 +49,36 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'CategoryPicker uses a dropdown and emits the selected category',
+    (tester) async {
+      var selected = IngredientCategory.custom;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CategoryPicker(
+              selectedCategory: selected,
+              onChanged: (category) => selected = category,
+            ),
+          ),
+        ),
+      );
+
+      expect(
+        find.byType(DropdownButtonFormField<IngredientCategory>),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byType(DropdownButtonFormField<IngredientCategory>),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('🥦 Produce').last);
+      await tester.pumpAndSettle();
+
+      expect(selected, IngredientCategory.produce);
+    },
+  );
 }

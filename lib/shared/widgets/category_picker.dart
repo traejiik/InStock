@@ -15,46 +15,61 @@ class CategoryPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return DropdownButtonFormField<IngredientCategory>(
+      initialValue: selectedCategory,
+      isExpanded: true,
+      dropdownColor: AppColors.surface2,
+      borderRadius: BorderRadius.circular(10),
+      icon: const Icon(
+        Icons.keyboard_arrow_down,
+        color: AppColors.textSecondary,
+      ),
+      style: AppTextStyles.label,
+      decoration: const InputDecoration(labelText: 'Category'),
+      selectedItemBuilder: (context) => IngredientCategory.values
+          .map((category) => _CategoryMenuLabel(category: category))
+          .toList(),
+      items: IngredientCategory.values
+          .map(
+            (category) => DropdownMenuItem(
+              value: category,
+              child: _CategoryMenuLabel(category: category),
+            ),
+          )
+          .toList(),
+      onChanged: (category) {
+        if (category == null) return;
+        onChanged(category);
+      },
+    );
+  }
+}
+
+class _CategoryMenuLabel extends StatelessWidget {
+  final IngredientCategory category;
+
+  const _CategoryMenuLabel({required this.category});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          'Category',
-          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: category.color,
+            shape: BoxShape.circle,
+          ),
         ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: IngredientCategory.values.map((category) {
-            final isSelected = category == selectedCategory;
-            return GestureDetector(
-              onTap: () => onChanged(category),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                height: 34,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.surface2 : AppColors.surface3,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: isSelected ? category.color : AppColors.border,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  '${category.emoji} ${category.label}',
-                  style: AppTextStyles.label.copyWith(
-                    fontSize: 12,
-                    color: isSelected
-                        ? category.color
-                        : AppColors.textSecondary,
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            '${category.emoji} ${category.label}',
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.label.copyWith(color: AppColors.textPrimary),
+          ),
         ),
       ],
     );
