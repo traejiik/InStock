@@ -1,14 +1,20 @@
+import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:instock/data/database/app_database.dart';
+import 'package:instock/data/database/drift_database.dart';
 
 void main() {
+  setUpAll(() {
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  });
+
   group('Pantry decrement', () {
     late AppDatabase db;
 
     setUp(() async {
       SharedPreferences.setMockInitialValues({});
-      db = AppDatabase();
+      db = AppDatabase(db: InStockDriftDb.memory());
       await db.init(); // seeds with default data
     });
 
@@ -28,7 +34,9 @@ void main() {
 
     test('decrement by exact amount → quantity == 0 and depletedAt set', () {
       // Set parmesan to exactly 80g so it hits 0 after decrement
-      final parmesan = db.pantryItems.firstWhere((p) => p.ingredientId == 'ing-parmesan');
+      final parmesan = db.pantryItems.firstWhere(
+        (p) => p.ingredientId == 'ing-parmesan',
+      );
       db.updatePantryQuantity(parmesan.id, 80.0);
 
       db.decrementPantryForRecipe('rec-carbonara', 2);
@@ -40,7 +48,9 @@ void main() {
 
     test('decrement by more than available → quantity == 0, no negative', () {
       // Set eggs to 1 pcs; recipe needs 3 → would go negative without guard
-      final eggs = db.pantryItems.firstWhere((p) => p.ingredientId == 'ing-eggs');
+      final eggs = db.pantryItems.firstWhere(
+        (p) => p.ingredientId == 'ing-eggs',
+      );
       db.updatePantryQuantity(eggs.id, 1.0);
 
       db.decrementPantryForRecipe('rec-carbonara', 2);

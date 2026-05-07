@@ -130,77 +130,77 @@ Rules:
 <claude-mem-context>
 # Memory Context
 
-# [InStock] recent context, 2026-05-04 3:56am GMT+2
+# [InStock] recent context, 2026-05-07 3:45am GMT+2
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (19,986t read) | 1,294,603t work | 98% savings
+Stats: 50 obs (21,657t read) | 396,285t work | 95% savings
 
-### Apr 27, 2026
-S37 Flutter InStock app: fix duplicate shopping/pantry list rows + add UnitPicker chip widget with full integration (Apr 27 at 6:35 PM)
-S38 Flutter InStock app — Fix B: Add persistent check-in trigger button to Pantry screen header, replacing amber notification pill (Apr 27 at 6:35 PM)
-201 7:37p 🔴 Color.withOpacity Replaced with Color.withValues for Flutter Analyze Compliance
-202 " 🔴 Pantry Title Long-Press Not Firing — Root Cause: Missing HitTestBehavior.opaque
-203 " 🟣 UnitPicker Chips — Size-Aware Shape System (Circle/Pill) with AnimatedContainer
-S39 Fix C: Pantry title long-press not firing (HitTestBehavior.opaque fix) + UnitPicker size-aware chip shapes (Apr 27 at 7:37 PM)
-S40 Complete Phase 2 implementation of recipe creation functionality for Flutter Fridge app and verify code quality and compilation (Apr 27 at 8:15 PM)
-204 8:15p 🔴 Long-press Debug Trigger Fixed with HitTestBehavior.opaque on Full Expanded Column
-205 8:16p 🔄 _debugResetVerification() Method Removed — Dead Code After Inline Closure Migration
-206 " 🟣 UnitPicker Rewritten with Size-Aware _buildChip() and _UnitChipSize Enum
-### Apr 28, 2026
-207 8:50p ⚖️ Fridge App Phase 2: Recipe Import Architecture Specified
-208 8:52p 🔵 InStock/Fridge Uses SharedPreferences + ChangeNotifier, NOT Drift SQLite
-209 " 🔵 ImportRecipeScreen Already Exists with Mock Behavior — Phase 2 Must Replace It
-210 " ✅ Added HTTP scraping and image caching dependencies for recipe import
-211 9:05p ✅ Extended Recipe model to support imageUrl field for scraped recipe images
-212 " 🟣 Implemented recipe scraper with JSON-LD and DOM fallback parsing
-213 9:06p 🟣 Created recipe import Riverpod provider for async scrape state management
-214 " 🟣 Implemented recipe form state provider with full ingredient and step management
-215 " 🟣 Created inline ingredient edit row widget with unit picker modal
-S41 Complete Phase 2 recipe creation implementation for Flutter Fridge app with code quality verification, build testing, and final quality assurance checks (Apr 28 at 9:06 PM)
-216 9:07p 🟣 Created step edit row widget for recipe instruction editing
-S43 Fix C: Defer RecipeFormNotifier.loadFromParsed() to post-frame callback — bug fixed and verified; session now moving to new work (Apr 28 at 9:11 PM)
 ### Apr 29, 2026
-217 12:29a 🔴 Riverpod Provider Mutation During Build Phase Fixed in Recipe Review Screen
-218 " 🔵 Riverpod Violation Located: loadFromParsed Called Synchronously in initState
-219 12:30a 🔴 RecipeReviewScreen initState Fixed: loadFromParsed Deferred to Post-Frame Callback
-220 " 🔵 AddRecipeScreen Already Follows Post-Frame Pattern; flutter analyze Passes Clean
-S42 Fix C: Defer RecipeFormNotifier.loadFromParsed() to post-frame callback in InStock (Fridge) Flutter app to resolve Riverpod "provider modified during widget build" exception (Apr 29 at 12:30 AM)
-S44 Two bugs fixed in InStock Flutter app: (1) Riverpod provider-mutation-during-build in RecipeReviewScreen; (2) FloatingActionButton heroTag conflicts across all three FAB screens (Apr 29 at 12:30 AM)
-221 12:31a 🔴 FloatingActionButton heroTag Conflicts Fixed — Unique Tags Added to Prevent Hero Animation Crash
-S45 Fix D — Four bugs in Fridge Flutter app: ingredient name cleaner, isOptional detection, overflow layout, and hero image display (Apr 29 at 12:32 AM)
-222 12:35a ⚖️ Fix B: Replace CachedNetworkImage with Image.network to Eliminate sqflite MissingPluginException
-223 " 🔵 CachedNetworkImage Usage Mapped: Two Call Sites, Both Already Have _ImageFallback Widgets
-224 " 🔴 CachedNetworkImage Replaced with Image.network in Both Recipe Screens to Fix MissingPluginException
-225 12:36a 🔴 Fix B Complete: All CachedNetworkImage Usages Replaced with Image.network, flutter analyze Passes Clean
-226 5:20a 🔴 Ingredient Name Cleaner Added to RecipeScraper
-227 " 🔴 isOptional Flag Wired from Scraper Through to IngredientFormRow
-228 " 🔴 IngredientRow Text Overflow Fixed with Expanded Widget
-229 " 🔴 RecipeDetailScreen Hero Area Now Shows Scraped Network Image
-230 " 🔴 ParsedIngredient Gains isOptional Field and Name Cleaner Applied in RecipeScraper
-231 " 🔵 ingredient_row.dart and recipe_form_provider.dart Already Had isOptional Before Fixes Applied
-232 5:21a 🔴 Three Remaining Fixes Applied: isOptional Propagation, Text Overflow, and Hero Image
-233 " 🔴 Dart const Correctness Fix on Gradient Scrim in _HeroArea
-234 " 🔵 flutter analyze Passes Clean After All Fix D Changes
-235 " 🟣 New Feature Request: Recipe Deletion and Image on Recipe Cards
-236 5:27a 🔵 Recipe Model Already Has deletedAt and imageUrl Fields — Soft-Delete Pattern Pre-Exists
-237 5:28a 🔵 Recipe Model Has deletedAt But No deleteRecipe() Method or copyWith()
-238 " 🟣 Implementation Plan: Recipe Delete + Card Images + Icon Placeholder
-239 5:36a 🟣 Recipe.copyWith() Added to app_models.dart
-240 " 🟣 deleteRecipe() Implemented in AppDatabase
-241 " 🟣 Recipe Cards Now Show Network Images with Icon Placeholder
-S46 Add delete recipe, render recipe card images, and show icon placeholder instead of emoji — InStock Flutter app (Apr 29 at 5:37 AM)
-242 9:41p 🔵 InStock Git Author Identity Mismatch — AnoAtHive vs traejiik/Anotida
-243 " 🔵 InStock Flutter App — Architecture and Feature Map
-244 9:42p 🔵 InStock Full Commit Timeline and Measurable Contribution Stats
-245 " 🔵 InStock Tech Stack and Dependency Profile
-246 " 🔵 InStock Domain Model Design — Ingredient, PantryItem, Recipe
-247 9:43p 🔵 AppDatabase Uses SharedPreferences JSON — Not SQLite Despite the Name
-248 " 🟣 Recipe Web Scraper with JSON-LD + Heuristic Fallback and Metric Conversion
-249 " 🔵 Smart Cross-Feature Business Logic: Pantry-Recipe Matching and Serving-Scaled Shopping
-250 " 🔵 Uncommitted Changes and Active Work-in-Progress Fix
+S47 Add app icons and splash screens to InStock Flutter app (iOS + Android) using flutter_launcher_icons and flutter_native_splash with existing dark brand assets (Apr 29 at 5:37 AM)
+### May 6, 2026
+S48 InStock Flutter App — Fix White Border on App Icon and Oversized Icon-Only Splash Screen (May 6 at 2:09 PM)
+S49 Commit app icon and splash screen brand assets with an appropriate conventional commit message (May 6 at 9:39 PM)
+S50 InStock Flutter App — Settings Screen Phase 1 Implementation (unit preference, theme preference, app version, clear-all-data) (May 6 at 10:15 PM)
+353 11:43p ⚖️ InStock Settings Screen — Phased Architecture Plan
+357 11:44p 🔵 Settings Screen Currently a Placeholder at Non-Standard Path
+358 " 🔵 AppState Uses `AppState.empty` Static Const — Not Default Constructor
+359 " 🔵 InStock Codebase Pre-Implementation State Survey
+360 11:48p ✅ Added `package_info_plus: ^8.0.0` to pubspec.yaml
+361 " ✅ `flutter pub get` Resolved `package_info_plus 8.3.1` Successfully
+362 " 🟣 Settings Providers File Created with Unit, Theme, and PackageInfo Providers
+363 11:49p 🟣 Settings Screen Replaced: Placeholder → Full Functional Implementation
+364 " 🟣 `AppDatabase.clearAllData()` Added and `InStockApp` Upgraded to ConsumerWidget
+365 " ✅ Settings Feature Passes `flutter analyze` Clean and Formatted
+366 11:50p 🔴 Fixed Braceless `if` in `toggleShoppingItem()` After `dart format` Reformatted It
+367 " 🟣 InStock Settings Feature — Phase 1 Complete: Analyze Clean, All Tests Pass
+368 " ✅ Design System Compliance Verified: No Hardcoded Colors or `withOpacity` in Settings Feature
+S51 Commit settings screen implementation in InStock Flutter app (May 6 at 11:51 PM)
+369 11:56p 🔵 InStock Flutter App Has Large Uncommitted Changes Ready to Commit
+S52 Commit and push settings screen implementation in InStock Flutter app (May 6 at 11:56 PM)
+370 " ✅ InStock Settings Feature Pushed to GitHub Remote
+S55 InStock Flutter app: Migrate data persistence from SharedPreferences JSON blob to Drift SQLite database while preserving AppDatabase public API (May 6 at 11:56 PM)
+### May 7, 2026
+388 2:41a ⚖️ InStock Data Layer: SharedPreferences → Drift SQLite Migration Architecture
+389 " 🔵 Existing AppDatabase Implementation: SharedPreferences JSON Blob Architecture
+390 2:42a 🔵 appDatabaseProvider Defined in shopping_provider.dart
+391 " 🔵 Complete AppDatabase Method Call Surface Across Feature Screens
+392 2:48a ⚖️ InStock: SharedPreferences → Drift SQLite Migration Architecture
+393 " 🟣 Drift Database Schema: Five-Table SQLite Design for InStock
+394 " 🟣 MigrationService: Atomic One-Time SharedPreferences → Drift Migration
+395 " 🔄 AppDatabase Rewritten as Drift Facade with Preserved ChangeNotifier API
+396 2:49a 🟣 Drift Code Generation Completed Successfully for InStock
+397 " 🟣 MigrationService Implemented with Extra Legacy Key Handling
+398 2:52a 🔄 app_database.dart Fully Rewritten: SharedPreferences JSON Replaced with Drift Persistence
+399 " 🔄 pantry_repository_test.dart Updated to Use In-Memory Drift Database
+400 " 🔴 Fixed Missing InsertMode Import in migration_service.dart
+401 " 🔵 All 6 Tests Pass; Drift Warns About Multiple Database Instantiations Per Test
+402 " 🔴 Suppressed Drift Multi-Instantiation Warning in Test File
+403 2:53a 🟣 InStock Drift Migration Phase 1 Complete: Zero Analyzer Issues, All Tests Pass
+404 " 🔵 Spec Grep Checks Reveal Two Partial Violations in app_database.dart
+405 " 🔄 MigrationService Refactored: SharedPreferences Fetched Internally, Returns MigrationOutcome Enum
+406 2:54a 🔄 AppDatabase.init() Simplified to 4 Lines Using MigrationOutcome Enum
+407 " 🟣 InStock Drift Migration Phase 1 Fully Complete and Verified
+S56 InStock Drift migration Phase 1 complete — user asked if /memory was run to record the session work (May 7 at 2:54 AM)
+S57 InStock Flutter app: SharedPreferences → Drift SQLite migration + Graphify knowledge graph generation (May 7 at 2:56 AM)
+408 2:58a 🔵 README.md and AGENTS.md Contain Stale Persistence References After Drift Migration
+409 " ⚖️ InStock Flutter App: SharedPreferences → Drift SQLite Migration Plan
+410 2:59a ⚖️ InStock: SharedPreferences → Drift SQLite Migration Architecture
+411 " 🔵 InStock Graphify Knowledge Graph — Full Codebase Node/Edge Map
+S58 InStock Flutter app: SharedPreferences → Drift SQLite migration + Graphify knowledge graph regeneration (in progress) (May 7 at 3:01 AM)
+412 3:01a 🔵 Graphify Chunk Verification — All 3 Chunks Present and Valid
+413 " 🟣 Graphify Knowledge Graph Merged and Cached — 93 Nodes, 171 Edges
+414 " 🔵 InStock Full Graph — 833 Nodes, 857 Edges (AST + Semantic Combined)
+415 3:02a 🔵 InStock AST Community Analysis — Drift Migration Already Implemented in Codebase
+416 " 🔵 InStock Graph — 33 Communities Identified, Drift Migration Confirmed in Community 3
+417 3:04a 🔵 InStock Graph Communities 15–32 — Drift Database and Repository Layer Confirmed
+418 3:05a 🔵 Graphify report.py API Mismatch — generate_report Not Exported
+419 " 🔵 Graphify report.generate() API Signature and Analysis File Structure Confirmed
+420 " 🔵 graph.json Uses NetworkX Format — 666 Nodes, 853 Links After Filtering
+421 " 🟣 GRAPH_REPORT.md Regenerated — 13,789 chars with 33 Labeled Communities
+422 " 🔵 Graphify Export API — Full Function Inventory Including graph.html Regeneration
 
-Access 1295k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 396k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

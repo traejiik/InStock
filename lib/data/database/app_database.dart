@@ -1,12 +1,13 @@
+import 'dart:async' show unawaited;
 import 'dart:convert';
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../models/app_models.dart';
 import '../../core/utils/unit_converter.dart';
+import 'drift_database.dart';
+import 'migration_service.dart';
 
-const _kLegacyStateKey = 'fridge_state_v1';
-const _kStateKey = 'instock_state_v1';
 const _uuid = Uuid();
 
 // Canonical alias upgrades applied on every load so existing saves stay current.
@@ -24,7 +25,10 @@ const _aliasUpgrades = <String, List<String>>{
 };
 
 class AppDatabase extends ChangeNotifier {
+  final InStockDriftDb _db;
   AppState _state = AppState.empty;
+
+  AppDatabase({InStockDriftDb? db}) : _db = db ?? InStockDriftDb();
 
   AppState get state => _state;
 
@@ -55,9 +59,14 @@ class AppDatabase extends ChangeNotifier {
   }
 
   Future<void> clearAllData() async {
-    _state = AppState.empty;
-    await _save();
-    notifyListeners();
+    await _db.transaction(() async {
+      await _db.delete(_db.shoppingItems).go();
+      await _db.delete(_db.recipeIngredients).go();
+      await _db.delete(_db.recipes).go();
+      await _db.delete(_db.pantryItems).go();
+      await _db.delete(_db.ingredients).go();
+    });
+    await _reload();
   }
 
   PantryItem? pantryItemForIngredient(String ingredientId) =>
@@ -66,44 +75,75 @@ class AppDatabase extends ChangeNotifier {
   // ─── Init ─────────────────────────────────────────────────────────────────
 
   Future<void> init() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    // One-time migration: move data from old fridge_state_v1 key to instock_state_v1.
-    if (prefs.containsKey(_kLegacyStateKey) && !prefs.containsKey(_kStateKey)) {
-      final legacyData = prefs.getString(_kLegacyStateKey);
-      if (legacyData != null) {
-        await prefs.setString(_kStateKey, legacyData);
-      }
-      await prefs.remove(_kLegacyStateKey);
+    final outcome = await MigrationService.migrateIfNeeded(_db);
+    if (outcome == MigrationOutcome.freshInstall) {
+      await _seed();
     }
-
-    final raw = prefs.getString(_kStateKey);
-    if (raw != null) {
-      try {
-        _state = AppState.fromJson(jsonDecode(raw) as Map<String, dynamic>);
-        _applyMigrations();
-      } catch (_) {
-        await _seed(prefs);
-      }
-    } else {
-      await _seed(prefs);
-    }
-    notifyListeners();
+    await _reload();
+    await _applyAliasUpgrades();
   }
 
-  Future<void> _save() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kStateKey, jsonEncode(_state.toJson()));
+  // ─── Private helpers ─────────────────────────────────────────────────────
+
+  Future<void> _reload() async {
+    final ingRows = await _db.select(_db.ingredients).get();
+    final pantryRows = await _db.select(_db.pantryItems).get();
+    final recipeRows = await _db.select(_db.recipes).get();
+    final riRows = await _db.select(_db.recipeIngredients).get();
+    final shoppingRows = await _db.select(_db.shoppingItems).get();
+
+    _state = AppState(
+      ingredients: ingRows.map(_mapIngredient).toList(),
+      pantryItems: pantryRows.map(_mapPantryItem).toList(),
+      recipes: recipeRows.map(_mapRecipe).toList(),
+      recipeIngredients: riRows.map(_mapRecipeIngredient).toList(),
+      shoppingItems: shoppingRows.map(_mapShoppingItem).toList(),
+    );
+    notifyListeners();
   }
 
   void _update(AppState next) {
     _state = next;
     notifyListeners();
-    _save();
+    unawaited(_persistFullState());
   }
 
-  // Applies alias upgrades to existing persisted state so known synonyms stay current.
-  void _applyMigrations() {
+  Future<void> _persistFullState() async {
+    try {
+      final snapshot = _state;
+      await _db.transaction(() async {
+        for (final ing in snapshot.ingredients) {
+          await _db
+              .into(_db.ingredients)
+              .insertOnConflictUpdate(_ingredientCompanion(ing));
+        }
+        for (final p in snapshot.pantryItems) {
+          await _db
+              .into(_db.pantryItems)
+              .insertOnConflictUpdate(_pantryItemCompanion(p));
+        }
+        for (final r in snapshot.recipes) {
+          await _db
+              .into(_db.recipes)
+              .insertOnConflictUpdate(_recipeCompanion(r));
+        }
+        for (final ri in snapshot.recipeIngredients) {
+          await _db
+              .into(_db.recipeIngredients)
+              .insertOnConflictUpdate(_recipeIngredientCompanion(ri));
+        }
+        for (final s in snapshot.shoppingItems) {
+          await _db
+              .into(_db.shoppingItems)
+              .insertOnConflictUpdate(_shoppingItemCompanion(s));
+        }
+      });
+    } catch (e) {
+      debugPrint('[AppDatabase] persist error: $e');
+    }
+  }
+
+  Future<void> _applyAliasUpgrades() async {
     bool changed = false;
     final updated = _state.ingredients.map((ing) {
       final upgrade = _aliasUpgrades[ing.id];
@@ -121,8 +161,14 @@ class AppDatabase extends ChangeNotifier {
       );
     }).toList();
     if (changed) {
-      _state = _state.copyWith(ingredients: updated);
-      _save();
+      await _db.transaction(() async {
+        for (final ing in updated) {
+          await _db
+              .into(_db.ingredients)
+              .insertOnConflictUpdate(_ingredientCompanion(ing));
+        }
+      });
+      await _reload();
     }
   }
 
@@ -572,7 +618,7 @@ class AppDatabase extends ChangeNotifier {
 
   // ─── Seed ─────────────────────────────────────────────────────────────────
 
-  Future<void> _seed(SharedPreferences prefs) async {
+  Future<void> _seed() async {
     final now = DateTime.now();
 
     const iMilk = 'ing-milk';
@@ -1198,13 +1244,165 @@ class AppDatabase extends ChangeNotifier {
       ),
     ];
 
-    _state = AppState(
-      ingredients: ingredients,
-      pantryItems: pantryItems,
-      recipes: recipes,
-      recipeIngredients: recipeIngredients,
-      shoppingItems: shoppingItems,
-    );
-    await prefs.setString(_kStateKey, jsonEncode(_state.toJson()));
+    await _db.transaction(() async {
+      for (final ing in ingredients) {
+        await _db
+            .into(_db.ingredients)
+            .insertOnConflictUpdate(_ingredientCompanion(ing));
+      }
+      for (final p in pantryItems) {
+        await _db
+            .into(_db.pantryItems)
+            .insertOnConflictUpdate(_pantryItemCompanion(p));
+      }
+      for (final r in recipes) {
+        await _db.into(_db.recipes).insertOnConflictUpdate(_recipeCompanion(r));
+      }
+      for (final ri in recipeIngredients) {
+        await _db
+            .into(_db.recipeIngredients)
+            .insertOnConflictUpdate(_recipeIngredientCompanion(ri));
+      }
+      for (final s in shoppingItems) {
+        await _db
+            .into(_db.shoppingItems)
+            .insertOnConflictUpdate(_shoppingItemCompanion(s));
+      }
+    });
   }
+
+  // ─── Mappers: Drift rows → domain models ─────────────────────────────────
+
+  static Ingredient _mapIngredient(IngredientData row) => Ingredient(
+    id: row.id,
+    canonicalName: row.canonicalName,
+    category: IngredientCategory.values.firstWhere(
+      (e) => e.name == row.category,
+      orElse: () => IngredientCategory.custom,
+    ),
+    aliases: List<String>.from(jsonDecode(row.aliases) as List),
+    createdAt: DateTime.fromMillisecondsSinceEpoch(row.createdAt),
+  );
+
+  static PantryItem _mapPantryItem(PantryItemData row) => PantryItem(
+    id: row.id,
+    ingredientId: row.ingredientId,
+    quantity: row.quantity,
+    initialQuantity: row.initialQuantity,
+    unit: row.unit,
+    addedAt: DateTime.fromMillisecondsSinceEpoch(row.addedAt),
+    lastVerifiedAt: row.lastVerifiedAt != null
+        ? DateTime.fromMillisecondsSinceEpoch(row.lastVerifiedAt!)
+        : null,
+    deletedAt: row.deletedAt != null
+        ? DateTime.fromMillisecondsSinceEpoch(row.deletedAt!)
+        : null,
+    depletedAt: row.depletedAt != null
+        ? DateTime.fromMillisecondsSinceEpoch(row.depletedAt!)
+        : null,
+  );
+
+  static Recipe _mapRecipe(RecipeData row) => Recipe(
+    id: row.id,
+    title: row.title,
+    emoji: row.emoji,
+    imageUrl: row.imageUrl,
+    instructions: List<String>.from(jsonDecode(row.instructions) as List),
+    servings: row.servings,
+    cookMinutes: row.cookMinutes,
+    difficulty: row.difficulty,
+    sourceUrl: row.sourceUrl,
+    tags: List<String>.from(jsonDecode(row.tags) as List),
+    createdAt: DateTime.fromMillisecondsSinceEpoch(row.createdAt),
+    updatedAt: DateTime.fromMillisecondsSinceEpoch(row.updatedAt),
+    deletedAt: row.deletedAt != null
+        ? DateTime.fromMillisecondsSinceEpoch(row.deletedAt!)
+        : null,
+  );
+
+  static RecipeIngredient _mapRecipeIngredient(RecipeIngredientData row) =>
+      RecipeIngredient(
+        id: row.id,
+        recipeId: row.recipeId,
+        ingredientId: row.ingredientId,
+        quantity: row.quantity,
+        unit: row.unit,
+        isOptional: row.isOptional == 1,
+        notes: row.notes,
+      );
+
+  static ShoppingItem _mapShoppingItem(ShoppingItemData row) => ShoppingItem(
+    id: row.id,
+    ingredientId: row.ingredientId,
+    quantity: row.quantity,
+    unit: row.unit,
+    checked: row.checked == 1,
+    sourceRecipeId: row.sourceRecipeId,
+    addedAt: DateTime.fromMillisecondsSinceEpoch(row.addedAt),
+    updatedAt: DateTime.fromMillisecondsSinceEpoch(row.updatedAt),
+  );
+
+  // ─── Companions: domain models → Drift ───────────────────────────────────
+
+  static IngredientsCompanion _ingredientCompanion(Ingredient ing) =>
+      IngredientsCompanion.insert(
+        id: ing.id,
+        canonicalName: ing.canonicalName,
+        category: ing.category.name,
+        aliases: jsonEncode(ing.aliases),
+        createdAt: ing.createdAt.millisecondsSinceEpoch,
+      );
+
+  static PantryItemsCompanion _pantryItemCompanion(PantryItem p) =>
+      PantryItemsCompanion.insert(
+        id: p.id,
+        ingredientId: p.ingredientId,
+        quantity: p.quantity,
+        initialQuantity: p.initialQuantity,
+        unit: p.unit,
+        addedAt: p.addedAt.millisecondsSinceEpoch,
+        lastVerifiedAt: Value(p.lastVerifiedAt?.millisecondsSinceEpoch),
+        deletedAt: Value(p.deletedAt?.millisecondsSinceEpoch),
+        depletedAt: Value(p.depletedAt?.millisecondsSinceEpoch),
+      );
+
+  static RecipesCompanion _recipeCompanion(Recipe r) => RecipesCompanion.insert(
+    id: r.id,
+    title: r.title,
+    emoji: r.emoji,
+    imageUrl: Value(r.imageUrl),
+    instructions: jsonEncode(r.instructions),
+    servings: r.servings,
+    cookMinutes: r.cookMinutes,
+    difficulty: r.difficulty,
+    sourceUrl: Value(r.sourceUrl),
+    tags: jsonEncode(r.tags),
+    createdAt: r.createdAt.millisecondsSinceEpoch,
+    updatedAt: r.updatedAt.millisecondsSinceEpoch,
+    deletedAt: Value(r.deletedAt?.millisecondsSinceEpoch),
+  );
+
+  static RecipeIngredientsCompanion _recipeIngredientCompanion(
+    RecipeIngredient ri,
+  ) => RecipeIngredientsCompanion.insert(
+    id: ri.id,
+    recipeId: ri.recipeId,
+    ingredientId: ri.ingredientId,
+    quantity: ri.quantity,
+    unit: ri.unit,
+    isOptional: ri.isOptional ? 1 : 0,
+    notes: Value(ri.notes),
+  );
+
+  static ShoppingItemsCompanion _shoppingItemCompanion(ShoppingItem s) =>
+      ShoppingItemsCompanion.insert(
+        id: s.id,
+        ingredientId: s.ingredientId,
+        quantity: s.quantity,
+        unit: s.unit,
+        checked: s.checked ? 1 : 0,
+        sourceRecipeId: Value(s.sourceRecipeId),
+        addedAt: s.addedAt.millisecondsSinceEpoch,
+        updatedAt: s.updatedAt.millisecondsSinceEpoch,
+      );
 }
