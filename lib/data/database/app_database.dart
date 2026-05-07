@@ -181,6 +181,7 @@ class AppDatabase extends ChangeNotifier {
     IngredientCategory category = IngredientCategory.custom,
   }) {
     final normalized = name.trim().toLowerCase();
+    final canonicalName = _normalizeEntryName(name);
     final byCanonical = _state.ingredients
         .where((i) => i.canonicalName.toLowerCase() == normalized)
         .firstOrNull;
@@ -197,7 +198,7 @@ class AppDatabase extends ChangeNotifier {
 
     final newIng = Ingredient(
       id: 'ing-${normalized.replaceAll(' ', '-')}-${DateTime.now().millisecondsSinceEpoch}',
-      canonicalName: name.trim(),
+      canonicalName: canonicalName,
       category: category,
       aliases: [],
       createdAt: DateTime.now(),
@@ -227,6 +228,12 @@ class AppDatabase extends ChangeNotifier {
         .toList();
     _update(_state.copyWith(ingredients: ingredients));
     return updated;
+  }
+
+  static String _normalizeEntryName(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return trimmed;
+    return trimmed[0].toUpperCase() + trimmed.substring(1);
   }
 
   // ─── Shopping mutations ───────────────────────────────────────────────────

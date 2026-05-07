@@ -92,6 +92,15 @@ void main() {
       expect(ingredient.category, IngredientCategory.dairy);
     });
 
+    test('normalizes new ingredient names to start with a capital letter', () {
+      final ingredient = db.findOrCreateIngredient(
+        'kefir grains',
+        category: IngredientCategory.dairy,
+      );
+
+      expect(ingredient.canonicalName, 'Kefir grains');
+    });
+
     test(
       'updates an existing custom ingredient when a category is selected',
       () {
