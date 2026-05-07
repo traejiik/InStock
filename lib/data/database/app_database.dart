@@ -176,27 +176,57 @@ class AppDatabase extends ChangeNotifier {
 
   // Finds an existing ingredient by canonical name or alias (case-insensitive),
   // or creates a new one if no match exists.
-  Ingredient findOrCreateIngredient(String name) {
+  Ingredient findOrCreateIngredient(
+    String name, {
+    IngredientCategory category = IngredientCategory.custom,
+  }) {
     final normalized = name.trim().toLowerCase();
     final byCanonical = _state.ingredients
         .where((i) => i.canonicalName.toLowerCase() == normalized)
         .firstOrNull;
-    if (byCanonical != null) return byCanonical;
+    if (byCanonical != null) {
+      return _withSelectedCategory(byCanonical, category);
+    }
 
     final byAlias = _state.ingredients
         .where((i) => i.aliases.any((a) => a.toLowerCase() == normalized))
         .firstOrNull;
-    if (byAlias != null) return byAlias;
+    if (byAlias != null) {
+      return _withSelectedCategory(byAlias, category);
+    }
 
     final newIng = Ingredient(
       id: 'ing-${normalized.replaceAll(' ', '-')}-${DateTime.now().millisecondsSinceEpoch}',
       canonicalName: name.trim(),
-      category: IngredientCategory.custom,
+      category: category,
       aliases: [],
       createdAt: DateTime.now(),
     );
     _update(_state.copyWith(ingredients: [..._state.ingredients, newIng]));
     return newIng;
+  }
+
+  Ingredient _withSelectedCategory(
+    Ingredient ingredient,
+    IngredientCategory selectedCategory,
+  ) {
+    if (ingredient.category != IngredientCategory.custom ||
+        selectedCategory == IngredientCategory.custom) {
+      return ingredient;
+    }
+
+    final updated = Ingredient(
+      id: ingredient.id,
+      canonicalName: ingredient.canonicalName,
+      category: selectedCategory,
+      aliases: ingredient.aliases,
+      createdAt: ingredient.createdAt,
+    );
+    final ingredients = _state.ingredients
+        .map((i) => i.id == ingredient.id ? updated : i)
+        .toList();
+    _update(_state.copyWith(ingredients: ingredients));
+    return updated;
   }
 
   // ─── Shopping mutations ───────────────────────────────────────────────────

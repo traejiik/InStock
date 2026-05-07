@@ -7,6 +7,7 @@ import 'package:instock/core/utils/unit_converter.dart';
 import 'package:instock/data/database/app_database.dart';
 import 'package:instock/data/models/app_models.dart';
 import 'package:instock/features/shopping/providers/shopping_provider.dart';
+import 'package:instock/shared/widgets/category_picker.dart';
 import 'package:instock/shared/widgets/segment_control.dart';
 import 'package:instock/shared/widgets/unit_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -33,7 +34,9 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(child: _Header(total: items.length, inStock: checkedCount)),
+            SliverToBoxAdapter(
+              child: _Header(total: items.length, inStock: checkedCount),
+            ),
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverToBoxAdapter(
@@ -47,7 +50,9 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
             const SliverToBoxAdapter(child: SizedBox(height: 16)),
             if (items.isEmpty)
               SliverFillRemaining(
-                child: _ShoppingEmptyState(onBrowseRecipes: () => context.go('/recipes')),
+                child: _ShoppingEmptyState(
+                  onBrowseRecipes: () => context.go('/recipes'),
+                ),
               )
             else
               SliverPadding(
@@ -85,30 +90,25 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
       final key = _sortIndex == 0
           ? (ing?.category.label ?? 'Other')
           : (item.sourceRecipeId != null
-              ? (db.recipeById(item.sourceRecipeId!)?.title ?? 'Unknown')
-              : 'Manual');
+                ? (db.recipeById(item.sourceRecipeId!)?.title ?? 'Unknown')
+                : 'Manual');
       grouped.putIfAbsent(key, () => []).add(item);
     }
 
     final sections = grouped.entries.toList();
     return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (ctx, i) {
-          final section = sections[i];
-          final ing = db.ingredientById(section.value.first.ingredientId);
-          final emoji = _sortIndex == 0
-              ? (ing?.category.emoji ?? '📦')
-              : '🍽️';
-          return _Section(
-            emoji: emoji,
-            label: section.key,
-            items: section.value,
-            db: db,
-            builder: (item) => _buildItem(db, item),
-          );
-        },
-        childCount: sections.length,
-      ),
+      delegate: SliverChildBuilderDelegate((ctx, i) {
+        final section = sections[i];
+        final ing = db.ingredientById(section.value.first.ingredientId);
+        final emoji = _sortIndex == 0 ? (ing?.category.emoji ?? '📦') : '🍽️';
+        return _Section(
+          emoji: emoji,
+          label: section.key,
+          items: section.value,
+          db: db,
+          builder: (item) => _buildItem(db, item),
+        );
+      }, childCount: sections.length),
     );
   }
 
@@ -125,7 +125,8 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
         ingredient: ing,
         stockStatus: db.stockStatusForIngredient(item.ingredientId),
         sourceRecipeName: sourceRecipeName,
-        onToggle: () => ref.read(appDatabaseProvider).toggleShoppingItem(item.id),
+        onToggle: () =>
+            ref.read(appDatabaseProvider).toggleShoppingItem(item.id),
       ),
     );
   }
@@ -135,6 +136,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
     final nameCtrl = TextEditingController();
     final qtyCtrl = TextEditingController(text: '1');
     String selectedUnit = 'g';
+    var selectedCategory = IngredientCategory.custom;
     String? nameError;
     String? qtyError;
     String? pantryHint;
@@ -155,17 +157,26 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
               return;
             }
             final normalized = name.toLowerCase();
-            final ing = db.ingredients.where((i) =>
-              i.canonicalName.toLowerCase() == normalized ||
-              i.aliases.any((a) => a.toLowerCase() == normalized),
-            ).firstOrNull;
+            final ing = db.ingredients
+                .where(
+                  (i) =>
+                      i.canonicalName.toLowerCase() == normalized ||
+                      i.aliases.any((a) => a.toLowerCase() == normalized),
+                )
+                .firstOrNull;
             if (ing != null) {
               final pantryItem = db.pantryItemForIngredient(ing.id);
               if (pantryItem != null && pantryItem.quantity > 0) {
-                setLocal(() => pantryHint =
-                    'You have ${UnitConverter.formatQty(pantryItem.quantity, pantryItem.unit)} in your pantry');
+                setLocal(() {
+                  pantryHint =
+                      'You have ${UnitConverter.formatQty(pantryItem.quantity, pantryItem.unit)} in your pantry';
+                  selectedCategory = ing.category;
+                });
               } else {
-                setLocal(() => pantryHint = null);
+                setLocal(() {
+                  pantryHint = null;
+                  selectedCategory = ing.category;
+                });
               }
             } else {
               setLocal(() => pantryHint = null);
@@ -177,7 +188,9 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
             final qty = double.tryParse(qtyCtrl.text);
 
             setLocal(() {
-              nameError = name.length < 2 ? 'Name must be at least 2 characters' : null;
+              nameError = name.length < 2
+                  ? 'Name must be at least 2 characters'
+                  : null;
               qtyError = (qtyCtrl.text.isEmpty || qty == null || qty <= 0)
                   ? 'Enter a valid quantity greater than 0'
                   : null;
@@ -185,7 +198,10 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
 
             if (name.length < 2 || qty == null || qty <= 0) return;
 
-            final ing = db.findOrCreateIngredient(name);
+            final ing = db.findOrCreateIngredient(
+              name,
+              category: selectedCategory,
+            );
             db.addOrIncrementShopping(
               ingredientId: ing.id,
               quantity: qty,
@@ -195,59 +211,83 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
           }
 
           return Padding(
-            padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Add Item', style: AppTextStyles.headingMd),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: nameCtrl,
-                  style: const TextStyle(color: AppColors.textPrimary),
-                  decoration: InputDecoration(
-                    labelText: 'Item name',
-                    errorText: nameError,
-                  ),
-                  autofocus: true,
-                  onChanged: checkPantryHint,
-                ),
-                if (pantryHint != null) ...[
-                  const SizedBox(height: 6),
-                  Text(pantryHint!,
-                      style: AppTextStyles.caption.copyWith(color: AppColors.amber)),
-                ],
-                const SizedBox(height: 12),
-                TextField(
-                  controller: qtyCtrl,
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(color: AppColors.textPrimary),
-                  decoration: InputDecoration(
-                    labelText: 'Quantity',
-                    errorText: qtyError,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                UnitPicker(
-                  selectedUnit: selectedUnit,
-                  onChanged: (u) => setLocal(() => selectedUnit = u),
-                  allowCustom: true,
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.green,
-                      foregroundColor: AppColors.background,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              20,
+              20,
+              MediaQuery.of(ctx).viewInsets.bottom + 20,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Add Item', style: AppTextStyles.headingMd),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: nameCtrl,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: 'Item name',
+                      errorText: nameError,
                     ),
-                    onPressed: submit,
-                    child: Text('Add to List', style: AppTextStyles.label.copyWith(color: AppColors.background)),
+                    autofocus: true,
+                    onChanged: checkPantryHint,
                   ),
-                ),
-              ],
+                  if (pantryHint != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      pantryHint!,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.amber,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: qtyCtrl,
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: 'Quantity',
+                      errorText: qtyError,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  CategoryPicker(
+                    selectedCategory: selectedCategory,
+                    onChanged: (category) =>
+                        setLocal(() => selectedCategory = category),
+                  ),
+                  const SizedBox(height: 12),
+                  UnitPicker(
+                    selectedUnit: selectedUnit,
+                    onChanged: (u) => setLocal(() => selectedUnit = u),
+                    allowCustom: true,
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.green,
+                        foregroundColor: AppColors.background,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: submit,
+                      child: Text(
+                        'Add to List',
+                        style: AppTextStyles.label.copyWith(
+                          color: AppColors.background,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -268,13 +308,19 @@ class _ShoppingEmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(LucideIcons.shoppingCart, size: 56, color: AppColors.textTertiary),
+            const Icon(
+              LucideIcons.shoppingCart,
+              size: 56,
+              color: AppColors.textTertiary,
+            ),
             const SizedBox(height: 20),
             Text('Your list is empty', style: AppTextStyles.headingMd),
             const SizedBox(height: 8),
             Text(
               'Add items or pull from a recipe',
-              style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMd.copyWith(
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
@@ -282,11 +328,21 @@ class _ShoppingEmptyState extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.green,
                 foregroundColor: AppColors.background,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
+                ),
               ),
               onPressed: onBrowseRecipes,
-              child: Text('Add from Recipe', style: AppTextStyles.label.copyWith(color: AppColors.background)),
+              child: Text(
+                'Add from Recipe',
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.background,
+                ),
+              ),
             ),
           ],
         ),
@@ -312,7 +368,9 @@ class _Header extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '$total items · $inStock checked off',
-            style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodyMd.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
         ],
       ),

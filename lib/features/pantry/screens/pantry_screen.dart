@@ -7,6 +7,7 @@ import 'package:instock/core/theme/app_text_styles.dart';
 import 'package:instock/data/database/app_database.dart';
 import 'package:instock/data/models/app_models.dart';
 import 'package:instock/features/shopping/providers/shopping_provider.dart';
+import 'package:instock/shared/widgets/category_picker.dart';
 import 'package:instock/shared/widgets/segment_control.dart';
 import 'package:instock/shared/widgets/unit_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -33,12 +34,16 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     if (_search.isNotEmpty) {
       items = items.where((p) {
         final ing = db.ingredientById(p.ingredientId);
-        return ing?.canonicalName.toLowerCase().contains(_search.toLowerCase()) ?? false;
+        return ing?.canonicalName.toLowerCase().contains(
+              _search.toLowerCase(),
+            ) ??
+            false;
       }).toList();
     }
 
     if (_sortIndex == 1) {
-      items = [...items]..sort((a, b) {
+      items = [...items]
+        ..sort((a, b) {
           final ia = db.ingredientById(a.ingredientId)?.canonicalName ?? '';
           final ib = db.ingredientById(b.ingredientId)?.canonicalName ?? '';
           return ia.compareTo(ib);
@@ -67,7 +72,9 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                             Text('Pantry', style: AppTextStyles.displayLg),
                             Text(
                               '${items.length} items',
-                              style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+                              style: AppTextStyles.bodyMd.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ],
                         ),
@@ -80,7 +87,10 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                     const SizedBox(width: 4),
                     IconButton(
                       onPressed: () => _showSearch(),
-                      icon: const Icon(Icons.search, color: AppColors.textSecondary),
+                      icon: const Icon(
+                        Icons.search,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -164,11 +174,19 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
               setState(() => _search = '');
               Navigator.pop(ctx);
             },
-            child: Text('Clear', style: AppTextStyles.label.copyWith(color: AppColors.textSecondary)),
+            child: Text(
+              'Clear',
+              style: AppTextStyles.label.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Done', style: AppTextStyles.label.copyWith(color: AppColors.green)),
+            child: Text(
+              'Done',
+              style: AppTextStyles.label.copyWith(color: AppColors.green),
+            ),
           ),
         ],
       ),
@@ -184,19 +202,16 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     }
     final sections = grouped.entries.toList();
     return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (ctx, i) {
-          final section = sections[i];
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CategoryDivider(category: section.key),
-              ...section.value.map((p) => _buildRow(db, p)),
-            ],
-          );
-        },
-        childCount: sections.length,
-      ),
+      delegate: SliverChildBuilderDelegate((ctx, i) {
+        final section = sections[i];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CategoryDivider(category: section.key),
+            ...section.value.map((p) => _buildRow(db, p)),
+          ],
+        );
+      }, childCount: sections.length),
     );
   }
 
@@ -227,9 +242,15 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
       isScrollControlled: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          20,
+          20,
+          MediaQuery.of(ctx).viewInsets.bottom + 20,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,9 +262,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
               keyboardType: TextInputType.number,
               autofocus: true,
               style: const TextStyle(color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                labelText: 'Quantity (${item.unit})',
-              ),
+              decoration: InputDecoration(labelText: 'Quantity (${item.unit})'),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -252,15 +271,24 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.green,
                   foregroundColor: AppColors.background,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 onPressed: () {
                   final qty = double.tryParse(qtyCtrl.text) ?? item.quantity;
-                  ref.read(appDatabaseProvider).updatePantryQuantity(item.id, qty);
+                  ref
+                      .read(appDatabaseProvider)
+                      .updatePantryQuantity(item.id, qty);
                   Navigator.pop(ctx);
                 },
-                child: Text('Save', style: AppTextStyles.label.copyWith(color: AppColors.background)),
+                child: Text(
+                  'Save',
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.background,
+                  ),
+                ),
               ),
             ),
           ],
@@ -269,12 +297,17 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     );
   }
 
-  void _showQuickActions(BuildContext context, PantryItem item, Ingredient ing) {
+  void _showQuickActions(
+    BuildContext context,
+    PantryItem item,
+    Ingredient ing,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -284,19 +317,30 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
               child: Text(ing.canonicalName, style: AppTextStyles.headingMd),
             ),
             ListTile(
-              leading: const Icon(Icons.remove_circle_outline, color: AppColors.amber),
-              title: Text('Quick decrement (−1 ${item.unit})',
-                  style: AppTextStyles.label),
+              leading: const Icon(
+                Icons.remove_circle_outline,
+                color: AppColors.amber,
+              ),
+              title: Text(
+                'Quick decrement (−1 ${item.unit})',
+                style: AppTextStyles.label,
+              ),
               onTap: () {
-                ref.read(appDatabaseProvider).updatePantryQuantity(
-                    item.id, (item.quantity - 1).clamp(0.0, double.infinity));
+                ref
+                    .read(appDatabaseProvider)
+                    .updatePantryQuantity(
+                      item.id,
+                      (item.quantity - 1).clamp(0.0, double.infinity),
+                    );
                 Navigator.pop(ctx);
               },
             ),
             ListTile(
               leading: const Icon(Icons.close, color: AppColors.red),
-              title: Text('Mark as out of stock',
-                  style: AppTextStyles.label.copyWith(color: AppColors.red)),
+              title: Text(
+                'Mark as out of stock',
+                style: AppTextStyles.label.copyWith(color: AppColors.red),
+              ),
               onTap: () {
                 ref.read(appDatabaseProvider).markPantryItemOut(item.id);
                 Navigator.pop(ctx);
@@ -313,6 +357,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     final nameCtrl = TextEditingController();
     final qtyCtrl = TextEditingController(text: '1');
     String selectedUnit = 'g';
+    var selectedCategory = IngredientCategory.custom;
     String? nameError;
     String? qtyError;
 
@@ -321,7 +366,8 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
       isScrollControlled: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) {
           void submit() {
@@ -329,7 +375,9 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
             final qty = double.tryParse(qtyCtrl.text);
 
             setLocal(() {
-              nameError = name.length < 2 ? 'Name must be at least 2 characters' : null;
+              nameError = name.length < 2
+                  ? 'Name must be at least 2 characters'
+                  : null;
               qtyError = (qtyCtrl.text.isEmpty || qty == null || qty <= 0)
                   ? 'Enter a valid quantity greater than 0'
                   : null;
@@ -338,59 +386,94 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
             if (name.length < 2 || qty == null || qty <= 0) return;
 
             final db = ref.read(appDatabaseProvider);
-            final ing = db.findOrCreateIngredient(name);
+            final ing = db.findOrCreateIngredient(
+              name,
+              category: selectedCategory,
+            );
             db.addOrIncrementPantry(ing.id, qty, selectedUnit);
             Navigator.pop(ctx);
           }
 
+          void syncCategory(String value) {
+            final name = value.trim().toLowerCase();
+            if (name.length < 2) return;
+            final ing = ref.read(appDatabaseProvider).ingredients.where((i) {
+              return i.canonicalName.toLowerCase() == name ||
+                  i.aliases.any((alias) => alias.toLowerCase() == name);
+            }).firstOrNull;
+            if (ing == null) return;
+            setLocal(() => selectedCategory = ing.category);
+          }
+
           return Padding(
-            padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Add to Pantry', style: AppTextStyles.headingMd),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: nameCtrl,
-                  autofocus: true,
-                  style: const TextStyle(color: AppColors.textPrimary),
-                  decoration: InputDecoration(
-                    labelText: 'Ingredient name',
-                    errorText: nameError,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: qtyCtrl,
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(color: AppColors.textPrimary),
-                  decoration: InputDecoration(
-                    labelText: 'Quantity',
-                    errorText: qtyError,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                UnitPicker(
-                  selectedUnit: selectedUnit,
-                  onChanged: (u) => setLocal(() => selectedUnit = u),
-                  allowCustom: true,
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.green,
-                      foregroundColor: AppColors.background,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              20,
+              20,
+              MediaQuery.of(ctx).viewInsets.bottom + 20,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Add to Pantry', style: AppTextStyles.headingMd),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: nameCtrl,
+                    autofocus: true,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: 'Ingredient name',
+                      errorText: nameError,
                     ),
-                    onPressed: submit,
-                    child: Text('Add', style: AppTextStyles.label.copyWith(color: AppColors.background)),
+                    onChanged: syncCategory,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: qtyCtrl,
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: 'Quantity',
+                      errorText: qtyError,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  CategoryPicker(
+                    selectedCategory: selectedCategory,
+                    onChanged: (category) =>
+                        setLocal(() => selectedCategory = category),
+                  ),
+                  const SizedBox(height: 12),
+                  UnitPicker(
+                    selectedUnit: selectedUnit,
+                    onChanged: (u) => setLocal(() => selectedUnit = u),
+                    allowCustom: true,
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.green,
+                        foregroundColor: AppColors.background,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: submit,
+                      child: Text(
+                        'Add',
+                        style: AppTextStyles.label.copyWith(
+                          color: AppColors.background,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -411,13 +494,19 @@ class _PantryEmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(LucideIcons.package, size: 56, color: AppColors.textTertiary),
+            const Icon(
+              LucideIcons.package,
+              size: 56,
+              color: AppColors.textTertiary,
+            ),
             const SizedBox(height: 20),
             Text('Your pantry is empty', style: AppTextStyles.headingMd),
             const SizedBox(height: 8),
             Text(
               'Add items as you stock up or check off your shopping list',
-              style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMd.copyWith(
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
@@ -425,11 +514,21 @@ class _PantryEmptyState extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.green,
                 foregroundColor: AppColors.background,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
+                ),
               ),
               onPressed: onAdd,
-              child: Text('Add Item', style: AppTextStyles.label.copyWith(color: AppColors.background)),
+              child: Text(
+                'Add Item',
+                style: AppTextStyles.label.copyWith(
+                  color: AppColors.background,
+                ),
+              ),
             ),
           ],
         ),

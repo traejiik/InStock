@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:instock/data/database/app_database.dart';
 import 'package:instock/data/database/drift_database.dart';
+import 'package:instock/data/models/app_models.dart';
 
 void main() {
   setUpAll(() {
@@ -70,5 +71,41 @@ void main() {
       final after = db.pantryItemForIngredient('ing-butter')!.quantity;
       expect(after, closeTo(before, 0.001));
     });
+  });
+
+  group('Ingredient creation', () {
+    late AppDatabase db;
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      db = AppDatabase(db: InStockDriftDb.memory());
+      await db.init();
+    });
+
+    test('creates a new ingredient with the selected category', () {
+      final ingredient = db.findOrCreateIngredient(
+        'Kefir grains',
+        category: IngredientCategory.dairy,
+      );
+
+      expect(ingredient.canonicalName, 'Kefir grains');
+      expect(ingredient.category, IngredientCategory.dairy);
+    });
+
+    test(
+      'updates an existing custom ingredient when a category is selected',
+      () {
+        final custom = db.findOrCreateIngredient('Tofu');
+        expect(custom.category, IngredientCategory.custom);
+
+        final categorized = db.findOrCreateIngredient(
+          'Tofu',
+          category: IngredientCategory.produce,
+        );
+
+        expect(categorized.id, custom.id);
+        expect(categorized.category, IngredientCategory.produce);
+      },
+    );
   });
 }
