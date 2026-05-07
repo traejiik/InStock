@@ -130,77 +130,76 @@ Rules:
 <claude-mem-context>
 # Memory Context
 
-# [InStock] recent context, 2026-05-07 5:20am GMT+2
+# [InStock] recent context, 2026-05-07 6:59pm GMT+2
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (21,657t read) | 396,285t work | 95% savings
+Stats: 50 obs (19,189t read) | 386,469t work | 95% savings
 
-### Apr 29, 2026
-S47 Add app icons and splash screens to InStock Flutter app (iOS + Android) using flutter_launcher_icons and flutter_native_splash with existing dark brand assets (Apr 29 at 5:37 AM)
 ### May 6, 2026
-S48 InStock Flutter App — Fix White Border on App Icon and Oversized Icon-Only Splash Screen (May 6 at 2:09 PM)
-S49 Commit app icon and splash screen brand assets with an appropriate conventional commit message (May 6 at 9:39 PM)
-S50 InStock Flutter App — Settings Screen Phase 1 Implementation (unit preference, theme preference, app version, clear-all-data) (May 6 at 10:15 PM)
-353 11:43p ⚖️ InStock Settings Screen — Phased Architecture Plan
-357 11:44p 🔵 Settings Screen Currently a Placeholder at Non-Standard Path
-358 " 🔵 AppState Uses `AppState.empty` Static Const — Not Default Constructor
-359 " 🔵 InStock Codebase Pre-Implementation State Survey
-360 11:48p ✅ Added `package_info_plus: ^8.0.0` to pubspec.yaml
-361 " ✅ `flutter pub get` Resolved `package_info_plus 8.3.1` Successfully
-362 " 🟣 Settings Providers File Created with Unit, Theme, and PackageInfo Providers
-363 11:49p 🟣 Settings Screen Replaced: Placeholder → Full Functional Implementation
-364 " 🟣 `AppDatabase.clearAllData()` Added and `InStockApp` Upgraded to ConsumerWidget
-365 " ✅ Settings Feature Passes `flutter analyze` Clean and Formatted
-366 11:50p 🔴 Fixed Braceless `if` in `toggleShoppingItem()` After `dart format` Reformatted It
-367 " 🟣 InStock Settings Feature — Phase 1 Complete: Analyze Clean, All Tests Pass
-368 " ✅ Design System Compliance Verified: No Hardcoded Colors or `withOpacity` in Settings Feature
 S51 Commit settings screen implementation in InStock Flutter app (May 6 at 11:51 PM)
-369 11:56p 🔵 InStock Flutter App Has Large Uncommitted Changes Ready to Commit
 S52 Commit and push settings screen implementation in InStock Flutter app (May 6 at 11:56 PM)
-370 " ✅ InStock Settings Feature Pushed to GitHub Remote
 S55 InStock Flutter app: Migrate data persistence from SharedPreferences JSON blob to Drift SQLite database while preserving AppDatabase public API (May 6 at 11:56 PM)
 ### May 7, 2026
-388 2:41a ⚖️ InStock Data Layer: SharedPreferences → Drift SQLite Migration Architecture
-389 " 🔵 Existing AppDatabase Implementation: SharedPreferences JSON Blob Architecture
-390 2:42a 🔵 appDatabaseProvider Defined in shopping_provider.dart
-391 " 🔵 Complete AppDatabase Method Call Surface Across Feature Screens
-392 2:48a ⚖️ InStock: SharedPreferences → Drift SQLite Migration Architecture
-393 " 🟣 Drift Database Schema: Five-Table SQLite Design for InStock
-394 " 🟣 MigrationService: Atomic One-Time SharedPreferences → Drift Migration
-395 " 🔄 AppDatabase Rewritten as Drift Facade with Preserved ChangeNotifier API
-396 2:49a 🟣 Drift Code Generation Completed Successfully for InStock
-397 " 🟣 MigrationService Implemented with Extra Legacy Key Handling
-398 2:52a 🔄 app_database.dart Fully Rewritten: SharedPreferences JSON Replaced with Drift Persistence
-399 " 🔄 pantry_repository_test.dart Updated to Use In-Memory Drift Database
-400 " 🔴 Fixed Missing InsertMode Import in migration_service.dart
-401 " 🔵 All 6 Tests Pass; Drift Warns About Multiple Database Instantiations Per Test
-402 " 🔴 Suppressed Drift Multi-Instantiation Warning in Test File
-403 2:53a 🟣 InStock Drift Migration Phase 1 Complete: Zero Analyzer Issues, All Tests Pass
-404 " 🔵 Spec Grep Checks Reveal Two Partial Violations in app_database.dart
-405 " 🔄 MigrationService Refactored: SharedPreferences Fetched Internally, Returns MigrationOutcome Enum
-406 2:54a 🔄 AppDatabase.init() Simplified to 4 Lines Using MigrationOutcome Enum
-407 " 🟣 InStock Drift Migration Phase 1 Fully Complete and Verified
 S56 InStock Drift migration Phase 1 complete — user asked if /memory was run to record the session work (May 7 at 2:54 AM)
 S57 InStock Flutter app: SharedPreferences → Drift SQLite migration + Graphify knowledge graph generation (May 7 at 2:56 AM)
-408 2:58a 🔵 README.md and AGENTS.md Contain Stale Persistence References After Drift Migration
-409 " ⚖️ InStock Flutter App: SharedPreferences → Drift SQLite Migration Plan
-410 2:59a ⚖️ InStock: SharedPreferences → Drift SQLite Migration Architecture
-411 " 🔵 InStock Graphify Knowledge Graph — Full Codebase Node/Edge Map
-S58 InStock Flutter app: SharedPreferences → Drift SQLite migration + Graphify knowledge graph regeneration (in progress) (May 7 at 3:01 AM)
-412 3:01a 🔵 Graphify Chunk Verification — All 3 Chunks Present and Valid
-413 " 🟣 Graphify Knowledge Graph Merged and Cached — 93 Nodes, 171 Edges
-414 " 🔵 InStock Full Graph — 833 Nodes, 857 Edges (AST + Semantic Combined)
-415 3:02a 🔵 InStock AST Community Analysis — Drift Migration Already Implemented in Codebase
-416 " 🔵 InStock Graph — 33 Communities Identified, Drift Migration Confirmed in Community 3
+S58 InStock Flutter app: SharedPreferences → Drift SQLite migration + Graphify knowledge graph regeneration (in progress) (May 7 at 3:00 AM)
+S59 InStock Flutter App — Bundle ID Migration (com.example → dev.traejiik) + iOS Privacy Manifest + Android Build Fix (May 7 at 3:01 AM)
+416 3:02a 🔵 InStock Graph — 33 Communities Identified, Drift Migration Confirmed in Community 3
 417 3:04a 🔵 InStock Graph Communities 15–32 — Drift Database and Repository Layer Confirmed
 418 3:05a 🔵 Graphify report.py API Mismatch — generate_report Not Exported
 419 " 🔵 Graphify report.generate() API Signature and Analysis File Structure Confirmed
 420 " 🔵 graph.json Uses NetworkX Format — 666 Nodes, 853 Links After Filtering
 421 " 🟣 GRAPH_REPORT.md Regenerated — 13,789 chars with 33 Labeled Communities
 422 " 🔵 Graphify Export API — Full Function Inventory Including graph.html Regeneration
+423 5:31p ⚖️ InStock Flutter App — Bundle ID Migration Plan
+424 " 🟣 iOS Privacy Manifest (`PrivacyInfo.xcprivacy`) Added for App Store
+425 5:32p 🔵 InStock Codebase Audit: Bundle ID Scope Confirmed
+426 " ✅ iOS Bundle IDs Updated in project.pbxproj + PrivacyInfo PBXBuildFile Added
+427 " ✅ PrivacyInfo.xcprivacy Fully Wired into Xcode project.pbxproj
+428 " ✅ Android Bundle ID Updated and Package Directory Migrated
+429 " 🟣 PrivacyInfo.xcprivacy File Created at ios/Runner/PrivacyInfo.xcprivacy
+430 5:33p ✅ Bundle ID Migration Verified Complete — All Checks Passed
+431 5:34p ✅ flutter build ios --no-codesign Succeeds with New Bundle ID
+432 5:39p ✅ InStock Flutter App Bundle ID Migration: com.example → dev.traejiik
+433 " 🟣 iOS Privacy Manifest (PrivacyInfo.xcprivacy) Created for App Store Submission
+434 5:40p 🔵 Android APK Build Fails After Bundle ID Migration
+435 5:41p ✅ Enabled Core Library Desugaring in Android build.gradle.kts
+436 " ✅ Added coreLibraryDesugaring Dependency to Android Build
+437 5:42p 🔴 Android APK Build Succeeds After Adding Core Library Desugaring
+S60 InStock Flutter App — Bundle ID Migration + iOS Privacy Manifest + Android Build Fix + graphify graph update (May 7 at 5:42 PM)
+438 5:45p 🔵 graphify CLI Available on InStock Dev Machine
+S61 InStock Flutter App — Bundle ID Migration + iOS Privacy Manifest + Android Desugaring Fix — COMMITTED (May 7 at 5:45 PM)
+439 " ✅ Bundle ID Migration + Privacy Manifest Changes Staged for Git Commit
+440 6:21p 🔴 Android SQLite Crash Fixed After Drift Migration
+441 " 🔴 Splash Screen Fixed to Use Correct Dark Brand Asset on Both Platforms
+442 6:22p 🔵 Pre-Fix State Verified: drift_database.dart and launch_background.xml Already Correct
+443 " ✅ Dark Splash Asset Copied to Tracked Assets Folder
+444 " 🔴 pubspec.yaml Splash Config Updated to Dark Asset with Fullscreen Mode
+445 " ✅ sqlite3_flutter_libs 0.5.42 Added as New Resolved Dependency
+446 " 🔵 flutter_native_splash:create Overwrites launch_background.xml Color Element with Bitmap Fill
+447 6:23p 🔵 flutter_native_splash Generates background.png as Solid Color Drawable for Fullscreen Mode
+448 " ✅ Graphify Knowledge Graph Updated After SQLite and Splash Fixes
+S62 InStock Flutter: Fix Android SQLite crash after Drift migration and fix splash screen on both platforms to use correct dark brand asset (May 7 at 6:23 PM)
+449 6:38p 🔵 InStock Flutter Project Structure — Codebase Overview
+450 " 🔵 InStock Has Extensive Uncommitted Changes Across Android/iOS/Dart Affecting Build
+451 6:39p 🔵 Flutter Binary Broken — Permission Error on engine.stamp Blocks All Flutter Commands
+452 " 🔵 Drift Database Migrated from drift_flutter to Manual sqlite3_flutter_libs Setup
+453 " 🔵 Splash Screen and iOS Info.plist Changes May Cause iOS Build Issues
+454 6:40p 🔵 flutter analyze Reveals Build-Blocking Error: openCipherOnAndroid Undefined in drift_database.dart
+455 " 🔵 Android Gradle Uses Aggressive AGP 8.11.1 and Kotlin 2.2.20 — Potential Flutter Compatibility Risk
+456 " 🔵 Android Build Confirms: openCipherOnAndroid Compile Error is the Primary Build Failure
+457 " 🔵 Full Android Build Failure Chain Traced: Dart Compile Error → kernel_snapshot_program → assembleDebug FAILED
+458 6:41p 🔵 iOS Device Build Has Two Distinct Failures: Dart Compile Error Plus Missing sqlite3.xcframework Binary
+459 6:42p 🔵 openCipherOnAndroid Was Copied from a Drift Documentation Comment — Not a Real Function
+460 " 🔵 @DriftDatabase Annotation Misplaced on _openDatabase() Function Instead of InStockDriftDb Class
+461 " 🔵 iOS Podfile Missing Platform Declaration Causes CocoaPods Targets to Default to iOS 9.0
+462 6:43p 🔵 Correct sqlite3_flutter_libs Pattern Confirmed — No Cipher Override Needed or Available
+463 " 🔵 iOS Xcode Project Has Correct iOS 13.0 Deployment Target but No Development Team Configured
+464 6:44p 🔵 Flutter Toolchain Fully Healthy — engine.stamp Error Is Sandbox Restriction, Not Real Flutter Issue
+465 " 🔵 sqlite3 Source Explicitly Documents openCipherOnAndroid Comes from sqlcipher_flutter_libs Package
 
-Access 396k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 386k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>
