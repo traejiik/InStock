@@ -51,6 +51,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
             if (items.isEmpty)
               SliverFillRemaining(
                 child: _ShoppingEmptyState(
+                  onAddItem: () => _showAddSheet(context),
                   onBrowseRecipes: () => context.go('/recipes'),
                 ),
               )
@@ -62,14 +63,16 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'shopping_fab',
-        onPressed: () => _showAddSheet(context),
-        backgroundColor: AppColors.green,
-        foregroundColor: AppColors.background,
-        elevation: 0,
-        child: const Icon(Icons.add, size: 26),
-      ),
+      floatingActionButton: items.isEmpty
+          ? null
+          : FloatingActionButton(
+              heroTag: 'shopping_fab',
+              onPressed: () => _showAddSheet(context),
+              backgroundColor: AppColors.green,
+              foregroundColor: AppColors.background,
+              elevation: 0,
+              child: const Icon(Icons.add, size: 26),
+            ),
     );
   }
 
@@ -297,8 +300,12 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
 }
 
 class _ShoppingEmptyState extends StatelessWidget {
+  final VoidCallback onAddItem;
   final VoidCallback onBrowseRecipes;
-  const _ShoppingEmptyState({required this.onBrowseRecipes});
+  const _ShoppingEmptyState({
+    required this.onAddItem,
+    required this.onBrowseRecipes,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -324,23 +331,48 @@ class _ShoppingEmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.green,
-                foregroundColor: AppColors.background,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.green,
+                  foregroundColor: AppColors.background,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 14,
+                onPressed: onAddItem,
+                icon: const Icon(Icons.add, size: 18),
+                label: Text(
+                  'Add Item',
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.background,
+                  ),
                 ),
               ),
-              onPressed: onBrowseRecipes,
-              child: Text(
-                'Add from Recipe',
-                style: AppTextStyles.label.copyWith(
-                  color: AppColors.background,
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.surface2,
+                  foregroundColor: AppColors.textPrimary,
+                  side: const BorderSide(color: AppColors.border),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                onPressed: onBrowseRecipes,
+                icon: const Icon(LucideIcons.bookOpen, size: 18),
+                label: Text(
+                  'Add from Recipe',
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
             ),

@@ -510,23 +510,24 @@ class _PantryEmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.green,
-                foregroundColor: AppColors.background,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.green,
+                  foregroundColor: AppColors.background,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 14,
-                ),
-              ),
-              onPressed: onAdd,
-              child: Text(
-                'Add Item',
-                style: AppTextStyles.label.copyWith(
-                  color: AppColors.background,
+                onPressed: onAdd,
+                icon: const Icon(LucideIcons.plus, size: 18),
+                label: Text(
+                  'Add Item',
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.background,
+                  ),
                 ),
               ),
             ),
