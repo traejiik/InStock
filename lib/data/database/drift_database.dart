@@ -84,13 +84,8 @@ class ShoppingItems extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(
-  tables: [Ingredients, PantryItems, Recipes, RecipeIngredients, ShoppingItems],
-)
 QueryExecutor _openDatabase() {
   return LazyDatabase(() async {
-    // On Android, use the bundled sqlite3 from sqlite3_flutter_libs.
-    // On iOS, use the system SQLite (avoids objective_c.framework dependency).
     if (Platform.isAndroid) {
       await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
     }
@@ -100,6 +95,9 @@ QueryExecutor _openDatabase() {
   });
 }
 
+@DriftDatabase(
+  tables: [Ingredients, PantryItems, Recipes, RecipeIngredients, ShoppingItems],
+)
 class InStockDriftDb extends _$InStockDriftDb {
   InStockDriftDb() : super(_openDatabase());
 
