@@ -136,76 +136,77 @@ Rules:
 <claude-mem-context>
 # Memory Context
 
-# [InStock] recent context, 2026-05-07 7:35pm GMT+2
+# [InStock] recent context, 2026-05-11 11:28pm GMT+2
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (19,189t read) | 386,469t work | 95% savings
+Stats: 50 obs (16,365t read) | 423,499t work | 96% savings
 
-### May 6, 2026
-S51 Commit settings screen implementation in InStock Flutter app (May 6 at 11:51 PM)
-S52 Commit and push settings screen implementation in InStock Flutter app (May 6 at 11:56 PM)
-S55 InStock Flutter app: Migrate data persistence from SharedPreferences JSON blob to Drift SQLite database while preserving AppDatabase public API (May 6 at 11:56 PM)
 ### May 7, 2026
-S56 InStock Drift migration Phase 1 complete — user asked if /memory was run to record the session work (May 7 at 2:54 AM)
 S57 InStock Flutter app: SharedPreferences → Drift SQLite migration + Graphify knowledge graph generation (May 7 at 2:56 AM)
 S58 InStock Flutter app: SharedPreferences → Drift SQLite migration + Graphify knowledge graph regeneration (in progress) (May 7 at 3:00 AM)
 S59 InStock Flutter App — Bundle ID Migration (com.example → dev.traejiik) + iOS Privacy Manifest + Android Build Fix (May 7 at 3:01 AM)
-416 3:02a 🔵 InStock Graph — 33 Communities Identified, Drift Migration Confirmed in Community 3
-417 3:04a 🔵 InStock Graph Communities 15–32 — Drift Database and Repository Layer Confirmed
-418 3:05a 🔵 Graphify report.py API Mismatch — generate_report Not Exported
-419 " 🔵 Graphify report.generate() API Signature and Analysis File Structure Confirmed
-420 " 🔵 graph.json Uses NetworkX Format — 666 Nodes, 853 Links After Filtering
-421 " 🟣 GRAPH_REPORT.md Regenerated — 13,789 chars with 33 Labeled Communities
-422 " 🔵 Graphify Export API — Full Function Inventory Including graph.html Regeneration
-423 5:31p ⚖️ InStock Flutter App — Bundle ID Migration Plan
-424 " 🟣 iOS Privacy Manifest (`PrivacyInfo.xcprivacy`) Added for App Store
-425 5:32p 🔵 InStock Codebase Audit: Bundle ID Scope Confirmed
-426 " ✅ iOS Bundle IDs Updated in project.pbxproj + PrivacyInfo PBXBuildFile Added
-427 " ✅ PrivacyInfo.xcprivacy Fully Wired into Xcode project.pbxproj
-428 " ✅ Android Bundle ID Updated and Package Directory Migrated
-429 " 🟣 PrivacyInfo.xcprivacy File Created at ios/Runner/PrivacyInfo.xcprivacy
-430 5:33p ✅ Bundle ID Migration Verified Complete — All Checks Passed
-431 5:34p ✅ flutter build ios --no-codesign Succeeds with New Bundle ID
-432 5:39p ✅ InStock Flutter App Bundle ID Migration: com.example → dev.traejiik
-433 " 🟣 iOS Privacy Manifest (PrivacyInfo.xcprivacy) Created for App Store Submission
-434 5:40p 🔵 Android APK Build Fails After Bundle ID Migration
-435 5:41p ✅ Enabled Core Library Desugaring in Android build.gradle.kts
-436 " ✅ Added coreLibraryDesugaring Dependency to Android Build
-437 5:42p 🔴 Android APK Build Succeeds After Adding Core Library Desugaring
 S60 InStock Flutter App — Bundle ID Migration + iOS Privacy Manifest + Android Build Fix + graphify graph update (May 7 at 5:42 PM)
-438 5:45p 🔵 graphify CLI Available on InStock Dev Machine
 S61 InStock Flutter App — Bundle ID Migration + iOS Privacy Manifest + Android Desugaring Fix — COMMITTED (May 7 at 5:45 PM)
-439 " ✅ Bundle ID Migration + Privacy Manifest Changes Staged for Git Commit
-440 6:21p 🔴 Android SQLite Crash Fixed After Drift Migration
-441 " 🔴 Splash Screen Fixed to Use Correct Dark Brand Asset on Both Platforms
-442 6:22p 🔵 Pre-Fix State Verified: drift_database.dart and launch_background.xml Already Correct
-443 " ✅ Dark Splash Asset Copied to Tracked Assets Folder
-444 " 🔴 pubspec.yaml Splash Config Updated to Dark Asset with Fullscreen Mode
-445 " ✅ sqlite3_flutter_libs 0.5.42 Added as New Resolved Dependency
-446 " 🔵 flutter_native_splash:create Overwrites launch_background.xml Color Element with Bitmap Fill
-447 6:23p 🔵 flutter_native_splash Generates background.png as Solid Color Drawable for Fullscreen Mode
-448 " ✅ Graphify Knowledge Graph Updated After SQLite and Splash Fixes
-S62 InStock Flutter: Fix Android SQLite crash after Drift migration and fix splash screen on both platforms to use correct dark brand asset (May 7 at 6:23 PM)
-449 6:38p 🔵 InStock Flutter Project Structure — Codebase Overview
-450 " 🔵 InStock Has Extensive Uncommitted Changes Across Android/iOS/Dart Affecting Build
-451 6:39p 🔵 Flutter Binary Broken — Permission Error on engine.stamp Blocks All Flutter Commands
-452 " 🔵 Drift Database Migrated from drift_flutter to Manual sqlite3_flutter_libs Setup
-453 " 🔵 Splash Screen and iOS Info.plist Changes May Cause iOS Build Issues
-454 6:40p 🔵 flutter analyze Reveals Build-Blocking Error: openCipherOnAndroid Undefined in drift_database.dart
-455 " 🔵 Android Gradle Uses Aggressive AGP 8.11.1 and Kotlin 2.2.20 — Potential Flutter Compatibility Risk
-456 " 🔵 Android Build Confirms: openCipherOnAndroid Compile Error is the Primary Build Failure
-457 " 🔵 Full Android Build Failure Chain Traced: Dart Compile Error → kernel_snapshot_program → assembleDebug FAILED
-458 6:41p 🔵 iOS Device Build Has Two Distinct Failures: Dart Compile Error Plus Missing sqlite3.xcframework Binary
-459 6:42p 🔵 openCipherOnAndroid Was Copied from a Drift Documentation Comment — Not a Real Function
-460 " 🔵 @DriftDatabase Annotation Misplaced on _openDatabase() Function Instead of InStockDriftDb Class
-461 " 🔵 iOS Podfile Missing Platform Declaration Causes CocoaPods Targets to Default to iOS 9.0
-462 6:43p 🔵 Correct sqlite3_flutter_libs Pattern Confirmed — No Cipher Override Needed or Available
-463 " 🔵 iOS Xcode Project Has Correct iOS 13.0 Deployment Target but No Development Team Configured
-464 6:44p 🔵 Flutter Toolchain Fully Healthy — engine.stamp Error Is Sandbox Restriction, Not Real Flutter Issue
-465 " 🔵 sqlite3 Source Explicitly Documents openCipherOnAndroid Comes from sqlcipher_flutter_libs Package
+S62 InStock Flutter: Fix Android SQLite crash after Drift migration and fix splash screen on both platforms to use correct dark brand asset (May 7 at 5:46 PM)
+S63 Audit GPT-introduced changes to InStock Flutter app and fix all issues found (May 7 at 6:23 PM)
+### May 8, 2026
+468 1:50a 🔵 Data Layer Fully Migrated from SharedPreferences JSON to Drift/SQLite
+470 1:51a 🔵 Critical Bug: @DriftDatabase Annotation Applied to Function, Not Class
+471 " 🔵 Audit Summary: 4 Issues Found Across Tests and Config
+472 " 🔵 AGENTS.md Has 6 Stale Sections After Drift Migration
+473 " 🔵 Two Undocumented Routes Added: /recipes/add and /recipes/review
+474 1:54a 🔵 Audit Plan Created: 5 Issues Prioritized, AGENTS.md Has Committed claude-mem Block
+475 1:55a 🔴 Fixed: @DriftDatabase Annotation Moved to Correct Class
+476 " 🔴 Fixed: Machine-Specific Path Removed from splash_assets_test.dart
+477 " ✅ AGENTS.md Updated: Persistence Stack Corrected in Project Snapshot
+478 " ✅ AGENTS.md Folder Map Updated: main.dart and bootstrap.dart Corrected
+479 " ✅ AGENTS.md Folder Map: Database Directory Updated with Drift Files
+480 1:56a ✅ AGENTS.md Route List Updated: /recipes/add and /recipes/review Added
+481 " 🔵 AGENTS.md Confirmed Clean: No claude-mem-context Block Present
+482 " ✅ AGENTS.md Trailing Blank Lines Removed
+483 1:57a ✅ AGENTS.md Architecture Notes Rewritten to Describe Drift Architecture
+484 " ✅ AGENTS.md Data Rules: JSON Compatibility Rule Clarified for Migration Context
+485 " 🔵 All 16 Tests Pass After Audit Fixes
+486 " 🔵 build_runner Succeeds After @DriftDatabase Annotation Fix — Code Gen Verified
+S64 Restore the claude-mem segment — fix documentation restoration, stale references, annotation placement, and machine-specific test failures in the InStock Flutter app (May 8 at 1:58 AM)
+S65 Audit and fix GPT-introduced issues in InStock Flutter app — annotation placement, initialization pattern, splash assets, and documentation (May 8 at 2:00 AM)
+487 2:01a ✅ Bootstrap pattern implemented for AppDatabase initialization
+488 " ✅ Drift database annotation repositioned to class declaration
+489 " ✅ Flutter native splash assets and configuration updated
+490 " ✅ AGENTS.md updated with accurate architecture and migration information
+491 2:09a 🔵 InStock iOS Podfile Missing Explicit Platform Version
+492 2:11a 🔵 InStock Uses sqlite3_flutter_libs as Direct Dependency with objective_c Transitive
+493 " 🔵 objective_c Package Version 9.3.0 Confirmed in Pub Cache
+494 " 🔵 objective_c 9.3.0 Uses Native Build Hooks and Is Absent from iOS Pods
+495 " 🔵 Exact Dependency Versions Confirmed: sqlite3 2.9.4, sqlite3_flutter_libs 0.5.42, objective_c 9.3.0
+496 2:13a 🔴 Podfile iOS Platform Version Uncommented to Fix Build Issue
+497 " 🔴 Podfile post_install Hook Added to Force IPHONEOS_DEPLOYMENT_TARGET on All Pod Targets
+S66 Fix iOS build error in InStock Flutter app — likely caused by objective_c 9.3.0 deployment target conflict (May 8 at 2:13 AM)
+### May 11, 2026
+498 10:14p 🔵 InStock Flutter App — Codebase Architecture Graph
+499 " 🔴 iOS Podfile — Deployment Target Uncommented and Enforced for All Pods
+500 10:15p 🔵 Drift Database — Schema Version 1 with No Migration Handler
+501 " 🔵 Bootstrap — Hard-coded Colors Outside Design Token System
+502 " 🔵 Dependency Audit — 49 Packages Outdated, sqlite3_flutter_libs at EOL
+503 " 🔵 Flutter Analyze — Zero Issues Found
+504 " 🔵 Flutter Test Suite — All 16 Tests Passing
+505 10:16p 🔵 Android Debug APK — Build Succeeds Clean
+506 " 🔵 iOS pod install — CocoaPods Profile xcconfig Integration Warning
+507 10:17p 🔵 iOS Debug.xcconfig — Correctly Includes Pods xcconfig; Release Likely Missing Profile Include
+508 " 🔵 iOS Profile Build xcconfig Gap — Root Cause Confirmed
+509 10:18p 🔵 iOS Release Build — Succeeds Despite Profile xcconfig Warning
+510 " 🔵 Available Flutter Devices — macOS and Chrome Only; No Mobile Simulators Connected
+511 10:19p 🔵 macOS Build — 192 Compiler Warnings from sqlite3 CocoaPod Amalgamation
+512 10:20p 🔵 macOS Build — Succeeds with Two Warnings: Deployment Target Mismatch and Run Script Overhead
+513 " 🔵 macOS Podfile — Missing Per-Pod Deployment Target Override (Unlike iOS Podfile)
+514 10:21p 🔴 Runtime Bug — google_fonts Network Fetch Blocked by macOS Sandbox; Fonts Fail to Load
+515 10:22p 🔵 macOS Entitlements Missing network.client — Root Cause of Font Load Failure Confirmed
+516 " 🔵 iOS Simulator "Polar" Available — iOS 26.4, Currently Shutdown
+517 10:25p 🔵 iOS Simulator Run — Clean Launch, No Font Errors (Unlike macOS)
+518 " 🔵 iOS Simulator Screenshot — App Renders Correctly with Proper Fonts and Dark Theme
 
-Access 386k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 423k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>
