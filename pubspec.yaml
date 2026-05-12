@@ -16,6 +16,9 @@ dependencies:
   drift: ^2.18.0
   sqlite3_flutter_libs: ^0.5.0
   path_provider: ^2.1.0
+  # Keep the Darwin implementation on the plugin-based release. 2.6.x uses
+  # native assets via objective_c, which currently fails to load on iOS sim.
+  path_provider_foundation: 2.5.1
   path: ^1.9.0
   google_fonts: ^6.2.1
   lucide_icons: ^0.257.0
