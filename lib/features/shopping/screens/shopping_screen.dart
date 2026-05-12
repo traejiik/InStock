@@ -309,76 +309,95 @@ class _ShoppingEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              LucideIcons.shoppingCart,
-              size: 56,
-              color: AppColors.textTertiary,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxHeight < 260;
+        final maxWidth = compact ? 520.0 : double.infinity;
+
+        final addButton = ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.green,
+            foregroundColor: AppColors.background,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
-            const SizedBox(height: 20),
-            Text('Your list is empty', style: AppTextStyles.headingMd),
-            const SizedBox(height: 8),
-            Text(
-              'Add items or pull from a recipe',
-              style: AppTextStyles.bodyMd.copyWith(
-                color: AppColors.textSecondary,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          onPressed: onAddItem,
+          icon: const Icon(Icons.add, size: 18),
+          label: Text(
+            'Add Item',
+            style: AppTextStyles.label.copyWith(color: AppColors.background),
+          ),
+        );
+
+        final recipeButton = ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.surface2,
+            foregroundColor: AppColors.textPrimary,
+            side: const BorderSide(color: AppColors.border),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          onPressed: onBrowseRecipes,
+          icon: const Icon(LucideIcons.bookOpen, size: 18),
+          label: Text(
+            'Add from Recipe',
+            style: AppTextStyles.label.copyWith(color: AppColors.textPrimary),
+          ),
+        );
+
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? 24 : 40,
+              vertical: compact ? 12 : 0,
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxWidth),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    LucideIcons.shoppingCart,
+                    size: compact ? 36 : 56,
+                    color: AppColors.textTertiary,
+                  ),
+                  SizedBox(height: compact ? 10 : 20),
+                  Text('Your list is empty', style: AppTextStyles.headingMd),
+                  if (!compact) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Add items or pull from a recipe',
+                      style: AppTextStyles.bodyMd.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  SizedBox(height: compact ? 14 : 28),
+                  if (compact)
+                    Row(
+                      children: [
+                        Expanded(child: addButton),
+                        const SizedBox(width: 10),
+                        Expanded(child: recipeButton),
+                      ],
+                    )
+                  else ...[
+                    SizedBox(width: double.infinity, child: addButton),
+                    const SizedBox(height: 10),
+                    SizedBox(width: double.infinity, child: recipeButton),
+                  ],
+                ],
               ),
-              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 28),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.green,
-                  foregroundColor: AppColors.background,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                onPressed: onAddItem,
-                icon: const Icon(Icons.add, size: 18),
-                label: Text(
-                  'Add Item',
-                  style: AppTextStyles.label.copyWith(
-                    color: AppColors.background,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.surface2,
-                  foregroundColor: AppColors.textPrimary,
-                  side: const BorderSide(color: AppColors.border),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                onPressed: onBrowseRecipes,
-                icon: const Icon(LucideIcons.bookOpen, size: 18),
-                label: Text(
-                  'Add from Recipe',
-                  style: AppTextStyles.label.copyWith(
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
