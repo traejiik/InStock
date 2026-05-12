@@ -27,7 +27,7 @@ Avoid:
 - Nested cards and heavy chrome
 - Copy that explains the UI inside the UI
 
-## Color Tokens
+## Color Tokens (Dark Mode)
 
 Use `AppColors` directly. Do not hardcode hex values in widgets unless adding a new token first.
 
@@ -72,6 +72,70 @@ Precomputed alpha variants exist for common borders/surfaces:
 - `AppColors.greenBorder`
 - `AppColors.greenSurface`
 - `AppColors.purpleBorder`
+
+## Color Tokens (Light Mode)
+
+Light mode is an opt-in appearance (Settings → Appearance → Light). It mirrors the dark theme's hierarchy and intent — same hue families, same component shapes, same status semantics — only the surface stack is inverted and accents are tuned for AA contrast on light backgrounds. Do not introduce light-mode-only patterns; if a screen looks wrong in one mode, fix the structure, not the palette.
+
+### Base Surfaces (light)
+
+| Token | Hex | Usage |
+| --- | --- | --- |
+| `AppColors.background` | `#F6F7F8` | App scaffold (off-white, never pure `#FFFFFF`) |
+| `AppColors.surface` | `#FFFFFF` | Bottom nav, primary surface, cards |
+| `AppColors.surface2` | `#F1F2F4` | Inputs, raised rows, segmented track |
+| `AppColors.surface3` | `#E6E8EC` | Secondary controls and chips |
+| `AppColors.border` | `#E2E4E9` | Default borders and dividers |
+| `AppColors.borderSubtle` | `rgba(14,15,17,0.06)` | Low-emphasis separators |
+
+### Text (light)
+
+| Token | Hex | Usage |
+| --- | --- | --- |
+| `AppColors.textPrimary` | `#0E0F11` | Primary labels and content |
+| `AppColors.textSecondary` | `#5A5F6B` | Secondary copy and metadata |
+| `AppColors.textTertiary` | `#9AA0A6` | Disabled, inactive, quiet hints |
+
+### Status and Category Colors (light)
+
+Status hues shift slightly deeper than their dark-mode counterparts so they hold contrast against white surfaces. `*Dim` tokens become pale tints (used for status pills, active nav pill, selected segments).
+
+| Token | Hex | Usage |
+| --- | --- | --- |
+| `AppColors.green` | `#22C55E` | Primary action, in-stock, active nav |
+| `AppColors.greenInk` | `#15803D` | Text/icon color on `greenDim` surfaces |
+| `AppColors.greenDim` | `#DCFCE7` | Green tinted background |
+| `AppColors.greenBorder` | `#BBF7D0` | Green focused/selected border |
+| `AppColors.amber` | `#D97706` | Low stock or warning |
+| `AppColors.amberInk` | `#92400E` | Text on `amberDim` |
+| `AppColors.amberDim` | `#FEF3C7` | Amber tinted background |
+| `AppColors.red` | `#DC2626` | Missing, destructive, error |
+| `AppColors.redInk` | `#991B1B` | Text on `redDim` |
+| `AppColors.redDim` | `#FEE2E2` | Red tinted background |
+| `AppColors.blue` | `#2563EB` | Dairy/category accent |
+| `AppColors.blueDim` | `#DBEAFE` | Blue tinted background |
+| `AppColors.purple` | `#7C3AED` | Spice/secondary accent, AI affordances |
+| `AppColors.purpleDim` | `#EDE9FE` | Purple tinted background |
+| `AppColors.purpleBorder` | `#DDD6FE` | Purple focused/selected border |
+| `AppColors.teal` | `#0D9488` | Custom/other accent |
+| `AppColors.tealDim` | `#CCFBF1` | Teal tinted background |
+
+### Light-Mode Rules
+
+- The primary FAB stays vivid green (`#22C55E`) with dark ink (`#062014`) and the same green-tinted shadow — it's the one element that reads identically across modes.
+- Status pills in light mode pair a `*Dim` background with the matching `*Ink` text token. Never put `AppColors.red` text on `AppColors.background` — it vibrates; use `redInk` on `redDim`.
+- Cards and rows sit on `surface` (`#FFFFFF`) **with** a 1px `border` outline. Do not rely on shadows alone to separate cards from the scaffold; the contrast between `background` and `surface` is intentionally subtle.
+- The active bottom-nav pill uses `greenDim` (not a solid green) with `green` icon + label, matching dark mode's structure.
+- Floating labels on focused inputs use `greenInk` on `surface` — not `green` — so they remain readable when the label sits in front of the field.
+- The destructive "Clear All Data" surface uses `redDim` background + `#FCA5A5` border + `red` icon/heading + `redInk` body copy. Apply the same recipe to any future destructive surfaces.
+- Do not introduce new light-only tokens. If you find yourself needing one, the dark theme is probably missing a counterpart — add the pair together.
+
+### Theming Rules (additions)
+
+- `AppTheme.light` is exposed alongside `AppTheme.dark`; `MaterialApp` selects based on the user's `Appearance` setting (Light / Dark / System).
+- `ColorScheme.primary` remains green in both modes; `onPrimary` is `#062014` in light, `#0E0F11` in dark.
+- Inputs use `surface2` fill, `border` outline, and `green` focused border in both modes.
+- Bottom navigation surface is `surface` (white) in light, dark surface in dark; selected color is `green` in both.
 
 ## Typography
 
@@ -148,7 +212,7 @@ Keep item names, quantities, and actions visually close together. A pantry app t
 
 ## Theming Rules
 
-- `AppTheme.dark` is the active app theme.
+- `AppTheme.dark` and `AppTheme.light` are both registered; the active theme follows the user's Appearance setting
 - `ColorScheme.primary` is green.
 - `ColorScheme.secondary` is purple.
 - Inputs use `surface2`, border `border`, and focused border `green`.
