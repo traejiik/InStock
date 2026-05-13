@@ -21,6 +21,7 @@ class RecipeReviewScreen extends ConsumerStatefulWidget {
 class _RecipeReviewScreenState extends ConsumerState<RecipeReviewScreen> {
   late final TextEditingController _titleCtrl;
   late final TextEditingController _cookTimeCtrl;
+  late final TextEditingController _notesCtrl;
 
   // Used to force IngredientEditRow reinit when metric conversion changes
   int _metricRevision = 0;
@@ -33,6 +34,7 @@ class _RecipeReviewScreenState extends ConsumerState<RecipeReviewScreen> {
     _cookTimeCtrl = TextEditingController(
       text: widget.parsed.cookTimeMinutes?.toString() ?? '',
     );
+    _notesCtrl = TextEditingController(text: widget.parsed.notes ?? '');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(recipeFormProvider.notifier).loadFromParsed(widget.parsed);
     });
@@ -42,6 +44,7 @@ class _RecipeReviewScreenState extends ConsumerState<RecipeReviewScreen> {
   void dispose() {
     _titleCtrl.dispose();
     _cookTimeCtrl.dispose();
+    _notesCtrl.dispose();
     super.dispose();
   }
 
@@ -84,6 +87,7 @@ class _RecipeReviewScreenState extends ConsumerState<RecipeReviewScreen> {
     ref.read(recipeFormProvider.notifier).updateTitle(title);
     final cookMins = int.tryParse(_cookTimeCtrl.text);
     ref.read(recipeFormProvider.notifier).updateCookTime(cookMins);
+    ref.read(recipeFormProvider.notifier).updateNotes(_notesCtrl.text);
     ref.read(recipeFormProvider.notifier).save();
     context.go('/recipes');
   }
@@ -250,6 +254,34 @@ class _RecipeReviewScreenState extends ConsumerState<RecipeReviewScreen> {
                     label: '+ Add Step',
                     onTap: () =>
                         ref.read(recipeFormProvider.notifier).addStep(),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Notes section
+                  Text('Notes', style: AppTextStyles.headingSm),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _notesCtrl,
+                    maxLines: null,
+                    minLines: 4,
+                    style: AppTextStyles.bodyMd,
+                    decoration: InputDecoration(
+                      labelText: 'Notes',
+                      hintText: 'Add recipe notes...',
+                      alignLabelWithHint: true,
+                      filled: true,
+                      fillColor: colors.surface2,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: colors.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: colors.green),
+                      ),
+                    ),
+                    onChanged: (text) =>
+                        ref.read(recipeFormProvider.notifier).updateNotes(text),
                   ),
                 ],
               ),

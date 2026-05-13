@@ -68,6 +68,7 @@ class ParsedRecipe {
   final int baseServings;
   final List<ParsedIngredient> ingredients;
   final List<String> steps;
+  final String? notes;
   final String? sourceUrl;
   final List<ParsedIngredientSection> ingredientSections;
   final List<ParsedInstructionSection> instructionSections;
@@ -79,6 +80,7 @@ class ParsedRecipe {
     required this.baseServings,
     required this.ingredients,
     required this.steps,
+    this.notes,
     this.sourceUrl,
     this.ingredientSections = const [],
     this.instructionSections = const [],
@@ -91,6 +93,7 @@ class ParsedRecipe {
     int? baseServings,
     List<ParsedIngredient>? ingredients,
     List<String>? steps,
+    String? notes,
     String? sourceUrl,
     List<ParsedIngredientSection>? ingredientSections,
     List<ParsedInstructionSection>? instructionSections,
@@ -103,6 +106,7 @@ class ParsedRecipe {
       baseServings: baseServings ?? this.baseServings,
       ingredients: nextIngredients,
       steps: steps ?? this.steps,
+      notes: notes ?? this.notes,
       sourceUrl: sourceUrl ?? this.sourceUrl,
       ingredientSections:
           ingredientSections ?? _replaceSectionIngredients(nextIngredients),
@@ -344,10 +348,19 @@ class RecipeScraper {
         final ingredients = ingredientSections
             .expand((section) => section.ingredients)
             .toList(growable: false);
-        final instructionSections = _extractInstructionSections(
+        final jsonInstructionSections = _extractInstructionSections(
           recipe['recipeInstructions'],
         );
+        final visibleInstructionSections = _extractVisibleInstructionSections(
+          doc,
+        );
+        final instructionSections = _chooseInstructionSections([
+          ...jsonInstructionSections,
+          ...visibleInstructionSections,
+        ]);
         final steps = _chooseSteps(instructionSections);
+        final notes =
+            _extractRecipeNotesFromJson(recipe) ?? _extractVisibleNotes(doc);
 
         return ParsedRecipe(
           title: title,
@@ -358,6 +371,7 @@ class RecipeScraper {
           baseServings: _parseServings(recipe['recipeYield']),
           ingredients: ingredients,
           steps: steps,
+          notes: notes,
           sourceUrl: url,
           ingredientSections: ingredientSections,
           instructionSections: instructionSections,
@@ -548,22 +562,50 @@ class RecipeScraper {
     return _cleanStepText('$name - $text');
   }
 
-  static List<String> _chooseSteps(List<ParsedInstructionSection> sections) {
+  static List<ParsedInstructionSection> _chooseInstructionSections(
+    List<ParsedInstructionSection> sections,
+  ) {
     if (sections.isEmpty) return const [];
-    final fullRecipe = sections.where((section) {
-      final label = section.label?.toLowerCase() ?? '';
-      return label.contains('full recipe') || label == 'method';
-    }).toList();
-    final source = fullRecipe.isNotEmpty ? fullRecipe : sections;
-    return source.expand((section) => section.steps).toList(growable: false);
+    final useful = sections.where((section) => section.steps.isNotEmpty);
+    if (useful.isEmpty) return const [];
+
+    final best = useful.reduce((a, b) {
+      return _instructionScore(b) > _instructionScore(a) ? b : a;
+    });
+    return _instructionScore(best) <= 0 ? const [] : [best];
   }
 
-  static String _cleanStepText(String text) =>
-      _cleanRawText(text).replaceAll(RegExp(r'^\d+[\.)]\s*'), '').trim();
+  static int _instructionScore(ParsedInstructionSection section) {
+    final label = section.label?.toLowerCase() ?? '';
+    if (RegExp(
+      r'\b(abbreviated|summary|quick|overview|short)\b',
+    ).hasMatch(label)) {
+      return -100000;
+    }
+
+    var score = section.steps.length * 100;
+    score += section.steps.fold<int>(0, (sum, step) => sum + step.length);
+    if (label.contains('full recipe')) score += 1000;
+    if (label == 'method' ||
+        label.contains('method') ||
+        label.contains('instruction')) {
+      score += 500;
+    }
+    return score;
+  }
+
+  static List<String> _chooseSteps(List<ParsedInstructionSection> sections) =>
+      sections.expand((section) => section.steps).toList(growable: false);
+
+  static String _cleanStepText(String text) => _decodeHtmlEntities(
+    _cleanRawText(text).replaceAll(RegExp(r'^\d+[\.)]\s*'), ''),
+  ).trim();
 
   static String? _cleanNullableText(dynamic value) {
     final text = value?.toString().trim();
-    return text == null || text.isEmpty ? null : _cleanRawText(text);
+    return text == null || text.isEmpty
+        ? null
+        : _decodeHtmlEntities(_cleanRawText(text));
   }
 
   static ParsedRecipe? _tryHeuristic(Document doc, String url) {
@@ -602,24 +644,10 @@ class RecipeScraper {
         .expand((section) => section.ingredients)
         .toList(growable: false);
 
-    var steps = <String>[];
-    for (final list in doc.querySelectorAll('ol, ul')) {
-      final cls = list.className.toLowerCase();
-      final id = list.id.toLowerCase();
-      if (cls.contains('instruction') ||
-          cls.contains('method') ||
-          cls.contains('step') ||
-          id.contains('instruction') ||
-          id.contains('method') ||
-          id.contains('step')) {
-        steps = list
-            .querySelectorAll('li')
-            .map((li) => _cleanStepText(li.text))
-            .where((s) => s.isNotEmpty)
-            .toList();
-        if (steps.isNotEmpty) break;
-      }
-    }
+    final instructionSections = _chooseInstructionSections(
+      _extractVisibleInstructionSections(doc),
+    );
+    final steps = _chooseSteps(instructionSections);
 
     return ParsedRecipe(
       title: title.trim(),
@@ -628,13 +656,138 @@ class RecipeScraper {
       baseServings: 2,
       ingredients: ingredients,
       steps: steps,
+      notes: _extractVisibleNotes(doc),
       sourceUrl: url,
       ingredientSections: ingredientSections,
-      instructionSections: steps.isEmpty
-          ? const []
-          : [ParsedInstructionSection(steps: steps)],
+      instructionSections: instructionSections,
     );
   }
+
+  static List<ParsedInstructionSection> _extractVisibleInstructionSections(
+    Document doc,
+  ) {
+    final sections = <ParsedInstructionSection>[];
+    final seen = <String>{};
+
+    for (final element in doc.querySelectorAll('section, div, ol, ul')) {
+      if (!_looksLikeInstructionElement(element)) continue;
+      final steps = _extractVisibleStepTexts(element);
+      if (steps.isEmpty) continue;
+
+      final key = steps.join('\n').toLowerCase();
+      if (!seen.add(key)) continue;
+      sections.add(
+        ParsedInstructionSection(
+          label: _visibleSectionLabel(element),
+          steps: steps,
+        ),
+      );
+    }
+
+    return sections;
+  }
+
+  static bool _looksLikeInstructionElement(Element element) {
+    final token = '${element.id} ${element.className}'.toLowerCase();
+    if (RegExp(
+      r'\b(ingredient|nutrition|comment|review|note|notes)\b',
+    ).hasMatch(token)) {
+      return false;
+    }
+    return token.contains('instruction') ||
+        token.contains('direction') ||
+        token.contains('method') ||
+        token.contains('step');
+  }
+
+  static List<String> _extractVisibleStepTexts(Element element) {
+    final listItems = element.localName == 'ol' || element.localName == 'ul'
+        ? element.children.where((child) => child.localName == 'li')
+        : element.querySelectorAll('li');
+
+    return listItems
+        .map((li) => _cleanStepText(li.text))
+        .where((text) => text.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  static String? _visibleSectionLabel(Element element) {
+    final heading = element.querySelector('h1,h2,h3,h4,h5,h6')?.text;
+    final aria = element.attributes['aria-label'];
+    final text = heading ?? aria;
+    final cleaned = _cleanNullableText(text);
+    return cleaned == null || cleaned.isEmpty ? null : cleaned;
+  }
+
+  static String? _extractRecipeNotesFromJson(Map<String, dynamic> recipe) {
+    const keys = ['notes', 'recipeNotes', 'recipeNote'];
+    final parts = <String>[];
+    for (final key in keys) {
+      final value = recipe[key];
+      if (value == null) continue;
+      if (value is List) {
+        parts.addAll(
+          value
+              .map((item) => _cleanNoteText(item.toString()))
+              .where((note) => note.isNotEmpty),
+        );
+      } else {
+        final note = _cleanNoteText(value.toString());
+        if (note.isNotEmpty) parts.add(note);
+      }
+    }
+    return parts.isEmpty ? null : _dedupeLines(parts).join('\n');
+  }
+
+  static String? _extractVisibleNotes(Document doc) {
+    final parts = <String>[];
+    final seen = <String>{};
+    for (final element in doc.querySelectorAll('section, div')) {
+      final token = '${element.id} ${element.className}'.toLowerCase();
+      final hasNotesToken =
+          token.contains('recipe-notes') ||
+          token.contains('recipe_notes') ||
+          token.contains('recipe notes') ||
+          token.contains('wprm-recipe-notes') ||
+          token.contains('tasty-recipes-notes') ||
+          RegExp(r'(^|\s)notes?($|\s)').hasMatch(token);
+      if (!hasNotesToken) continue;
+      if (RegExp(
+        r'\b(ingredient|instruction|nutrition|comment|review)\b',
+      ).hasMatch(token)) {
+        continue;
+      }
+
+      final notes = _extractVisibleNoteLines(element);
+      final key = notes.join('\n').toLowerCase();
+      if (notes.isEmpty || !seen.add(key)) continue;
+      parts.addAll(notes);
+    }
+    final deduped = _dedupeLines(parts);
+    return deduped.isEmpty ? null : deduped.join('\n');
+  }
+
+  static List<String> _extractVisibleNoteLines(Element element) {
+    final children = element.querySelectorAll('p, li');
+    final source = children.isEmpty ? [element] : children;
+    return source
+        .map((node) => _cleanNoteText(node.text))
+        .where((note) => note.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  static List<String> _dedupeLines(List<String> lines) {
+    final seen = <String>{};
+    final result = <String>[];
+    for (final line in lines) {
+      final key = line.toLowerCase();
+      if (seen.add(key)) result.add(line);
+    }
+    return result;
+  }
+
+  static String _decodeHtmlEntities(String text) =>
+      html_parser.parseFragment(text).text ?? text;
 
   static ParsedIngredient _parseIngredientString(String raw) {
     final rawText = _cleanRawText(raw);

@@ -127,6 +127,36 @@ void main() {
       expect(parsed.instructionSections.map((s) => s.label), ['Method']);
     });
 
+    test('prefers richer visible instructions over terse structured steps', () {
+      final parsed = RecipeScraper.parseHtml(
+        _visibleInstructionsHtml,
+        sourceUrl: 'https://example.com/rich-steps',
+      );
+
+      expect(parsed.steps, [
+        "Whisk the sauce ingredients together until it's glossy and smooth.",
+        'Sear the chicken until deep golden, then simmer it gently in the sauce for 8 minutes.',
+        'Rest the chicken for 5 minutes before slicing and serving with parsley.',
+      ]);
+      expect(parsed.steps, isNot(contains('Cook chicken.')));
+      expect(parsed.notes, contains('Leftovers keep for 3 days'));
+      expect(parsed.notes, contains('Use low-sodium stock if skipping wine'));
+      expect(parsed.steps.join(' '), isNot(contains('Leftovers keep')));
+    });
+
+    test('ignores abbreviated visible instructions when full steps exist', () {
+      final parsed = RecipeScraper.parseHtml(
+        _visibleAbbreviatedAndFullHtml,
+        sourceUrl: 'https://example.com/full-steps',
+      );
+
+      expect(parsed.steps, [
+        'Season the chicken on both sides with the spice mix.',
+        'Cook the chicken in butter until golden and cooked through.',
+      ]);
+      expect(parsed.steps, isNot(contains('Season, cook, serve.')));
+    });
+
     test('does not convert tiny spoon measures to milliliters', () {
       final parsed = RecipeScraper.parseHtml(
         _recipeTinStyleHtml,
@@ -192,6 +222,64 @@ const _recipeTinStyleHtml = '''
 </script>
 </head>
 <body></body>
+</html>
+''';
+
+const _visibleInstructionsHtml = '''
+<!doctype html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": "Rich Step Chicken",
+  "recipeIngredient": ["2 chicken breasts", "1 tbsp parsley"],
+  "recipeInstructions": ["Cook chicken."]
+}
+</script>
+</head>
+<body>
+  <ol class="wprm-recipe-instructions">
+    <li>Whisk the sauce ingredients together until it&#39;s glossy and smooth.</li>
+    <li>Sear the chicken until deep golden, then simmer it gently in the sauce for 8 minutes.</li>
+    <li>Rest the chicken for 5 minutes before slicing and serving with parsley.</li>
+  </ol>
+  <div class="wprm-recipe-notes">
+    <p>Leftovers keep for 3 days.</p>
+    <p>Use low-sodium stock if skipping wine.</p>
+  </div>
+</body>
+</html>
+''';
+
+const _visibleAbbreviatedAndFullHtml = '''
+<!doctype html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": "Full Step Chicken",
+  "recipeIngredient": ["2 chicken breasts", "1 tbsp parsley"],
+  "recipeInstructions": ["Cook chicken."]
+}
+</script>
+</head>
+<body>
+  <section class="recipe-instructions">
+    <h3>Abbreviated</h3>
+    <ol><li>Season, cook, serve.</li></ol>
+  </section>
+  <section class="recipe-instructions">
+    <h3>Full Recipe</h3>
+    <ol>
+      <li>Season the chicken on both sides with the spice mix.</li>
+      <li>Cook the chicken in butter until golden and cooked through.</li>
+    </ol>
+  </section>
+</body>
 </html>
 ''';
 

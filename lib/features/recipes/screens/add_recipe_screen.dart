@@ -129,6 +129,7 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
   final _servingsCtrl = TextEditingController(text: '2');
   final _timeCtrl = TextEditingController();
   final _sourceCtrl = TextEditingController();
+  final _notesCtrl = TextEditingController();
   final List<TextEditingController> _ingNameCtrl = [TextEditingController()];
   final List<TextEditingController> _ingQtyCtrl = [
     TextEditingController(text: '1'),
@@ -153,6 +154,7 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
     _servingsCtrl.dispose();
     _timeCtrl.dispose();
     _sourceCtrl.dispose();
+    _notesCtrl.dispose();
     for (final c in _ingNameCtrl) {
       c.dispose();
     }
@@ -230,6 +232,7 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
       sourceUrl: _sourceCtrl.text.trim().isEmpty
           ? null
           : _sourceCtrl.text.trim(),
+      notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
     );
 
     context.go('/recipes');
@@ -401,6 +404,22 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
         _AddRow(
           label: '+ Add Step',
           onTap: () => setState(() => _stepCtrl.add(TextEditingController())),
+        ),
+        const SizedBox(height: 20),
+        Text('Notes', style: AppTextStyles.headingSm),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _notesCtrl,
+          maxLines: null,
+          minLines: 4,
+          style: AppTextStyles.bodyMd,
+          decoration: const InputDecoration(
+            labelText: 'Notes',
+            hintText: 'Add recipe notes...',
+            alignLabelWithHint: true,
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          ),
         ),
         const SizedBox(height: 24),
         _PrimaryButton(label: 'Save Recipe', onTap: _save),

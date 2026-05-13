@@ -1,11 +1,16 @@
+import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:instock/data/database/app_database.dart';
 import 'package:instock/data/database/drift_database.dart';
 import 'package:instock/data/models/app_models.dart';
 import 'package:instock/core/theme/app_theme.dart';
 import 'package:instock/features/recipes/screens/add_recipe_screen.dart';
+import 'package:instock/features/recipes/screens/recipe_detail_screen.dart';
+import 'package:instock/features/recipes/screens/recipe_review_screen.dart';
+import 'package:instock/features/recipes/services/recipe_scraper.dart';
 import 'package:instock/features/recipes/widgets/recipe_card.dart';
 import 'package:instock/features/shopping/providers/shopping_provider.dart';
 import 'package:instock/features/shopping/screens/shopping_screen.dart';
@@ -13,6 +18,10 @@ import 'package:instock/shared/widgets/category_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  setUpAll(() {
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  });
+
   testWidgets('RecipeCardSm lays out inside a row with unbounded height', (
     tester,
   ) async {
@@ -148,4 +157,152 @@ void main() {
 
     expect(importButton().onTap, isNotNull);
   });
+
+  testWidgets('Recipe review displays imported notes after instructions', (
+    tester,
+  ) async {
+    final db = AppDatabase(db: InStockDriftDb.memory());
+    await db.init();
+    await db.clearAllData();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWith((ref) => db)],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          home: RecipeReviewScreen(parsed: _parsedRecipeWithNotes()),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Instructions'), findsOneWidget);
+    expect(find.text('Notes'), findsWidgets);
+    expect(find.textContaining('Leftovers keep for 3 days'), findsOneWidget);
+  });
+
+  testWidgets('Recipe review saves edited notes', (tester) async {
+    final db = AppDatabase(db: InStockDriftDb.memory());
+    await db.init();
+    await db.clearAllData();
+
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) =>
+              RecipeReviewScreen(parsed: _parsedRecipeWithNotes()),
+        ),
+        GoRoute(
+          path: '/recipes',
+          builder: (context, state) => const Scaffold(body: Text('Recipes')),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWith((ref) => db)],
+        child: MaterialApp.router(
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final notesField = find.widgetWithText(TextField, 'Notes');
+    expect(notesField, findsOneWidget);
+
+    await tester.enterText(notesField, 'Rest sauce before serving.');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(db.recipes.single.notes, 'Rest sauce before serving.');
+  });
+
+  testWidgets('Recipe detail shows notes only when present', (tester) async {
+    final db = AppDatabase(db: InStockDriftDb.memory());
+    await db.init();
+    await db.clearAllData();
+
+    final notedId = db.saveRecipe(
+      title: 'Noted Chicken',
+      servings: 2,
+      cookMinutes: 15,
+      difficulty: 'Easy',
+      instructions: const ['Cook the chicken.'],
+      notes: 'Leftovers keep for 3 days.',
+      ingredients: const [
+        (
+          name: 'Chicken breast',
+          quantity: 2,
+          unit: 'pcs',
+          isOptional: false,
+          notes: null,
+        ),
+      ],
+    );
+    final plainId = db.saveRecipe(
+      title: 'Plain Chicken',
+      servings: 2,
+      cookMinutes: 15,
+      difficulty: 'Easy',
+      instructions: const ['Cook the chicken.'],
+      ingredients: const [
+        (
+          name: 'Chicken breast',
+          quantity: 2,
+          unit: 'pcs',
+          isOptional: false,
+          notes: null,
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWith((ref) => db)],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          home: RecipeDetailScreen(recipeId: notedId),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -800));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Notes'), findsOneWidget);
+    expect(find.text('Leftovers keep for 3 days.'), findsOneWidget);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWith((ref) => db)],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          home: RecipeDetailScreen(recipeId: plainId),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Notes'), findsNothing);
+  });
 }
+
+ParsedRecipe _parsedRecipeWithNotes() => const ParsedRecipe(
+  title: 'Noted Chicken',
+  baseServings: 2,
+  ingredients: [
+    ParsedIngredient(name: 'Chicken breast', quantity: 2, unit: 'pcs'),
+  ],
+  steps: ['Cook the chicken until golden.'],
+  notes: 'Leftovers keep for 3 days.',
+);

@@ -117,4 +117,79 @@ void main() {
       },
     );
   });
+
+  group('Recipe notes', () {
+    late AppDatabase db;
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      db = AppDatabase(db: InStockDriftDb.memory());
+      await db.init();
+      await db.clearAllData();
+    });
+
+    test('serializes and deserializes nullable recipe notes', () {
+      final createdAt = DateTime(2026, 5, 13);
+      final recipe = Recipe(
+        id: 'recipe-notes',
+        title: 'Notes Recipe',
+        emoji: '🍽️',
+        instructions: const ['Cook it.'],
+        servings: 2,
+        cookMinutes: 10,
+        difficulty: 'Easy',
+        sourceUrl: 'https://example.com/recipe',
+        notes: 'Leftovers keep for 3 days.',
+        tags: const [],
+        createdAt: createdAt,
+        updatedAt: createdAt,
+      );
+
+      final decoded = Recipe.fromJson(recipe.toJson());
+
+      expect(decoded.notes, 'Leftovers keep for 3 days.');
+    });
+
+    test('older serialized recipes without notes still load', () {
+      final createdAt = DateTime(2026, 5, 13);
+      final decoded = Recipe.fromJson({
+        'id': 'old-recipe',
+        'title': 'Old Recipe',
+        'emoji': '🍽️',
+        'instructions': ['Cook it.'],
+        'servings': 2,
+        'cookMinutes': 10,
+        'difficulty': 'Easy',
+        'sourceUrl': null,
+        'tags': <String>[],
+        'createdAt': createdAt.millisecondsSinceEpoch,
+        'updatedAt': createdAt.millisecondsSinceEpoch,
+        'deletedAt': null,
+      });
+
+      expect(decoded.notes, isNull);
+    });
+
+    test('saveRecipe stores recipe-level notes', () {
+      final id = db.saveRecipe(
+        title: 'Noted Chicken',
+        servings: 2,
+        cookMinutes: 15,
+        difficulty: 'Easy',
+        instructions: const ['Cook the chicken.'],
+        notes: 'Do not overcook. Rest before slicing.',
+        ingredients: const [
+          (
+            name: 'Chicken breast',
+            quantity: 2,
+            unit: 'pcs',
+            isOptional: false,
+            notes: null,
+          ),
+        ],
+      );
+
+      expect(db.recipeById(id)?.notes, 'Do not overcook. Rest before slicing.');
+    });
+  });
 }

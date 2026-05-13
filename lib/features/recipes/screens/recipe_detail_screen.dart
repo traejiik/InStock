@@ -182,7 +182,12 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 10)),
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    0,
+                    20,
+                    recipe.notes?.trim().isNotEmpty == true ? 24 : 100,
+                  ),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (ctx, i) => StepRow(
@@ -193,6 +198,21 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                     ),
                   ),
                 ),
+                if (recipe.notes?.trim().isNotEmpty == true) ...[
+                  const SliverPadding(
+                    padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                    sliver: SliverToBoxAdapter(
+                      child: _SectionHeader(title: 'Notes', count: 1),
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                    sliver: SliverToBoxAdapter(
+                      child: _NotesCard(notes: recipe.notes!.trim()),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -410,6 +430,27 @@ class _HeroArea extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _NotesCard extends StatelessWidget {
+  final String notes;
+
+  const _NotesCard({required this.notes});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: colors.border),
+      ),
+      child: Text(notes, style: AppTextStyles.bodyMd),
     );
   }
 }

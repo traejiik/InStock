@@ -46,6 +46,7 @@ class Recipes extends Table {
   IntColumn get cookMinutes => integer()();
   TextColumn get difficulty => text()();
   TextColumn get sourceUrl => text().nullable()();
+  TextColumn get notes => text().nullable()();
   TextColumn get tags => text()(); // JSON-encoded List<String>
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();
@@ -104,11 +105,15 @@ class InStockDriftDb extends _$InStockDriftDb {
   InStockDriftDb.memory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
-    onUpgrade: (m, from, to) async {},
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.addColumn(recipes, recipes.notes);
+      }
+    },
   );
 }

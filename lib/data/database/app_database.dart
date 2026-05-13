@@ -592,6 +592,7 @@ class AppDatabase extends ChangeNotifier {
     ingredients,
     String? sourceUrl,
     String? imageUrl,
+    String? notes,
     String? emoji,
   }) {
     final now = DateTime.now();
@@ -642,6 +643,7 @@ class AppDatabase extends ChangeNotifier {
       cookMinutes: cookMinutes,
       difficulty: difficulty,
       sourceUrl: sourceUrl,
+      notes: notes,
       tags: [],
       createdAt: now,
       updatedAt: now,
@@ -1356,6 +1358,7 @@ class AppDatabase extends ChangeNotifier {
     cookMinutes: row.cookMinutes,
     difficulty: row.difficulty,
     sourceUrl: row.sourceUrl,
+    notes: row.notes,
     tags: List<String>.from(jsonDecode(row.tags) as List),
     createdAt: DateTime.fromMillisecondsSinceEpoch(row.createdAt),
     updatedAt: DateTime.fromMillisecondsSinceEpoch(row.updatedAt),
@@ -1420,6 +1423,7 @@ class AppDatabase extends ChangeNotifier {
     cookMinutes: r.cookMinutes,
     difficulty: r.difficulty,
     sourceUrl: Value(r.sourceUrl),
+    notes: Value(r.notes),
     tags: jsonEncode(r.tags),
     createdAt: r.createdAt.millisecondsSinceEpoch,
     updatedAt: r.updatedAt.millisecondsSinceEpoch,

@@ -43,6 +43,7 @@ class RecipeFormState {
   final int baseServings;
   final List<IngredientFormRow> ingredients;
   final List<String> steps;
+  final String notes;
   final String? sourceUrl;
   final bool convertedToMetric;
 
@@ -53,6 +54,7 @@ class RecipeFormState {
     this.baseServings = 2,
     this.ingredients = const [],
     this.steps = const [],
+    this.notes = '',
     this.sourceUrl,
     this.convertedToMetric = false,
   });
@@ -64,6 +66,7 @@ class RecipeFormState {
     int? baseServings,
     List<IngredientFormRow>? ingredients,
     List<String>? steps,
+    String? notes,
     String? sourceUrl,
     bool? convertedToMetric,
   }) => RecipeFormState(
@@ -73,6 +76,7 @@ class RecipeFormState {
     baseServings: baseServings ?? this.baseServings,
     ingredients: ingredients ?? this.ingredients,
     steps: steps ?? this.steps,
+    notes: notes ?? this.notes,
     sourceUrl: sourceUrl ?? this.sourceUrl,
     convertedToMetric: convertedToMetric ?? this.convertedToMetric,
   );
@@ -117,6 +121,7 @@ class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
       baseServings: parsed.baseServings,
       ingredients: parsedRows,
       steps: List<String>.from(parsed.steps),
+      notes: parsed.notes ?? '',
       sourceUrl: parsed.sourceUrl,
       convertedToMetric: false,
     );
@@ -176,6 +181,8 @@ class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
     state = state.copyWith(steps: list);
   }
 
+  void updateNotes(String notes) => state = state.copyWith(notes: notes);
+
   void applyMetricConversion() {
     if (state.convertedToMetric) return;
     final converted = state.ingredients.map((row) {
@@ -224,6 +231,7 @@ class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
       ingredients: ingredients,
       sourceUrl: state.sourceUrl,
       imageUrl: state.imageUrl,
+      notes: state.notes.trim().isEmpty ? null : state.notes.trim(),
     );
   }
 }

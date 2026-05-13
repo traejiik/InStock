@@ -163,6 +163,7 @@ class Recipe {
   final int cookMinutes;
   final String difficulty;
   final String? sourceUrl;
+  final String? notes;
   final List<String> tags;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -178,6 +179,7 @@ class Recipe {
     required this.cookMinutes,
     required this.difficulty,
     this.sourceUrl,
+    this.notes,
     required this.tags,
     required this.createdAt,
     required this.updatedAt,
@@ -193,6 +195,7 @@ class Recipe {
     int? cookMinutes,
     String? difficulty,
     String? sourceUrl,
+    String? notes,
     List<String>? tags,
     DateTime? updatedAt,
     DateTime? deletedAt,
@@ -206,6 +209,7 @@ class Recipe {
     cookMinutes: cookMinutes ?? this.cookMinutes,
     difficulty: difficulty ?? this.difficulty,
     sourceUrl: sourceUrl ?? this.sourceUrl,
+    notes: notes ?? this.notes,
     tags: tags ?? this.tags,
     createdAt: createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -222,6 +226,7 @@ class Recipe {
     'cookMinutes': cookMinutes,
     'difficulty': difficulty,
     'sourceUrl': sourceUrl,
+    'notes': notes,
     'tags': tags,
     'createdAt': createdAt.millisecondsSinceEpoch,
     'updatedAt': updatedAt.millisecondsSinceEpoch,
@@ -238,6 +243,7 @@ class Recipe {
     cookMinutes: j['cookMinutes'] as int? ?? 30,
     difficulty: j['difficulty'] as String? ?? 'Medium',
     sourceUrl: j['sourceUrl'] as String?,
+    notes: j['notes'] as String?,
     tags: List<String>.from(j['tags'] as List),
     createdAt: DateTime.fromMillisecondsSinceEpoch(j['createdAt'] as int),
     updatedAt: DateTime.fromMillisecondsSinceEpoch(j['updatedAt'] as int),

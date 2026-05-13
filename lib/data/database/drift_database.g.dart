@@ -1049,6 +1049,15 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, RecipeData> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _tagsMeta = const VerificationMeta('tags');
   @override
   late final GeneratedColumn<String> tags = GeneratedColumn<String>(
@@ -1102,6 +1111,7 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, RecipeData> {
     cookMinutes,
     difficulty,
     sourceUrl,
+    notes,
     tags,
     createdAt,
     updatedAt,
@@ -1190,6 +1200,12 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, RecipeData> {
         sourceUrl.isAcceptableOrUnknown(data['source_url']!, _sourceUrlMeta),
       );
     }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
     if (data.containsKey('tags')) {
       context.handle(
         _tagsMeta,
@@ -1265,6 +1281,10 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, RecipeData> {
         DriftSqlType.string,
         data['${effectivePrefix}source_url'],
       ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
       tags: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}tags'],
@@ -1300,6 +1320,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
   final int cookMinutes;
   final String difficulty;
   final String? sourceUrl;
+  final String? notes;
   final String tags;
   final int createdAt;
   final int updatedAt;
@@ -1314,6 +1335,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
     required this.cookMinutes,
     required this.difficulty,
     this.sourceUrl,
+    this.notes,
     required this.tags,
     required this.createdAt,
     required this.updatedAt,
@@ -1334,6 +1356,9 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
     map['difficulty'] = Variable<String>(difficulty);
     if (!nullToAbsent || sourceUrl != null) {
       map['source_url'] = Variable<String>(sourceUrl);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
     }
     map['tags'] = Variable<String>(tags);
     map['created_at'] = Variable<int>(createdAt);
@@ -1359,6 +1384,9 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
       sourceUrl: sourceUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(sourceUrl),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
       tags: Value(tags),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -1383,6 +1411,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
       cookMinutes: serializer.fromJson<int>(json['cookMinutes']),
       difficulty: serializer.fromJson<String>(json['difficulty']),
       sourceUrl: serializer.fromJson<String?>(json['sourceUrl']),
+      notes: serializer.fromJson<String?>(json['notes']),
       tags: serializer.fromJson<String>(json['tags']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
@@ -1402,6 +1431,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
       'cookMinutes': serializer.toJson<int>(cookMinutes),
       'difficulty': serializer.toJson<String>(difficulty),
       'sourceUrl': serializer.toJson<String?>(sourceUrl),
+      'notes': serializer.toJson<String?>(notes),
       'tags': serializer.toJson<String>(tags),
       'createdAt': serializer.toJson<int>(createdAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
@@ -1419,6 +1449,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
     int? cookMinutes,
     String? difficulty,
     Value<String?> sourceUrl = const Value.absent(),
+    Value<String?> notes = const Value.absent(),
     String? tags,
     int? createdAt,
     int? updatedAt,
@@ -1433,6 +1464,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
     cookMinutes: cookMinutes ?? this.cookMinutes,
     difficulty: difficulty ?? this.difficulty,
     sourceUrl: sourceUrl.present ? sourceUrl.value : this.sourceUrl,
+    notes: notes.present ? notes.value : this.notes,
     tags: tags ?? this.tags,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -1455,6 +1487,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
           ? data.difficulty.value
           : this.difficulty,
       sourceUrl: data.sourceUrl.present ? data.sourceUrl.value : this.sourceUrl,
+      notes: data.notes.present ? data.notes.value : this.notes,
       tags: data.tags.present ? data.tags.value : this.tags,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -1474,6 +1507,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
           ..write('cookMinutes: $cookMinutes, ')
           ..write('difficulty: $difficulty, ')
           ..write('sourceUrl: $sourceUrl, ')
+          ..write('notes: $notes, ')
           ..write('tags: $tags, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -1493,6 +1527,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
     cookMinutes,
     difficulty,
     sourceUrl,
+    notes,
     tags,
     createdAt,
     updatedAt,
@@ -1511,6 +1546,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
           other.cookMinutes == this.cookMinutes &&
           other.difficulty == this.difficulty &&
           other.sourceUrl == this.sourceUrl &&
+          other.notes == this.notes &&
           other.tags == this.tags &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -1527,6 +1563,7 @@ class RecipesCompanion extends UpdateCompanion<RecipeData> {
   final Value<int> cookMinutes;
   final Value<String> difficulty;
   final Value<String?> sourceUrl;
+  final Value<String?> notes;
   final Value<String> tags;
   final Value<int> createdAt;
   final Value<int> updatedAt;
@@ -1542,6 +1579,7 @@ class RecipesCompanion extends UpdateCompanion<RecipeData> {
     this.cookMinutes = const Value.absent(),
     this.difficulty = const Value.absent(),
     this.sourceUrl = const Value.absent(),
+    this.notes = const Value.absent(),
     this.tags = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -1558,6 +1596,7 @@ class RecipesCompanion extends UpdateCompanion<RecipeData> {
     required int cookMinutes,
     required String difficulty,
     this.sourceUrl = const Value.absent(),
+    this.notes = const Value.absent(),
     required String tags,
     required int createdAt,
     required int updatedAt,
@@ -1583,6 +1622,7 @@ class RecipesCompanion extends UpdateCompanion<RecipeData> {
     Expression<int>? cookMinutes,
     Expression<String>? difficulty,
     Expression<String>? sourceUrl,
+    Expression<String>? notes,
     Expression<String>? tags,
     Expression<int>? createdAt,
     Expression<int>? updatedAt,
@@ -1599,6 +1639,7 @@ class RecipesCompanion extends UpdateCompanion<RecipeData> {
       if (cookMinutes != null) 'cook_minutes': cookMinutes,
       if (difficulty != null) 'difficulty': difficulty,
       if (sourceUrl != null) 'source_url': sourceUrl,
+      if (notes != null) 'notes': notes,
       if (tags != null) 'tags': tags,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -1617,6 +1658,7 @@ class RecipesCompanion extends UpdateCompanion<RecipeData> {
     Value<int>? cookMinutes,
     Value<String>? difficulty,
     Value<String?>? sourceUrl,
+    Value<String?>? notes,
     Value<String>? tags,
     Value<int>? createdAt,
     Value<int>? updatedAt,
@@ -1633,6 +1675,7 @@ class RecipesCompanion extends UpdateCompanion<RecipeData> {
       cookMinutes: cookMinutes ?? this.cookMinutes,
       difficulty: difficulty ?? this.difficulty,
       sourceUrl: sourceUrl ?? this.sourceUrl,
+      notes: notes ?? this.notes,
       tags: tags ?? this.tags,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -1671,6 +1714,9 @@ class RecipesCompanion extends UpdateCompanion<RecipeData> {
     if (sourceUrl.present) {
       map['source_url'] = Variable<String>(sourceUrl.value);
     }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
     if (tags.present) {
       map['tags'] = Variable<String>(tags.value);
     }
@@ -1701,6 +1747,7 @@ class RecipesCompanion extends UpdateCompanion<RecipeData> {
           ..write('cookMinutes: $cookMinutes, ')
           ..write('difficulty: $difficulty, ')
           ..write('sourceUrl: $sourceUrl, ')
+          ..write('notes: $notes, ')
           ..write('tags: $tags, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -3223,6 +3270,7 @@ typedef $$RecipesTableCreateCompanionBuilder =
       required int cookMinutes,
       required String difficulty,
       Value<String?> sourceUrl,
+      Value<String?> notes,
       required String tags,
       required int createdAt,
       required int updatedAt,
@@ -3240,6 +3288,7 @@ typedef $$RecipesTableUpdateCompanionBuilder =
       Value<int> cookMinutes,
       Value<String> difficulty,
       Value<String?> sourceUrl,
+      Value<String?> notes,
       Value<String> tags,
       Value<int> createdAt,
       Value<int> updatedAt,
@@ -3298,6 +3347,11 @@ class $$RecipesTableFilterComposer
 
   ColumnFilters<String> get sourceUrl => $composableBuilder(
     column: $table.sourceUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3376,6 +3430,11 @@ class $$RecipesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get tags => $composableBuilder(
     column: $table.tags,
     builder: (column) => ColumnOrderings(column),
@@ -3439,6 +3498,9 @@ class $$RecipesTableAnnotationComposer
   GeneratedColumn<String> get sourceUrl =>
       $composableBuilder(column: $table.sourceUrl, builder: (column) => column);
 
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
   GeneratedColumn<String> get tags =>
       $composableBuilder(column: $table.tags, builder: (column) => column);
 
@@ -3492,6 +3554,7 @@ class $$RecipesTableTableManager
                 Value<int> cookMinutes = const Value.absent(),
                 Value<String> difficulty = const Value.absent(),
                 Value<String?> sourceUrl = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
                 Value<String> tags = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
@@ -3507,6 +3570,7 @@ class $$RecipesTableTableManager
                 cookMinutes: cookMinutes,
                 difficulty: difficulty,
                 sourceUrl: sourceUrl,
+                notes: notes,
                 tags: tags,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -3524,6 +3588,7 @@ class $$RecipesTableTableManager
                 required int cookMinutes,
                 required String difficulty,
                 Value<String?> sourceUrl = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
                 required String tags,
                 required int createdAt,
                 required int updatedAt,
@@ -3539,6 +3604,7 @@ class $$RecipesTableTableManager
                 cookMinutes: cookMinutes,
                 difficulty: difficulty,
                 sourceUrl: sourceUrl,
+                notes: notes,
                 tags: tags,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

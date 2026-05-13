@@ -90,6 +90,7 @@ class MigrationService {
                   cookMinutes: r.cookMinutes,
                   difficulty: r.difficulty,
                   sourceUrl: Value(r.sourceUrl),
+                  notes: Value(r.notes),
                   tags: jsonEncode(r.tags),
                   createdAt: r.createdAt.millisecondsSinceEpoch,
                   updatedAt: r.updatedAt.millisecondsSinceEpoch,
