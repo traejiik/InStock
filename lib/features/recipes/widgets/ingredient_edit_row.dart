@@ -31,7 +31,9 @@ class _IngredientEditRowState extends State<IngredientEditRow> {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.initialName);
     _qtyCtrl = TextEditingController(
-      text: widget.initialQuantity > 0 ? _formatQty(widget.initialQuantity) : '',
+      text: widget.initialQuantity > 0
+          ? _formatQty(widget.initialQuantity)
+          : '',
     );
     _unit = widget.initialUnit;
   }
@@ -54,9 +56,10 @@ class _IngredientEditRowState extends State<IngredientEditRow> {
   }
 
   void _showUnitPicker() {
+    final colors = AppColors.of(context);
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -71,7 +74,7 @@ class _IngredientEditRowState extends State<IngredientEditRow> {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: colors.border,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -97,6 +100,7 @@ class _IngredientEditRowState extends State<IngredientEditRow> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -121,16 +125,16 @@ class _IngredientEditRowState extends State<IngredientEditRow> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
             decoration: BoxDecoration(
-              color: AppColors.surface3,
+              color: colors.surface3,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: colors.border),
             ),
             child: Text(
               _unit ?? '—',
               style: AppTextStyles.caption.copyWith(
                 color: _unit != null
-                    ? AppColors.textSecondary
-                    : AppColors.textTertiary,
+                    ? colors.textSecondary
+                    : colors.textTertiary,
               ),
             ),
           ),

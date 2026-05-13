@@ -17,6 +17,8 @@ class _StepRowState extends State<StepRow> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     return GestureDetector(
       onTap: () => setState(() => _done = !_done),
       child: Opacity(
@@ -25,9 +27,9 @@ class _StepRowState extends State<StepRow> {
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: colors.surface,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: colors.border),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,19 +40,19 @@ class _StepRowState extends State<StepRow> {
                 height: 28,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _done ? AppColors.green : AppColors.surface3,
+                  color: _done ? colors.green : colors.surface3,
                   border: Border.all(
-                    color: _done ? AppColors.green : AppColors.border,
+                    color: _done ? colors.green : colors.border,
                   ),
                 ),
                 child: Center(
                   child: _done
-                      ? const Icon(Icons.check, color: AppColors.background, size: 14)
+                      ? Icon(Icons.check, color: onPrimary, size: 14)
                       : Text(
                           '${widget.stepNumber}',
                           style: AppTextStyles.bodySm.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
+                            color: colors.textSecondary,
                           ),
                         ),
                 ),
@@ -63,8 +65,8 @@ class _StepRowState extends State<StepRow> {
                     widget.text,
                     style: AppTextStyles.bodyMd.copyWith(
                       decoration: _done ? TextDecoration.lineThrough : null,
-                      decorationColor: AppColors.textSecondary,
-                      color: _done ? AppColors.textSecondary : AppColors.textPrimary,
+                      decorationColor: colors.textSecondary,
+                      color: _done ? colors.textSecondary : colors.textPrimary,
                     ),
                   ),
                 ),

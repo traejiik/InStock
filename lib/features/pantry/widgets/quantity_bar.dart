@@ -8,11 +8,12 @@ class QuantityBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final color = fillLevel > 0.5
-        ? AppColors.green
+        ? colors.green
         : fillLevel > 0.1
-            ? AppColors.amber
-            : AppColors.red;
+        ? colors.amber
+        : colors.red;
 
     return SizedBox(
       width: 60,
@@ -21,7 +22,7 @@ class QuantityBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(2),
         child: LinearProgressIndicator(
           value: fillLevel.clamp(0.0, 1.0),
-          backgroundColor: AppColors.surface3,
+          backgroundColor: colors.surface3,
           valueColor: AlwaysStoppedAnimation<Color>(color),
           minHeight: 4,
         ),

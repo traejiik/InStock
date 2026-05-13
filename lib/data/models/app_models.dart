@@ -7,31 +7,33 @@ enum IngredientCategory { dairy, produce, grain, meat, spice, custom }
 
 extension IngredientCategoryX on IngredientCategory {
   String get label => switch (this) {
-        IngredientCategory.dairy => 'Dairy',
-        IngredientCategory.produce => 'Produce',
-        IngredientCategory.grain => 'Grains',
-        IngredientCategory.meat => 'Meat & Fish',
-        IngredientCategory.spice => 'Spices',
-        IngredientCategory.custom => 'Other',
-      };
+    IngredientCategory.dairy => 'Dairy',
+    IngredientCategory.produce => 'Produce',
+    IngredientCategory.grain => 'Grains',
+    IngredientCategory.meat => 'Meat & Fish',
+    IngredientCategory.spice => 'Spices',
+    IngredientCategory.custom => 'Other',
+  };
 
   String get emoji => switch (this) {
-        IngredientCategory.dairy => '🥛',
-        IngredientCategory.produce => '🥦',
-        IngredientCategory.grain => '🌾',
-        IngredientCategory.meat => '🥩',
-        IngredientCategory.spice => '🧂',
-        IngredientCategory.custom => '📦',
-      };
+    IngredientCategory.dairy => '🥛',
+    IngredientCategory.produce => '🥦',
+    IngredientCategory.grain => '🌾',
+    IngredientCategory.meat => '🥩',
+    IngredientCategory.spice => '🧂',
+    IngredientCategory.custom => '📦',
+  };
 
-  Color get color => switch (this) {
-        IngredientCategory.dairy => AppColors.blue,
-        IngredientCategory.produce => AppColors.green,
-        IngredientCategory.grain => AppColors.amber,
-        IngredientCategory.meat => AppColors.red,
-        IngredientCategory.spice => AppColors.purple,
-        IngredientCategory.custom => AppColors.teal,
-      };
+  Color colorFor(AppColors colors) => switch (this) {
+    IngredientCategory.dairy => colors.blue,
+    IngredientCategory.produce => colors.green,
+    IngredientCategory.grain => colors.amber,
+    IngredientCategory.meat => colors.red,
+    IngredientCategory.spice => colors.purple,
+    IngredientCategory.custom => colors.teal,
+  };
+
+  Color get color => colorFor(AppColors.dark);
 }
 
 enum StockStatus { inStock, low, need }
@@ -56,23 +58,23 @@ class Ingredient {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'canonicalName': canonicalName,
-        'category': category.name,
-        'aliases': aliases,
-        'createdAt': createdAt.millisecondsSinceEpoch,
-      };
+    'id': id,
+    'canonicalName': canonicalName,
+    'category': category.name,
+    'aliases': aliases,
+    'createdAt': createdAt.millisecondsSinceEpoch,
+  };
 
   factory Ingredient.fromJson(Map<String, dynamic> j) => Ingredient(
-        id: j['id'] as String,
-        canonicalName: j['canonicalName'] as String,
-        category: IngredientCategory.values.firstWhere(
-          (e) => e.name == j['category'],
-          orElse: () => IngredientCategory.custom,
-        ),
-        aliases: List<String>.from(j['aliases'] as List),
-        createdAt: DateTime.fromMillisecondsSinceEpoch(j['createdAt'] as int),
-      );
+    id: j['id'] as String,
+    canonicalName: j['canonicalName'] as String,
+    category: IngredientCategory.values.firstWhere(
+      (e) => e.name == j['category'],
+      orElse: () => IngredientCategory.custom,
+    ),
+    aliases: List<String>.from(j['aliases'] as List),
+    createdAt: DateTime.fromMillisecondsSinceEpoch(j['createdAt'] as int),
+  );
 }
 
 class PantryItem {
@@ -105,51 +107,50 @@ class PantryItem {
     DateTime? lastVerifiedAt,
     DateTime? deletedAt,
     DateTime? depletedAt,
-  }) =>
-      PantryItem(
-        id: id,
-        ingredientId: ingredientId,
-        quantity: quantity ?? this.quantity,
-        initialQuantity: initialQuantity ?? this.initialQuantity,
-        unit: unit,
-        addedAt: addedAt,
-        lastVerifiedAt: lastVerifiedAt ?? this.lastVerifiedAt,
-        deletedAt: deletedAt ?? this.deletedAt,
-        depletedAt: depletedAt ?? this.depletedAt,
-      );
+  }) => PantryItem(
+    id: id,
+    ingredientId: ingredientId,
+    quantity: quantity ?? this.quantity,
+    initialQuantity: initialQuantity ?? this.initialQuantity,
+    unit: unit,
+    addedAt: addedAt,
+    lastVerifiedAt: lastVerifiedAt ?? this.lastVerifiedAt,
+    deletedAt: deletedAt ?? this.deletedAt,
+    depletedAt: depletedAt ?? this.depletedAt,
+  );
 
   double get fillLevel =>
       initialQuantity > 0 ? (quantity / initialQuantity).clamp(0.0, 1.0) : 0.0;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'ingredientId': ingredientId,
-        'quantity': quantity,
-        'initialQuantity': initialQuantity,
-        'unit': unit,
-        'addedAt': addedAt.millisecondsSinceEpoch,
-        'lastVerifiedAt': lastVerifiedAt?.millisecondsSinceEpoch,
-        'deletedAt': deletedAt?.millisecondsSinceEpoch,
-        'depletedAt': depletedAt?.millisecondsSinceEpoch,
-      };
+    'id': id,
+    'ingredientId': ingredientId,
+    'quantity': quantity,
+    'initialQuantity': initialQuantity,
+    'unit': unit,
+    'addedAt': addedAt.millisecondsSinceEpoch,
+    'lastVerifiedAt': lastVerifiedAt?.millisecondsSinceEpoch,
+    'deletedAt': deletedAt?.millisecondsSinceEpoch,
+    'depletedAt': depletedAt?.millisecondsSinceEpoch,
+  };
 
   factory PantryItem.fromJson(Map<String, dynamic> j) => PantryItem(
-        id: j['id'] as String,
-        ingredientId: j['ingredientId'] as String,
-        quantity: (j['quantity'] as num).toDouble(),
-        initialQuantity: (j['initialQuantity'] as num).toDouble(),
-        unit: j['unit'] as String,
-        addedAt: DateTime.fromMillisecondsSinceEpoch(j['addedAt'] as int),
-        lastVerifiedAt: j['lastVerifiedAt'] != null
-            ? DateTime.fromMillisecondsSinceEpoch(j['lastVerifiedAt'] as int)
-            : null,
-        deletedAt: j['deletedAt'] != null
-            ? DateTime.fromMillisecondsSinceEpoch(j['deletedAt'] as int)
-            : null,
-        depletedAt: j['depletedAt'] != null
-            ? DateTime.fromMillisecondsSinceEpoch(j['depletedAt'] as int)
-            : null,
-      );
+    id: j['id'] as String,
+    ingredientId: j['ingredientId'] as String,
+    quantity: (j['quantity'] as num).toDouble(),
+    initialQuantity: (j['initialQuantity'] as num).toDouble(),
+    unit: j['unit'] as String,
+    addedAt: DateTime.fromMillisecondsSinceEpoch(j['addedAt'] as int),
+    lastVerifiedAt: j['lastVerifiedAt'] != null
+        ? DateTime.fromMillisecondsSinceEpoch(j['lastVerifiedAt'] as int)
+        : null,
+    deletedAt: j['deletedAt'] != null
+        ? DateTime.fromMillisecondsSinceEpoch(j['deletedAt'] as int)
+        : null,
+    depletedAt: j['depletedAt'] != null
+        ? DateTime.fromMillisecondsSinceEpoch(j['depletedAt'] as int)
+        : null,
+  );
 }
 
 class Recipe {
@@ -195,56 +196,55 @@ class Recipe {
     List<String>? tags,
     DateTime? updatedAt,
     DateTime? deletedAt,
-  }) =>
-      Recipe(
-        id: id,
-        title: title ?? this.title,
-        emoji: emoji ?? this.emoji,
-        imageUrl: imageUrl ?? this.imageUrl,
-        instructions: instructions ?? this.instructions,
-        servings: servings ?? this.servings,
-        cookMinutes: cookMinutes ?? this.cookMinutes,
-        difficulty: difficulty ?? this.difficulty,
-        sourceUrl: sourceUrl ?? this.sourceUrl,
-        tags: tags ?? this.tags,
-        createdAt: createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-        deletedAt: deletedAt ?? this.deletedAt,
-      );
+  }) => Recipe(
+    id: id,
+    title: title ?? this.title,
+    emoji: emoji ?? this.emoji,
+    imageUrl: imageUrl ?? this.imageUrl,
+    instructions: instructions ?? this.instructions,
+    servings: servings ?? this.servings,
+    cookMinutes: cookMinutes ?? this.cookMinutes,
+    difficulty: difficulty ?? this.difficulty,
+    sourceUrl: sourceUrl ?? this.sourceUrl,
+    tags: tags ?? this.tags,
+    createdAt: createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt ?? this.deletedAt,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'emoji': emoji,
-        'imageUrl': imageUrl,
-        'instructions': instructions,
-        'servings': servings,
-        'cookMinutes': cookMinutes,
-        'difficulty': difficulty,
-        'sourceUrl': sourceUrl,
-        'tags': tags,
-        'createdAt': createdAt.millisecondsSinceEpoch,
-        'updatedAt': updatedAt.millisecondsSinceEpoch,
-        'deletedAt': deletedAt?.millisecondsSinceEpoch,
-      };
+    'id': id,
+    'title': title,
+    'emoji': emoji,
+    'imageUrl': imageUrl,
+    'instructions': instructions,
+    'servings': servings,
+    'cookMinutes': cookMinutes,
+    'difficulty': difficulty,
+    'sourceUrl': sourceUrl,
+    'tags': tags,
+    'createdAt': createdAt.millisecondsSinceEpoch,
+    'updatedAt': updatedAt.millisecondsSinceEpoch,
+    'deletedAt': deletedAt?.millisecondsSinceEpoch,
+  };
 
   factory Recipe.fromJson(Map<String, dynamic> j) => Recipe(
-        id: j['id'] as String,
-        title: j['title'] as String,
-        emoji: j['emoji'] as String? ?? '🍽️',
-        imageUrl: j['imageUrl'] as String?,
-        instructions: List<String>.from(j['instructions'] as List),
-        servings: j['servings'] as int,
-        cookMinutes: j['cookMinutes'] as int? ?? 30,
-        difficulty: j['difficulty'] as String? ?? 'Medium',
-        sourceUrl: j['sourceUrl'] as String?,
-        tags: List<String>.from(j['tags'] as List),
-        createdAt: DateTime.fromMillisecondsSinceEpoch(j['createdAt'] as int),
-        updatedAt: DateTime.fromMillisecondsSinceEpoch(j['updatedAt'] as int),
-        deletedAt: j['deletedAt'] != null
-            ? DateTime.fromMillisecondsSinceEpoch(j['deletedAt'] as int)
-            : null,
-      );
+    id: j['id'] as String,
+    title: j['title'] as String,
+    emoji: j['emoji'] as String? ?? '🍽️',
+    imageUrl: j['imageUrl'] as String?,
+    instructions: List<String>.from(j['instructions'] as List),
+    servings: j['servings'] as int,
+    cookMinutes: j['cookMinutes'] as int? ?? 30,
+    difficulty: j['difficulty'] as String? ?? 'Medium',
+    sourceUrl: j['sourceUrl'] as String?,
+    tags: List<String>.from(j['tags'] as List),
+    createdAt: DateTime.fromMillisecondsSinceEpoch(j['createdAt'] as int),
+    updatedAt: DateTime.fromMillisecondsSinceEpoch(j['updatedAt'] as int),
+    deletedAt: j['deletedAt'] != null
+        ? DateTime.fromMillisecondsSinceEpoch(j['deletedAt'] as int)
+        : null,
+  );
 }
 
 class RecipeIngredient {
@@ -267,24 +267,24 @@ class RecipeIngredient {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'recipeId': recipeId,
-        'ingredientId': ingredientId,
-        'quantity': quantity,
-        'unit': unit,
-        'isOptional': isOptional ? 1 : 0,
-        'notes': notes,
-      };
+    'id': id,
+    'recipeId': recipeId,
+    'ingredientId': ingredientId,
+    'quantity': quantity,
+    'unit': unit,
+    'isOptional': isOptional ? 1 : 0,
+    'notes': notes,
+  };
 
   factory RecipeIngredient.fromJson(Map<String, dynamic> j) => RecipeIngredient(
-        id: j['id'] as String,
-        recipeId: j['recipeId'] as String,
-        ingredientId: j['ingredientId'] as String,
-        quantity: (j['quantity'] as num).toDouble(),
-        unit: j['unit'] as String,
-        isOptional: (j['isOptional'] as int) == 1,
-        notes: j['notes'] as String?,
-      );
+    id: j['id'] as String,
+    recipeId: j['recipeId'] as String,
+    ingredientId: j['ingredientId'] as String,
+    quantity: (j['quantity'] as num).toDouble(),
+    unit: j['unit'] as String,
+    isOptional: (j['isOptional'] as int) == 1,
+    notes: j['notes'] as String?,
+  );
 }
 
 class ShoppingItem {
@@ -309,37 +309,37 @@ class ShoppingItem {
   });
 
   ShoppingItem copyWith({bool? checked, DateTime? updatedAt}) => ShoppingItem(
-        id: id,
-        ingredientId: ingredientId,
-        quantity: quantity,
-        unit: unit,
-        checked: checked ?? this.checked,
-        sourceRecipeId: sourceRecipeId,
-        addedAt: addedAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-      );
+    id: id,
+    ingredientId: ingredientId,
+    quantity: quantity,
+    unit: unit,
+    checked: checked ?? this.checked,
+    sourceRecipeId: sourceRecipeId,
+    addedAt: addedAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'ingredientId': ingredientId,
-        'quantity': quantity,
-        'unit': unit,
-        'checked': checked ? 1 : 0,
-        'sourceRecipeId': sourceRecipeId,
-        'addedAt': addedAt.millisecondsSinceEpoch,
-        'updatedAt': updatedAt.millisecondsSinceEpoch,
-      };
+    'id': id,
+    'ingredientId': ingredientId,
+    'quantity': quantity,
+    'unit': unit,
+    'checked': checked ? 1 : 0,
+    'sourceRecipeId': sourceRecipeId,
+    'addedAt': addedAt.millisecondsSinceEpoch,
+    'updatedAt': updatedAt.millisecondsSinceEpoch,
+  };
 
   factory ShoppingItem.fromJson(Map<String, dynamic> j) => ShoppingItem(
-        id: j['id'] as String,
-        ingredientId: j['ingredientId'] as String,
-        quantity: (j['quantity'] as num).toDouble(),
-        unit: j['unit'] as String,
-        checked: (j['checked'] as int) == 1,
-        sourceRecipeId: j['sourceRecipeId'] as String?,
-        addedAt: DateTime.fromMillisecondsSinceEpoch(j['addedAt'] as int),
-        updatedAt: DateTime.fromMillisecondsSinceEpoch(j['updatedAt'] as int),
-      );
+    id: j['id'] as String,
+    ingredientId: j['ingredientId'] as String,
+    quantity: (j['quantity'] as num).toDouble(),
+    unit: j['unit'] as String,
+    checked: (j['checked'] as int) == 1,
+    sourceRecipeId: j['sourceRecipeId'] as String?,
+    addedAt: DateTime.fromMillisecondsSinceEpoch(j['addedAt'] as int),
+    updatedAt: DateTime.fromMillisecondsSinceEpoch(j['updatedAt'] as int),
+  );
 }
 
 // ─── App State ────────────────────────────────────────────────────────────────
@@ -373,38 +373,37 @@ class AppState {
     List<Recipe>? recipes,
     List<RecipeIngredient>? recipeIngredients,
     List<ShoppingItem>? shoppingItems,
-  }) =>
-      AppState(
-        ingredients: ingredients ?? this.ingredients,
-        pantryItems: pantryItems ?? this.pantryItems,
-        recipes: recipes ?? this.recipes,
-        recipeIngredients: recipeIngredients ?? this.recipeIngredients,
-        shoppingItems: shoppingItems ?? this.shoppingItems,
-      );
+  }) => AppState(
+    ingredients: ingredients ?? this.ingredients,
+    pantryItems: pantryItems ?? this.pantryItems,
+    recipes: recipes ?? this.recipes,
+    recipeIngredients: recipeIngredients ?? this.recipeIngredients,
+    shoppingItems: shoppingItems ?? this.shoppingItems,
+  );
 
   Map<String, dynamic> toJson() => {
-        'ingredients': ingredients.map((e) => e.toJson()).toList(),
-        'pantryItems': pantryItems.map((e) => e.toJson()).toList(),
-        'recipes': recipes.map((e) => e.toJson()).toList(),
-        'recipeIngredients': recipeIngredients.map((e) => e.toJson()).toList(),
-        'shoppingItems': shoppingItems.map((e) => e.toJson()).toList(),
-      };
+    'ingredients': ingredients.map((e) => e.toJson()).toList(),
+    'pantryItems': pantryItems.map((e) => e.toJson()).toList(),
+    'recipes': recipes.map((e) => e.toJson()).toList(),
+    'recipeIngredients': recipeIngredients.map((e) => e.toJson()).toList(),
+    'shoppingItems': shoppingItems.map((e) => e.toJson()).toList(),
+  };
 
   factory AppState.fromJson(Map<String, dynamic> j) => AppState(
-        ingredients: (j['ingredients'] as List)
-            .map((e) => Ingredient.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        pantryItems: (j['pantryItems'] as List)
-            .map((e) => PantryItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        recipes: (j['recipes'] as List)
-            .map((e) => Recipe.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        recipeIngredients: (j['recipeIngredients'] as List)
-            .map((e) => RecipeIngredient.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        shoppingItems: (j['shoppingItems'] as List)
-            .map((e) => ShoppingItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    ingredients: (j['ingredients'] as List)
+        .map((e) => Ingredient.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    pantryItems: (j['pantryItems'] as List)
+        .map((e) => PantryItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    recipes: (j['recipes'] as List)
+        .map((e) => Recipe.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    recipeIngredients: (j['recipeIngredients'] as List)
+        .map((e) => RecipeIngredient.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    shoppingItems: (j['shoppingItems'] as List)
+        .map((e) => ShoppingItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }

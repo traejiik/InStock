@@ -15,16 +15,14 @@ class CategoryPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return DropdownButtonFormField<IngredientCategory>(
       initialValue: selectedCategory,
       isExpanded: true,
-      dropdownColor: AppColors.surface2,
+      dropdownColor: colors.surface2,
       borderRadius: BorderRadius.circular(10),
-      icon: const Icon(
-        Icons.keyboard_arrow_down,
-        color: AppColors.textSecondary,
-      ),
-      style: AppTextStyles.label,
+      icon: Icon(Icons.keyboard_arrow_down, color: colors.textSecondary),
+      style: AppTextStyles.label.copyWith(color: colors.textPrimary),
       decoration: const InputDecoration(labelText: 'Category'),
       selectedItemBuilder: (context) => IngredientCategory.values
           .map((category) => _CategoryMenuLabel(category: category))
@@ -52,6 +50,7 @@ class _CategoryMenuLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -59,7 +58,7 @@ class _CategoryMenuLabel extends StatelessWidget {
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: category.color,
+            color: category.colorFor(colors),
             shape: BoxShape.circle,
           ),
         ),
@@ -68,7 +67,7 @@ class _CategoryMenuLabel extends StatelessWidget {
           child: Text(
             '${category.emoji} ${category.label}',
             overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.label.copyWith(color: AppColors.textPrimary),
+            style: AppTextStyles.label.copyWith(color: colors.textPrimary),
           ),
         ),
       ],

@@ -9,7 +9,8 @@ class PantryCheckinScreen extends ConsumerStatefulWidget {
   const PantryCheckinScreen({super.key});
 
   @override
-  ConsumerState<PantryCheckinScreen> createState() => _PantryCheckinScreenState();
+  ConsumerState<PantryCheckinScreen> createState() =>
+      _PantryCheckinScreenState();
 }
 
 class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
@@ -31,8 +32,10 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
       vsync: this,
       duration: const Duration(milliseconds: 260),
     );
-    _slideAnim = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOut));
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOut));
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final db = ref.read(appDatabaseProvider);
@@ -121,6 +124,7 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     if (_items.isEmpty) {
       return _EmptyState(onClose: () => Navigator.pop(context));
     }
@@ -144,20 +148,22 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
         : null;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.close, color: AppColors.textSecondary),
+          icon: Icon(Icons.close, color: colors.textSecondary),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Quick Check-in', style: AppTextStyles.headingMd),
-            Text('${_items.length} items to review',
-                style: AppTextStyles.caption),
+            Text(
+              '${_items.length} items to review',
+              style: AppTextStyles.caption,
+            ),
           ],
         ),
       ),
@@ -180,28 +186,37 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
                       background: const SizedBox.shrink(),
                       secondaryBackground: Container(
                         decoration: BoxDecoration(
-                          color: AppColors.surface3,
+                          color: colors.surface3,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         alignment: Alignment.centerRight,
                         padding: const EdgeInsets.only(right: 28),
-                        child: const Icon(Icons.skip_next_rounded,
-                            color: AppColors.textSecondary, size: 28),
+                        child: Icon(
+                          Icons.skip_next_rounded,
+                          color: colors.textSecondary,
+                          size: 28,
+                        ),
                       ),
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(28),
                         decoration: BoxDecoration(
-                          color: AppColors.surface,
+                          color: colors.surface,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.border),
+                          border: Border.all(color: colors.border),
                         ),
                         child: Column(
                           children: [
-                            Text(ing.category.emoji,
-                                style: const TextStyle(fontSize: 56)),
+                            Text(
+                              ing.category.emoji,
+                              style: const TextStyle(fontSize: 56),
+                            ),
                             const SizedBox(height: 12),
-                            Text(ing.canonicalName, style: AppTextStyles.headingLg, textAlign: TextAlign.center),
+                            Text(
+                              ing.canonicalName,
+                              style: AppTextStyles.headingLg,
+                              textAlign: TextAlign.center,
+                            ),
                             const SizedBox(height: 6),
                             if (daysAgo != null)
                               Text(
@@ -210,27 +225,37 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
                               ),
                             const SizedBox(height: 12),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 5,
+                              ),
                               decoration: BoxDecoration(
-                                color: AppColors.surface3,
+                                color: colors.surface3,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 'Recorded: ${item.quantity} ${item.unit}',
-                                style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
+                                style: AppTextStyles.bodySm.copyWith(
+                                  color: colors.textSecondary,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 24),
                             if (!_showUpdate) ...[
-                              Text('Still accurate?', style: AppTextStyles.label.copyWith(color: AppColors.textSecondary)),
+                              Text(
+                                'Still accurate?',
+                                style: AppTextStyles.label.copyWith(
+                                  color: colors.textSecondary,
+                                ),
+                              ),
                               const SizedBox(height: 14),
                               Row(
                                 children: [
                                   Expanded(
                                     child: _ActionButton(
                                       label: '✓ Still good',
-                                      color: AppColors.green,
-                                      bg: AppColors.greenDim,
+                                      color: colors.green,
+                                      bg: colors.greenDim,
                                       onTap: _stillGood,
                                     ),
                                   ),
@@ -238,16 +263,20 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
                                   Expanded(
                                     child: _ActionButton(
                                       label: '✎ Update',
-                                      color: AppColors.textPrimary,
-                                      bg: AppColors.surface3,
+                                      color: colors.textPrimary,
+                                      bg: colors.surface3,
                                       onTap: _showUpdatePanel,
                                     ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 10),
-                              Text('← Swipe left to skip',
-                                  style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary)),
+                              Text(
+                                '← Swipe left to skip',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: colors.textTertiary,
+                                ),
+                              ),
                             ],
                             if (_showUpdate) ...[
                               SlideTransition(
@@ -258,9 +287,12 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
                                       controller: _qtyCtrl,
                                       keyboardType: TextInputType.number,
                                       autofocus: true,
-                                      style: const TextStyle(color: AppColors.textPrimary),
+                                      style: TextStyle(
+                                        color: colors.textPrimary,
+                                      ),
                                       decoration: InputDecoration(
-                                        labelText: 'New quantity (${item.unit})',
+                                        labelText:
+                                            'New quantity (${item.unit})',
                                       ),
                                     ),
                                     const SizedBox(height: 14),
@@ -270,8 +302,8 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
                                           flex: 2,
                                           child: _ActionButton(
                                             label: 'Save & Next →',
-                                            color: AppColors.green,
-                                            bg: AppColors.greenDim,
+                                            color: colors.green,
+                                            bg: colors.greenDim,
                                             onTap: _saveUpdate,
                                           ),
                                         ),
@@ -279,8 +311,8 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
                                         Expanded(
                                           child: _ActionButton(
                                             label: 'Out',
-                                            color: AppColors.red,
-                                            bg: AppColors.redDim,
+                                            color: colors.red,
+                                            bg: colors.redDim,
                                             onTap: _markOut,
                                           ),
                                         ),
@@ -300,7 +332,9 @@ class _PantryCheckinScreenState extends ConsumerState<PantryCheckinScreen>
               const SizedBox(height: 16),
               Text(
                 '$_verifiedCount of ${_items.length} verified · ~${_items.length - _currentIndex} remaining',
-                style: AppTextStyles.caption.copyWith(color: AppColors.textTertiary),
+                style: AppTextStyles.caption.copyWith(
+                  color: colors.textTertiary,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -335,9 +369,11 @@ class _ActionButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: color.withAlpha(80)),
         ),
-        child: Text(label,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.label.copyWith(color: color)),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.label.copyWith(color: color),
+        ),
       ),
     );
   }
@@ -351,9 +387,10 @@ class _ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Row(
       children: List.generate(total, (i) {
-        final color = i < verified ? AppColors.green : AppColors.border;
+        final color = i < verified ? colors.green : colors.border;
         return Expanded(
           child: Container(
             height: 4,
@@ -375,8 +412,10 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Center(
           child: Column(
@@ -386,13 +425,17 @@ class _EmptyState extends StatelessWidget {
               const SizedBox(height: 16),
               Text('All caught up!', style: AppTextStyles.headingLg),
               const SizedBox(height: 8),
-              Text('Everything looks verified 👌',
-                  style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary)),
+              Text(
+                'Everything looks verified 👌',
+                style: AppTextStyles.bodyMd.copyWith(
+                  color: colors.textSecondary,
+                ),
+              ),
               const SizedBox(height: 28),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.green,
-                  foregroundColor: AppColors.background,
+                  backgroundColor: colors.green,
+                  foregroundColor: onPrimary,
                 ),
                 onPressed: onClose,
                 child: const Text('Done'),
@@ -418,15 +461,20 @@ class _DoneState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     final isPartial = verifiedCount < totalCount;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(isPartial ? '👍' : '🎉', style: const TextStyle(fontSize: 56)),
+              Text(
+                isPartial ? '👍' : '🎉',
+                style: const TextStyle(fontSize: 56),
+              ),
               const SizedBox(height: 16),
               Text('Check-in complete!', style: AppTextStyles.headingLg),
               const SizedBox(height: 8),
@@ -434,13 +482,15 @@ class _DoneState extends StatelessWidget {
                 isPartial
                     ? '$verifiedCount of $totalCount items verified'
                     : 'Pantry is up to date.',
-                style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.bodyMd.copyWith(
+                  color: colors.textSecondary,
+                ),
               ),
               const SizedBox(height: 28),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.green,
-                  foregroundColor: AppColors.background,
+                  backgroundColor: colors.green,
+                  foregroundColor: onPrimary,
                 ),
                 onPressed: onClose,
                 child: const Text('Done'),

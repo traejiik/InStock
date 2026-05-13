@@ -31,13 +31,14 @@ class _ImportRecipeScreenState extends State<ImportRecipeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textSecondary),
+          icon: Icon(Icons.arrow_back, color: colors.textSecondary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text('Add Recipe', style: AppTextStyles.headingMd),
@@ -60,7 +61,10 @@ class _ImportRecipeScreenState extends State<ImportRecipeScreen> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
               child: [
-                _WriteTab(aiReview: _aiReview, onAiToggle: (v) => setState(() => _aiReview = v)),
+                _WriteTab(
+                  aiReview: _aiReview,
+                  onAiToggle: (v) => setState(() => _aiReview = v),
+                ),
                 _ImportTab(
                   urlCtrl: _urlCtrl,
                   aiReview: _aiReview,
@@ -73,7 +77,10 @@ class _ImportRecipeScreenState extends State<ImportRecipeScreen> {
                     if (_urlCtrl.text.isEmpty) return;
                     setState(() => _importing = true);
                     await Future.delayed(const Duration(seconds: 2));
-                    setState(() { _importing = false; _importDone = true; });
+                    setState(() {
+                      _importing = false;
+                      _importDone = true;
+                    });
                   },
                   onSave: () => Navigator.pop(context),
                 ),
@@ -89,9 +96,11 @@ class _ImportRecipeScreenState extends State<ImportRecipeScreen> {
                     setState(() => _importing = false);
                     messenger.showSnackBar(
                       SnackBar(
-                        content: Text('☁️ AI generation requires an active plan',
-                            style: AppTextStyles.bodySm),
-                        backgroundColor: AppColors.purpleDim,
+                        content: Text(
+                          '☁️ AI generation requires an active plan',
+                          style: AppTextStyles.bodySm,
+                        ),
+                        backgroundColor: colors.purpleDim,
                       ),
                     );
                   },
@@ -154,13 +163,17 @@ class _WriteTabState extends State<_WriteTab> {
     bool valid = true;
 
     setState(() {
-      _titleError = title.length < 3 ? 'Title must be at least 3 characters' : null;
+      _titleError = title.length < 3
+          ? 'Title must be at least 3 characters'
+          : null;
       _servingsError = (servings == null || servings <= 0)
           ? 'Servings must be a whole number greater than 0'
           : null;
 
       final filledIngs = ings.where((s) => s.isNotEmpty).toList();
-      _ingredientsError = filledIngs.isEmpty ? 'Add at least one ingredient' : null;
+      _ingredientsError = filledIngs.isEmpty
+          ? 'Add at least one ingredient'
+          : null;
       for (var i = 0; i < ings.length; i++) {
         _ingRowErrors[i] = ings[i].isEmpty ? 'Required' : null;
       }
@@ -190,6 +203,7 @@ class _WriteTabState extends State<_WriteTab> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -197,10 +211,22 @@ class _WriteTabState extends State<_WriteTab> {
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: _field(_servingsCtrl, 'Servings',
-                type: TextInputType.number, errorText: _servingsError)),
+            Expanded(
+              child: _field(
+                _servingsCtrl,
+                'Servings',
+                type: TextInputType.number,
+                errorText: _servingsError,
+              ),
+            ),
             const SizedBox(width: 10),
-            Expanded(child: _field(_timeCtrl, 'Time (min)', type: TextInputType.number)),
+            Expanded(
+              child: _field(
+                _timeCtrl,
+                'Time (min)',
+                type: TextInputType.number,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 20),
@@ -209,43 +235,57 @@ class _WriteTabState extends State<_WriteTab> {
             Text('Ingredients', style: AppTextStyles.headingSm),
             if (_ingredientsError != null) ...[
               const SizedBox(width: 10),
-              Text(_ingredientsError!, style: AppTextStyles.caption.copyWith(color: AppColors.red)),
+              Text(
+                _ingredientsError!,
+                style: AppTextStyles.caption.copyWith(color: colors.red),
+              ),
             ],
           ],
         ),
         const SizedBox(height: 8),
-        ..._ingCtrl.asMap().entries.map((e) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(child: _field(e.value, 'Ingredient ${e.key + 1}',
-                      errorText: _ingRowErrors[e.key])),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () => setState(() {
-                      if (_ingCtrl.length > 1) {
-                        _ingCtrl[e.key].dispose();
-                        _ingCtrl.removeAt(e.key);
-                        _ingUnits.removeAt(e.key);
-                        _ingRowErrors.remove(e.key);
-                      }
-                    }),
-                    child: const Icon(Icons.remove_circle_outline, color: AppColors.textTertiary, size: 20),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              UnitPicker(
-                selectedUnit: _ingUnits[e.key],
-                onChanged: (u) => setState(() => _ingUnits[e.key] = u),
-                allowCustom: true,
-              ),
-            ],
+        ..._ingCtrl.asMap().entries.map(
+          (e) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _field(
+                        e.value,
+                        'Ingredient ${e.key + 1}',
+                        errorText: _ingRowErrors[e.key],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => setState(() {
+                        if (_ingCtrl.length > 1) {
+                          _ingCtrl[e.key].dispose();
+                          _ingCtrl.removeAt(e.key);
+                          _ingUnits.removeAt(e.key);
+                          _ingRowErrors.remove(e.key);
+                        }
+                      }),
+                      child: Icon(
+                        Icons.remove_circle_outline,
+                        color: colors.textTertiary,
+                        size: 20,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                UnitPicker(
+                  selectedUnit: _ingUnits[e.key],
+                  onChanged: (u) => setState(() => _ingUnits[e.key] = u),
+                  allowCustom: true,
+                ),
+              ],
+            ),
           ),
-        )),
+        ),
         _AddRow(
           label: '+ Ingredient',
           onTap: () => setState(() {
@@ -259,51 +299,75 @@ class _WriteTabState extends State<_WriteTab> {
             Text('Steps', style: AppTextStyles.headingSm),
             if (_stepsError != null) ...[
               const SizedBox(width: 10),
-              Text(_stepsError!, style: AppTextStyles.caption.copyWith(color: AppColors.red)),
+              Text(
+                _stepsError!,
+                style: AppTextStyles.caption.copyWith(color: colors.red),
+              ),
             ],
           ],
         ),
         const SizedBox(height: 8),
-        ..._stepCtrl.asMap().entries.map((e) => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 24, height: 24,
-                margin: const EdgeInsets.only(top: 14, right: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.surface3,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.border),
+        ..._stepCtrl.asMap().entries.map(
+          (e) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  margin: const EdgeInsets.only(top: 14, right: 8),
+                  decoration: BoxDecoration(
+                    color: colors.surface3,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: colors.border),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${e.key + 1}',
+                      style: AppTextStyles.caption.copyWith(fontSize: 10),
+                    ),
+                  ),
                 ),
-                child: Center(child: Text('${e.key + 1}', style: AppTextStyles.caption.copyWith(fontSize: 10))),
-              ),
-              Expanded(child: _field(e.value, 'Step ${e.key + 1}',
-                  maxLines: 3, errorText: _stepRowErrors[e.key])),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () => setState(() {
-                  if (_stepCtrl.length > 1) {
-                    _stepCtrl[e.key].dispose();
-                    _stepCtrl.removeAt(e.key);
-                    _stepRowErrors.remove(e.key);
-                  }
-                }),
-                child: const Padding(
-                  padding: EdgeInsets.only(top: 12),
-                  child: Icon(Icons.remove_circle_outline, color: AppColors.textTertiary, size: 20),
+                Expanded(
+                  child: _field(
+                    e.value,
+                    'Step ${e.key + 1}',
+                    maxLines: 3,
+                    errorText: _stepRowErrors[e.key],
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => setState(() {
+                    if (_stepCtrl.length > 1) {
+                      _stepCtrl[e.key].dispose();
+                      _stepCtrl.removeAt(e.key);
+                      _stepRowErrors.remove(e.key);
+                    }
+                  }),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Icon(
+                      Icons.remove_circle_outline,
+                      color: colors.textTertiary,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        )),
-        _AddRow(label: '+ Step', onTap: () => setState(() => _stepCtrl.add(TextEditingController()))),
+        ),
+        _AddRow(
+          label: '+ Step',
+          onTap: () => setState(() => _stepCtrl.add(TextEditingController())),
+        ),
         const SizedBox(height: 20),
         ToggleRow(
           icon: Icons.auto_awesome,
-          iconColor: AppColors.purple,
-          iconBg: AppColors.purpleDim,
+          iconColor: colors.purple,
+          iconBg: colors.purpleDim,
           title: 'AI Review ☁️',
           subtitle: 'Let AI check for improvements',
           value: widget.aiReview,
@@ -348,6 +412,7 @@ class _ImportTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -356,18 +421,24 @@ class _ImportTab extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border, style: BorderStyle.solid, width: 1.5),
-            color: AppColors.surface,
+            border: Border.all(
+              color: colors.border,
+              style: BorderStyle.solid,
+              width: 1.5,
+            ),
+            color: colors.surface,
           ),
           child: Column(
             children: [
-              const Icon(Icons.link, color: AppColors.textTertiary, size: 36),
+              Icon(Icons.link, color: colors.textTertiary, size: 36),
               const SizedBox(height: 10),
               Text('Paste a recipe URL', style: AppTextStyles.headingSm),
               const SizedBox(height: 6),
               Text(
                 'Supports most cooking websites and blogs',
-                style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.bodySm.copyWith(
+                  color: colors.textSecondary,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -376,10 +447,10 @@ class _ImportTab extends StatelessWidget {
         const SizedBox(height: 16),
         TextField(
           controller: urlCtrl,
-          style: const TextStyle(color: AppColors.textPrimary),
-          decoration: const InputDecoration(
+          style: TextStyle(color: colors.textPrimary),
+          decoration: InputDecoration(
             labelText: 'Recipe URL',
-            prefixIcon: Icon(Icons.link, color: AppColors.textTertiary, size: 20),
+            prefixIcon: Icon(Icons.link, color: colors.textTertiary, size: 20),
           ),
         ),
         const SizedBox(height: 14),
@@ -392,9 +463,9 @@ class _ImportTab extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.greenDim,
+              color: colors.greenDim,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.greenBorder),
+              border: Border.all(color: colors.greenBorder),
             ),
             child: Row(
               children: [
@@ -404,8 +475,16 @@ class _ImportTab extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Recipe imported!', style: AppTextStyles.label.copyWith(color: AppColors.green)),
-                      Text('Review and save below', style: AppTextStyles.caption),
+                      Text(
+                        'Recipe imported!',
+                        style: AppTextStyles.label.copyWith(
+                          color: colors.green,
+                        ),
+                      ),
+                      Text(
+                        'Review and save below',
+                        style: AppTextStyles.caption,
+                      ),
                     ],
                   ),
                 ),
@@ -415,8 +494,8 @@ class _ImportTab extends StatelessWidget {
           const SizedBox(height: 16),
           ToggleRow(
             icon: Icons.auto_awesome,
-            iconColor: AppColors.purple,
-            iconBg: AppColors.purpleDim,
+            iconColor: colors.purple,
+            iconBg: colors.purpleDim,
             title: 'AI Review ☁️',
             subtitle: 'AI quality check on the imported recipe',
             value: aiReview,
@@ -425,8 +504,8 @@ class _ImportTab extends StatelessWidget {
           const SizedBox(height: 10),
           ToggleRow(
             icon: Icons.straighten,
-            iconColor: AppColors.blue,
-            iconBg: AppColors.blueDim,
+            iconColor: colors.blue,
+            iconBg: colors.blueDim,
             title: 'Convert to Metric',
             subtitle: 'cups/oz → ml/g',
             value: convertMetric,
@@ -457,6 +536,7 @@ class _AiTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -465,17 +545,18 @@ class _AiTab extends StatelessWidget {
         TextField(
           controller: descCtrl,
           maxLines: 5,
-          style: const TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: colors.textPrimary),
           decoration: const InputDecoration(
-            hintText: 'e.g. A quick weeknight pasta, creamy but not too heavy...',
+            hintText:
+                'e.g. A quick weeknight pasta, creamy but not too heavy...',
             alignLabelWithHint: true,
           ),
         ),
         const SizedBox(height: 14),
         ToggleRow(
           icon: Icons.home_outlined,
-          iconColor: AppColors.green,
-          iconBg: AppColors.greenDim,
+          iconColor: colors.green,
+          iconBg: colors.greenDim,
           title: "What's in my pantry",
           subtitle: 'AI uses your current pantry items as context',
           value: useWithPantry,
@@ -488,14 +569,14 @@ class _AiTab extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 14),
             decoration: BoxDecoration(
-              color: AppColors.purpleDim,
+              color: colors.purpleDim,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.purpleBorder),
+              border: Border.all(color: colors.purpleBorder),
             ),
             child: Text(
               'Generate Recipe ✨ ☁️',
               textAlign: TextAlign.center,
-              style: AppTextStyles.label.copyWith(color: AppColors.purple),
+              style: AppTextStyles.label.copyWith(color: colors.purple),
             ),
           ),
         ),
@@ -503,7 +584,7 @@ class _AiTab extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.purpleDim,
+            color: colors.purpleDim,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
@@ -513,7 +594,7 @@ class _AiTab extends StatelessWidget {
               Expanded(
                 child: Text(
                   'AI features require internet connection and an active plan',
-                  style: AppTextStyles.caption.copyWith(color: AppColors.purple),
+                  style: AppTextStyles.caption.copyWith(color: colors.purple),
                 ),
               ),
             ],
@@ -526,13 +607,18 @@ class _AiTab extends StatelessWidget {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-Widget _field(TextEditingController ctrl, String label,
-    {TextInputType? type, int? maxLines, String? errorText}) {
+Widget _field(
+  TextEditingController ctrl,
+  String label, {
+  TextInputType? type,
+  int? maxLines,
+  String? errorText,
+}) {
   return TextField(
     controller: ctrl,
     keyboardType: type,
     maxLines: maxLines ?? 1,
-    style: const TextStyle(color: AppColors.textPrimary),
+    style: AppTextStyles.bodyMd,
     decoration: InputDecoration(labelText: label, errorText: errorText),
   );
 }
@@ -544,15 +630,19 @@ class _AddRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
           children: [
-            const Icon(Icons.add_circle_outline, color: AppColors.green, size: 18),
+            Icon(Icons.add_circle_outline, color: colors.green, size: 18),
             const SizedBox(width: 8),
-            Text(label, style: AppTextStyles.bodySm.copyWith(color: AppColors.green)),
+            Text(
+              label,
+              style: AppTextStyles.bodySm.copyWith(color: colors.green),
+            ),
           ],
         ),
       ),
@@ -567,20 +657,22 @@ class _PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: onTap == null ? AppColors.surface3 : AppColors.green,
+          color: onTap == null ? colors.surface3 : colors.green,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
           label,
           textAlign: TextAlign.center,
           style: AppTextStyles.label.copyWith(
-            color: onTap == null ? AppColors.textTertiary : AppColors.background,
+            color: onTap == null ? colors.textTertiary : onPrimary,
           ),
         ),
       ),

@@ -21,10 +21,11 @@ class IngredientRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final (statusLabel, statusColor) = switch (matchStatus) {
-      PantryMatchStatus.enough => ('In pantry', AppColors.green),
-      PantryMatchStatus.partial => ('Partial', AppColors.amber),
-      PantryMatchStatus.missing => ('Missing', AppColors.red),
+      PantryMatchStatus.enough => ('In pantry', colors.green),
+      PantryMatchStatus.partial => ('Partial', colors.amber),
+      PantryMatchStatus.missing => ('Missing', colors.red),
     };
 
     final stockStatus = switch (matchStatus) {
@@ -37,9 +38,9 @@ class IngredientRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         children: [
@@ -52,7 +53,9 @@ class IngredientRow extends StatelessWidget {
                     Expanded(
                       child: Text(
                         ingredient.canonicalName,
-                        style: AppTextStyles.label,
+                        style: AppTextStyles.label.copyWith(
+                          color: colors.textPrimary,
+                        ),
                         overflow: TextOverflow.ellipsis,
                         softWrap: false,
                       ),
@@ -60,24 +63,34 @@ class IngredientRow extends StatelessWidget {
                     if (recipeIngredient.isOptional) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
-                          color: AppColors.surface3,
+                          color: colors.surface3,
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Text('optional', style: AppTextStyles.caption),
+                        child: Text(
+                          'optional',
+                          style: AppTextStyles.caption.copyWith(
+                            color: colors.textSecondary,
+                          ),
+                        ),
                       ),
                     ],
                   ],
                 ),
-                Text(statusLabel,
-                    style: AppTextStyles.caption.copyWith(color: statusColor)),
+                Text(
+                  statusLabel,
+                  style: AppTextStyles.caption.copyWith(color: statusColor),
+                ),
               ],
             ),
           ),
           Text(
             UnitConverter.formatQty(scaledQuantity, recipeIngredient.unit),
-            style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodySm.copyWith(color: colors.textSecondary),
           ),
           const SizedBox(width: 8),
           StockBadge(status: stockStatus),

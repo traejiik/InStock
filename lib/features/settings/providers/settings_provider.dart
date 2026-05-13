@@ -8,18 +8,13 @@ const _kThemePrefKey = 'instock_theme_pref';
 
 enum UnitSystem { metric, imperial }
 
-enum AppThemeMode {
-  dark,
-  system,
-  light, // TODO: light theme not yet designed
-}
+enum AppThemeMode { dark, system, light }
 
 extension AppThemeModeX on AppThemeMode {
   ThemeMode toThemeMode() => switch (this) {
     AppThemeMode.dark => ThemeMode.dark,
     AppThemeMode.system => ThemeMode.system,
-    AppThemeMode.light =>
-      ThemeMode.dark, // TODO: light theme not yet designed — fallback to dark
+    AppThemeMode.light => ThemeMode.light,
   };
 }
 
@@ -44,11 +39,15 @@ class UnitPreferenceNotifier extends StateNotifier<UnitSystem> {
 }
 
 class ThemePreferenceNotifier extends StateNotifier<AppThemeMode> {
-  ThemePreferenceNotifier() : super(AppThemeMode.dark) {
+  ThemePreferenceNotifier() : super(AppThemeMode.system) {
     SharedPreferences.getInstance().then((prefs) {
       _prefs = prefs;
       final raw = prefs.getString(_kThemePrefKey);
-      if (raw == 'system') state = AppThemeMode.system;
+      state = switch (raw) {
+        'dark' => AppThemeMode.dark,
+        'light' => AppThemeMode.light,
+        _ => AppThemeMode.system,
+      };
     });
   }
 
@@ -56,10 +55,11 @@ class ThemePreferenceNotifier extends StateNotifier<AppThemeMode> {
 
   void set(AppThemeMode value) {
     state = value;
-    _prefs?.setString(
-      _kThemePrefKey,
-      value == AppThemeMode.system ? 'system' : 'dark',
-    );
+    _prefs?.setString(_kThemePrefKey, switch (value) {
+      AppThemeMode.dark => 'dark',
+      AppThemeMode.light => 'light',
+      AppThemeMode.system => 'system',
+    });
   }
 }
 

@@ -29,13 +29,22 @@ class UnitPicker extends StatefulWidget {
 class _UnitPickerState extends State<UnitPicker> {
   static const _weightUnits = ['g', 'kg', 'oz', 'lb'];
   static const _volumeUnits = ['ml', 'l', 'tsp', 'tbsp', 'cup', 'fl oz'];
-  static const _countUnits = ['pcs', 'cloves', 'slices', 'bags', 'cans', 'bottles', 'bunches', 'heads'];
+  static const _countUnits = [
+    'pcs',
+    'cloves',
+    'slices',
+    'bags',
+    'cans',
+    'bottles',
+    'bunches',
+    'heads',
+  ];
 
   static List<String> get _allStandardUnits => [
-        ..._weightUnits,
-        ..._volumeUnits,
-        ..._countUnits,
-      ];
+    ..._weightUnits,
+    ..._volumeUnits,
+    ..._countUnits,
+  ];
 
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _customCtrl = TextEditingController();
@@ -92,7 +101,8 @@ class _UnitPickerState extends State<UnitPicker> {
 
   Widget _buildChip(
     String label,
-    bool isSelected, {
+    bool isSelected,
+    AppColors colors, {
     GlobalKey? chipKey,
     bool forceCustom = false,
   }) {
@@ -106,14 +116,16 @@ class _UnitPickerState extends State<UnitPicker> {
       duration: const Duration(milliseconds: 150),
       height: 32,
       width: isShort ? 40 : null,
-      padding: isShort ? EdgeInsets.zero : EdgeInsets.symmetric(horizontal: hPadding),
+      padding: isShort
+          ? EdgeInsets.zero
+          : EdgeInsets.symmetric(horizontal: hPadding),
       decoration: BoxDecoration(
-        color: isSelected ? AppColors.greenDim : AppColors.surface3,
+        color: isSelected ? colors.greenDim : colors.surface3,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isSelected
-              ? AppColors.green.withValues(alpha: 0.4)
-              : AppColors.border,
+              ? colors.green.withValues(alpha: 0.4)
+              : colors.border,
         ),
       ),
       alignment: Alignment.center,
@@ -122,25 +134,22 @@ class _UnitPickerState extends State<UnitPicker> {
         style: AppTextStyles.label.copyWith(
           fontSize: fontSize,
           fontWeight: FontWeight.w500,
-          color: isSelected ? AppColors.green : AppColors.textSecondary,
+          color: isSelected ? colors.green : colors.textSecondary,
         ),
       ),
     );
   }
 
-  Widget _divider() {
+  Widget _divider(AppColors colors) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Container(
-        width: 1,
-        height: 20,
-        color: AppColors.border,
-      ),
+      child: Container(width: 1, height: 20, color: colors.border),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -151,39 +160,58 @@ class _UnitPickerState extends State<UnitPicker> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Weight group
-              ..._weightUnits.map((u) => Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: GestureDetector(
-                      onTap: () => _selectUnit(u),
-                      child: _buildChip(u, widget.selectedUnit == u, chipKey: _chipKeys[u]),
+              ..._weightUnits.map(
+                (u) => Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: GestureDetector(
+                    onTap: () => _selectUnit(u),
+                    child: _buildChip(
+                      u,
+                      widget.selectedUnit == u,
+                      colors,
+                      chipKey: _chipKeys[u],
                     ),
-                  )),
-              _divider(),
-              // Volume group
-              ..._volumeUnits.map((u) => Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: GestureDetector(
-                      onTap: () => _selectUnit(u),
-                      child: _buildChip(u, widget.selectedUnit == u, chipKey: _chipKeys[u]),
+                  ),
+                ),
+              ),
+              _divider(colors),
+              ..._volumeUnits.map(
+                (u) => Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: GestureDetector(
+                    onTap: () => _selectUnit(u),
+                    child: _buildChip(
+                      u,
+                      widget.selectedUnit == u,
+                      colors,
+                      chipKey: _chipKeys[u],
                     ),
-                  )),
-              _divider(),
-              // Count group
-              ..._countUnits.map((u) => Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: GestureDetector(
-                      onTap: () => _selectUnit(u),
-                      child: _buildChip(u, widget.selectedUnit == u, chipKey: _chipKeys[u]),
+                  ),
+                ),
+              ),
+              _divider(colors),
+              ..._countUnits.map(
+                (u) => Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: GestureDetector(
+                    onTap: () => _selectUnit(u),
+                    child: _buildChip(
+                      u,
+                      widget.selectedUnit == u,
+                      colors,
+                      chipKey: _chipKeys[u],
                     ),
-                  )),
-              // Custom chip — always long pill
+                  ),
+                ),
+              ),
               if (widget.allowCustom)
                 GestureDetector(
-                  onTap: () => setState(() => _showCustomField = !_showCustomField),
+                  onTap: () =>
+                      setState(() => _showCustomField = !_showCustomField),
                   child: _buildChip(
                     _isCustomActive ? '${widget.selectedUnit} ✓' : 'Custom…',
                     _isCustomActive,
+                    colors,
                     forceCustom: true,
                   ),
                 ),
@@ -198,11 +226,14 @@ class _UnitPickerState extends State<UnitPicker> {
                 child: TextField(
                   controller: _customCtrl,
                   autofocus: true,
-                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                  style: TextStyle(color: colors.textPrimary, fontSize: 13),
                   decoration: const InputDecoration(
                     hintText: 'Enter unit (e.g. sprigs, sheets…)',
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                   ),
                   onSubmitted: (_) => _confirmCustom(),
                 ),
@@ -214,14 +245,14 @@ class _UnitPickerState extends State<UnitPicker> {
                   height: 36,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: AppColors.greenDim,
+                    color: colors.greenDim,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.greenBorder),
+                    border: Border.all(color: colors.greenBorder),
                   ),
                   alignment: Alignment.center,
-                  child: const Text(
+                  child: Text(
                     '✓',
-                    style: TextStyle(color: AppColors.green, fontSize: 16),
+                    style: TextStyle(color: colors.green, fontSize: 16),
                   ),
                 ),
               ),

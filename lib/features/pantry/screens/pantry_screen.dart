@@ -27,6 +27,8 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     final db = ref.watch(appDatabaseProvider);
     final needsCheck = ref.watch(pantryVerificationStatusProvider);
     var items = db.pantryItems;
@@ -53,7 +55,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -73,7 +75,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                             Text(
                               '${items.length} items',
                               style: AppTextStyles.bodyMd.copyWith(
-                                color: AppColors.textSecondary,
+                                color: colors.textSecondary,
                               ),
                             ),
                           ],
@@ -87,10 +89,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                     const SizedBox(width: 4),
                     IconButton(
                       onPressed: () => _showSearch(),
-                      icon: const Icon(
-                        Icons.search,
-                        color: AppColors.textSecondary,
-                      ),
+                      icon: Icon(Icons.search, color: colors.textSecondary),
                     ),
                   ],
                 ),
@@ -132,8 +131,8 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
       floatingActionButton: FloatingActionButton(
         heroTag: 'pantry_fab',
         onPressed: () => _showAddSheet(context),
-        backgroundColor: AppColors.green,
-        foregroundColor: AppColors.background,
+        backgroundColor: colors.green,
+        foregroundColor: onPrimary,
         elevation: 0,
         child: const Icon(Icons.add, size: 26),
       ),
@@ -142,29 +141,31 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
 
   void _handleDebugLongPress() {
     if (!kDebugMode) return;
+    final colors = AppColors.of(context);
     ref.read(appDatabaseProvider).debugResetVerification();
     ref.invalidate(pantryVerificationStatusProvider);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Debug: pantry marked as overdue'),
-          backgroundColor: AppColors.surface3,
+        SnackBar(
+          content: const Text('Debug: pantry marked as overdue'),
+          backgroundColor: colors.surface3,
           behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
   }
 
   void _showSearch() {
+    final colors = AppColors.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface2,
+        backgroundColor: colors.surface2,
         title: Text('Search Pantry', style: AppTextStyles.headingMd),
         content: TextField(
           autofocus: true,
-          style: const TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: colors.textPrimary),
           decoration: const InputDecoration(hintText: 'Item name...'),
           onChanged: (v) => setState(() => _search = v),
         ),
@@ -176,16 +177,14 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
             },
             child: Text(
               'Clear',
-              style: AppTextStyles.label.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.label.copyWith(color: colors.textSecondary),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Done',
-              style: AppTextStyles.label.copyWith(color: AppColors.green),
+              style: AppTextStyles.label.copyWith(color: colors.green),
             ),
           ),
         ],
@@ -236,11 +235,13 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
   }
 
   void _showEditSheet(BuildContext context, PantryItem item, Ingredient ing) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     final qtyCtrl = TextEditingController(text: item.quantity.toString());
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -261,7 +262,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
               controller: qtyCtrl,
               keyboardType: TextInputType.number,
               autofocus: true,
-              style: const TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(color: colors.textPrimary),
               decoration: InputDecoration(labelText: 'Quantity (${item.unit})'),
             ),
             const SizedBox(height: 20),
@@ -269,8 +270,8 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.green,
-                  foregroundColor: AppColors.background,
+                  backgroundColor: colors.green,
+                  foregroundColor: onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -285,9 +286,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                 },
                 child: Text(
                   'Save',
-                  style: AppTextStyles.label.copyWith(
-                    color: AppColors.background,
-                  ),
+                  style: AppTextStyles.label.copyWith(color: onPrimary),
                 ),
               ),
             ),
@@ -302,9 +301,10 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     PantryItem item,
     Ingredient ing,
   ) {
+    final colors = AppColors.of(context);
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -317,10 +317,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
               child: Text(ing.canonicalName, style: AppTextStyles.headingMd),
             ),
             ListTile(
-              leading: const Icon(
-                Icons.remove_circle_outline,
-                color: AppColors.amber,
-              ),
+              leading: Icon(Icons.remove_circle_outline, color: colors.amber),
               title: Text(
                 'Quick decrement (−1 ${item.unit})',
                 style: AppTextStyles.label,
@@ -336,10 +333,10 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.close, color: AppColors.red),
+              leading: Icon(Icons.close, color: colors.red),
               title: Text(
                 'Mark as out of stock',
-                style: AppTextStyles.label.copyWith(color: AppColors.red),
+                style: AppTextStyles.label.copyWith(color: colors.red),
               ),
               onTap: () {
                 ref.read(appDatabaseProvider).markPantryItemOut(item.id);
@@ -354,6 +351,8 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
   }
 
   void _showAddSheet(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     final nameCtrl = TextEditingController();
     final qtyCtrl = TextEditingController(text: '1');
     String selectedUnit = 'g';
@@ -364,7 +363,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -422,7 +421,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                   TextField(
                     controller: nameCtrl,
                     autofocus: true,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: colors.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'Ingredient name',
                       errorText: nameError,
@@ -433,7 +432,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                   TextField(
                     controller: qtyCtrl,
                     keyboardType: TextInputType.number,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: colors.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'Quantity',
                       errorText: qtyError,
@@ -456,8 +455,8 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.green,
-                        foregroundColor: AppColors.background,
+                        backgroundColor: colors.green,
+                        foregroundColor: onPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -466,9 +465,7 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
                       onPressed: submit,
                       child: Text(
                         'Add',
-                        style: AppTextStyles.label.copyWith(
-                          color: AppColors.background,
-                        ),
+                        style: AppTextStyles.label.copyWith(color: onPrimary),
                       ),
                     ),
                   ),
@@ -488,25 +485,21 @@ class _PantryEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              LucideIcons.package,
-              size: 56,
-              color: AppColors.textTertiary,
-            ),
+            Icon(LucideIcons.package, size: 56, color: colors.textTertiary),
             const SizedBox(height: 20),
             Text('Your pantry is empty', style: AppTextStyles.headingMd),
             const SizedBox(height: 8),
             Text(
               'Add items as you stock up or check off your shopping list',
-              style: AppTextStyles.bodyMd.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.bodyMd.copyWith(color: colors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
@@ -514,8 +507,8 @@ class _PantryEmptyState extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.green,
-                  foregroundColor: AppColors.background,
+                  backgroundColor: colors.green,
+                  foregroundColor: onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -525,9 +518,7 @@ class _PantryEmptyState extends StatelessWidget {
                 icon: const Icon(LucideIcons.plus, size: 18),
                 label: Text(
                   'Add Item',
-                  style: AppTextStyles.label.copyWith(
-                    color: AppColors.background,
-                  ),
+                  style: AppTextStyles.label.copyWith(color: onPrimary),
                 ),
               ),
             ),
@@ -546,6 +537,7 @@ class _CheckInButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Stack(
@@ -555,16 +547,16 @@ class _CheckInButton extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: isOverdue ? AppColors.amberDim : AppColors.surface3,
+              color: isOverdue ? colors.amberDim : colors.surface3,
               shape: BoxShape.circle,
               border: isOverdue
-                  ? Border.all(color: AppColors.amber.withValues(alpha: 0.25))
+                  ? Border.all(color: colors.amber.withValues(alpha: 0.25))
                   : null,
             ),
             child: Icon(
               LucideIcons.clipboardCheck,
               size: 18,
-              color: isOverdue ? AppColors.amber : AppColors.textSecondary,
+              color: isOverdue ? colors.amber : colors.textSecondary,
             ),
           ),
           if (isOverdue)
@@ -574,8 +566,8 @@ class _CheckInButton extends StatelessWidget {
               child: Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
-                  color: AppColors.amber,
+                decoration: BoxDecoration(
+                  color: colors.amber,
                   shape: BoxShape.circle,
                 ),
               ),

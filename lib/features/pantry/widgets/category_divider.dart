@@ -10,6 +10,7 @@ class CategoryDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: 20, bottom: 10),
       child: Row(
@@ -17,13 +18,15 @@ class CategoryDivider extends StatelessWidget {
           Text(
             '${category.emoji} ${category.label}',
             style: AppTextStyles.caption.copyWith(
-              color: category.color,
+              color: category.colorFor(colors),
               fontWeight: FontWeight.w600,
               letterSpacing: 0.5,
             ),
           ),
           const SizedBox(width: 10),
-          const Expanded(child: Divider(color: AppColors.border, height: 1, thickness: 1)),
+          Expanded(
+            child: Divider(color: colors.border, height: 1, thickness: 1),
+          ),
         ],
       ),
     );

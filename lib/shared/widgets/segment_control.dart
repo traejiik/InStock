@@ -16,9 +16,10 @@ class SegmentControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface3,
+        color: colors.surface3,
         borderRadius: BorderRadius.circular(10),
       ),
       padding: const EdgeInsets.all(3),
@@ -31,10 +32,8 @@ class SegmentControl extends StatelessWidget {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.surface2 : Colors.transparent,
-                  border: isSelected
-                      ? Border.all(color: AppColors.border)
-                      : null,
+                  color: isSelected ? colors.surface2 : Colors.transparent,
+                  border: isSelected ? Border.all(color: colors.border) : null,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -42,7 +41,9 @@ class SegmentControl extends StatelessWidget {
                   e.value,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodySm.copyWith(
-                    color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                    color: isSelected
+                        ? colors.textPrimary
+                        : colors.textSecondary,
                     fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
                   ),
                 ),

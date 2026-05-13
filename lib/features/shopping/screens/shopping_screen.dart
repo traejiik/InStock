@@ -25,12 +25,14 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     final db = ref.watch(appDatabaseProvider);
     final items = db.shoppingItems;
     final checkedCount = items.where((i) => i.checked).length;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -68,8 +70,8 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
           : FloatingActionButton(
               heroTag: 'shopping_fab',
               onPressed: () => _showAddSheet(context),
-              backgroundColor: AppColors.green,
-              foregroundColor: AppColors.background,
+              backgroundColor: colors.green,
+              foregroundColor: onPrimary,
               elevation: 0,
               child: const Icon(Icons.add, size: 26),
             ),
@@ -135,6 +137,8 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
   }
 
   void _showAddSheet(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     final db = ref.read(appDatabaseProvider);
     final nameCtrl = TextEditingController();
     final qtyCtrl = TextEditingController(text: '1');
@@ -147,7 +151,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -229,7 +233,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: nameCtrl,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: colors.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'Item name',
                       errorText: nameError,
@@ -242,7 +246,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
                     Text(
                       pantryHint!,
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.amber,
+                        color: colors.amber,
                       ),
                     ),
                   ],
@@ -250,7 +254,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
                   TextField(
                     controller: qtyCtrl,
                     keyboardType: TextInputType.number,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: colors.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'Quantity',
                       errorText: qtyError,
@@ -273,8 +277,8 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.green,
-                        foregroundColor: AppColors.background,
+                        backgroundColor: colors.green,
+                        foregroundColor: onPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -283,9 +287,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
                       onPressed: submit,
                       child: Text(
                         'Add to List',
-                        style: AppTextStyles.label.copyWith(
-                          color: AppColors.background,
-                        ),
+                        style: AppTextStyles.label.copyWith(color: onPrimary),
                       ),
                     ),
                   ),
@@ -309,6 +311,8 @@ class _ShoppingEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxHeight < 260;
@@ -316,8 +320,8 @@ class _ShoppingEmptyState extends StatelessWidget {
 
         final addButton = ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.green,
-            foregroundColor: AppColors.background,
+            backgroundColor: colors.green,
+            foregroundColor: onPrimary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -327,15 +331,15 @@ class _ShoppingEmptyState extends StatelessWidget {
           icon: const Icon(Icons.add, size: 18),
           label: Text(
             'Add Item',
-            style: AppTextStyles.label.copyWith(color: AppColors.background),
+            style: AppTextStyles.label.copyWith(color: onPrimary),
           ),
         );
 
         final recipeButton = ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.surface2,
-            foregroundColor: AppColors.textPrimary,
-            side: const BorderSide(color: AppColors.border),
+            backgroundColor: colors.surface2,
+            foregroundColor: colors.textPrimary,
+            side: BorderSide(color: colors.border),
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -346,7 +350,7 @@ class _ShoppingEmptyState extends StatelessWidget {
           icon: const Icon(LucideIcons.bookOpen, size: 18),
           label: Text(
             'Add from Recipe',
-            style: AppTextStyles.label.copyWith(color: AppColors.textPrimary),
+            style: AppTextStyles.label.copyWith(color: colors.textPrimary),
           ),
         );
 
@@ -364,7 +368,7 @@ class _ShoppingEmptyState extends StatelessWidget {
                   Icon(
                     LucideIcons.shoppingCart,
                     size: compact ? 36 : 56,
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                   ),
                   SizedBox(height: compact ? 10 : 20),
                   Text('Your list is empty', style: AppTextStyles.headingMd),
@@ -373,7 +377,7 @@ class _ShoppingEmptyState extends StatelessWidget {
                     Text(
                       'Add items or pull from a recipe',
                       style: AppTextStyles.bodyMd.copyWith(
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -410,6 +414,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
       child: Column(
@@ -419,9 +424,7 @@ class _Header extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '$total items · $inStock checked off',
-            style: AppTextStyles.bodyMd.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: AppTextStyles.bodyMd.copyWith(color: colors.textSecondary),
           ),
         ],
       ),
@@ -446,6 +449,7 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -459,14 +463,14 @@ class _Section extends StatelessWidget {
                 style: AppTextStyles.caption.copyWith(
                   letterSpacing: 1.1,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ),
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.surface3,
+                  color: colors.surface3,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text('${items.length}', style: AppTextStyles.caption),

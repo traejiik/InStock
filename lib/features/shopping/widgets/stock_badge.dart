@@ -10,10 +10,11 @@ class StockBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final (bg, fg, label) = switch (status) {
-      StockStatus.inStock => (AppColors.greenDim, AppColors.green, 'In stock'),
-      StockStatus.low => (AppColors.amberDim, AppColors.amber, 'Low'),
-      StockStatus.need => (AppColors.redDim, AppColors.red, 'Need'),
+      StockStatus.inStock => (colors.greenDim, colors.greenInk, 'In stock'),
+      StockStatus.low => (colors.amberDim, colors.amberInk, 'Low'),
+      StockStatus.need => (colors.redDim, colors.redInk, 'Need'),
     };
 
     return Container(
@@ -24,7 +25,10 @@ class StockBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: AppTextStyles.caption.copyWith(color: fg, fontWeight: FontWeight.w500),
+        style: AppTextStyles.caption.copyWith(
+          color: fg,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }

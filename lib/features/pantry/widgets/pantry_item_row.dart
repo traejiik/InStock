@@ -28,6 +28,7 @@ class PantryItemRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
@@ -35,9 +36,9 @@ class PantryItemRow extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 6),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: colors.surface,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
         ),
         child: Row(
           children: [
@@ -45,7 +46,7 @@ class PantryItemRow extends StatelessWidget {
               width: 8,
               height: 8,
               decoration: BoxDecoration(
-                color: ingredient.category.color,
+                color: ingredient.category.colorFor(colors),
                 shape: BoxShape.circle,
               ),
             ),
@@ -54,9 +55,18 @@ class PantryItemRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(ingredient.canonicalName, style: AppTextStyles.label),
-                  Text('Added ${_daysAgo()}',
-                      style: AppTextStyles.caption),
+                  Text(
+                    ingredient.canonicalName,
+                    style: AppTextStyles.label.copyWith(
+                      color: colors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    'Added ${_daysAgo()}',
+                    style: AppTextStyles.caption.copyWith(
+                      color: colors.textSecondary,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -66,7 +76,7 @@ class PantryItemRow extends StatelessWidget {
                 Text(
                   UnitConverter.formatQty(item.quantity, item.unit),
                   style: AppTextStyles.bodySm.copyWith(
-                    color: item.quantity == 0 ? AppColors.red : AppColors.textPrimary,
+                    color: item.quantity == 0 ? colors.red : colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 4),

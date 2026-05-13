@@ -23,15 +23,17 @@ class ShoppingListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     return Opacity(
       opacity: item.checked ? 0.5 : 1.0,
       child: Container(
         margin: const EdgeInsets.only(bottom: 2),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: colors.surface,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
         ),
         child: Row(
           children: [
@@ -43,14 +45,14 @@ class ShoppingListItem extends StatelessWidget {
                 height: 24,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: item.checked ? AppColors.green : Colors.transparent,
+                  color: item.checked ? colors.green : Colors.transparent,
                   border: Border.all(
-                    color: item.checked ? AppColors.green : AppColors.border,
+                    color: item.checked ? colors.green : colors.border,
                     width: 2,
                   ),
                 ),
                 child: item.checked
-                    ? const Icon(Icons.check, color: AppColors.background, size: 14)
+                    ? Icon(Icons.check, color: onPrimary, size: 14)
                     : null,
               ),
             ),
@@ -62,16 +64,27 @@ class ShoppingListItem extends StatelessWidget {
                   Text(
                     ingredient.canonicalName,
                     style: AppTextStyles.label.copyWith(
-                      decoration: item.checked ? TextDecoration.lineThrough : null,
-                      decorationColor: AppColors.textSecondary,
+                      color: colors.textPrimary,
+                      decoration: item.checked
+                          ? TextDecoration.lineThrough
+                          : null,
+                      decorationColor: colors.textSecondary,
                     ),
                   ),
                   if (item.checked)
-                    Text('Added to pantry ✓',
-                        style: AppTextStyles.caption.copyWith(color: AppColors.green))
+                    Text(
+                      'Added to pantry ✓',
+                      style: AppTextStyles.caption.copyWith(
+                        color: colors.green,
+                      ),
+                    )
                   else if (sourceRecipeName != null)
-                    Text(sourceRecipeName!,
-                        style: AppTextStyles.caption.copyWith(color: AppColors.purple)),
+                    Text(
+                      sourceRecipeName!,
+                      style: AppTextStyles.caption.copyWith(
+                        color: colors.purple,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -79,12 +92,14 @@ class ShoppingListItem extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: AppColors.surface3,
+                color: colors.surface3,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
                 UnitConverter.formatQty(item.quantity, item.unit),
-                style: AppTextStyles.caption,
+                style: AppTextStyles.caption.copyWith(
+                  color: colors.textSecondary,
+                ),
               ),
             ),
             const SizedBox(width: 6),

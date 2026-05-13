@@ -35,6 +35,7 @@ class _StepEditRowState extends State<StepEditRow> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -43,9 +44,9 @@ class _StepEditRowState extends State<StepEditRow> {
           height: 24,
           margin: const EdgeInsets.only(top: 12, right: 10),
           decoration: BoxDecoration(
-            color: AppColors.surface3,
+            color: colors.surface3,
             shape: BoxShape.circle,
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: colors.border),
           ),
           alignment: Alignment.center,
           child: Text(
@@ -53,7 +54,7 @@ class _StepEditRowState extends State<StepEditRow> {
             style: AppTextStyles.caption.copyWith(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
         ),

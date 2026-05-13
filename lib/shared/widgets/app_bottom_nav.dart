@@ -14,10 +14,11 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(top: BorderSide(color: colors.border)),
       ),
       child: SafeArea(
         top: false,
@@ -25,10 +26,34 @@ class AppBottomNav extends StatelessWidget {
           height: 60,
           child: Row(
             children: [
-              _NavItem(icon: Icons.shopping_cart_outlined, label: 'Shopping', index: 0, current: currentIndex, onTap: onTap),
-              _NavItem(icon: Icons.home_outlined, label: 'Pantry', index: 1, current: currentIndex, onTap: onTap),
-              _NavItem(icon: Icons.menu_book_outlined, label: 'Recipes', index: 2, current: currentIndex, onTap: onTap),
-              _NavItem(icon: Icons.settings_outlined, label: 'Settings', index: 3, current: currentIndex, onTap: onTap),
+              _NavItem(
+                icon: Icons.shopping_cart_outlined,
+                label: 'Shopping',
+                index: 0,
+                current: currentIndex,
+                onTap: onTap,
+              ),
+              _NavItem(
+                icon: Icons.home_outlined,
+                label: 'Pantry',
+                index: 1,
+                current: currentIndex,
+                onTap: onTap,
+              ),
+              _NavItem(
+                icon: Icons.menu_book_outlined,
+                label: 'Recipes',
+                index: 2,
+                current: currentIndex,
+                onTap: onTap,
+              ),
+              _NavItem(
+                icon: Icons.settings_outlined,
+                label: 'Settings',
+                index: 3,
+                current: currentIndex,
+                onTap: onTap,
+              ),
             ],
           ),
         ),
@@ -54,6 +79,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final isActive = index == current;
     return Expanded(
       child: GestureDetector(
@@ -66,20 +92,20 @@ class _NavItem extends StatelessWidget {
               duration: const Duration(milliseconds: 180),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
               decoration: BoxDecoration(
-                color: isActive ? AppColors.greenDim : Colors.transparent,
+                color: isActive ? colors.greenDim : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(
                 icon,
                 size: 22,
-                color: isActive ? AppColors.green : AppColors.textTertiary,
+                color: isActive ? colors.green : colors.textTertiary,
               ),
             ),
             const SizedBox(height: 2),
             Text(
               label,
               style: AppTextStyles.caption.copyWith(
-                color: isActive ? AppColors.green : AppColors.textTertiary,
+                color: isActive ? colors.green : colors.textTertiary,
                 fontSize: 10,
               ),
             ),

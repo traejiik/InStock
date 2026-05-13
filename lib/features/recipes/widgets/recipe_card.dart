@@ -19,18 +19,19 @@ class RecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         height: 180,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [AppColors.surface2, AppColors.surface3],
+            colors: [colors.surface2, colors.surface3],
           ),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
         ),
         child: Stack(
           children: [
@@ -97,18 +98,19 @@ class RecipeCardSm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         height: 130,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [AppColors.surface2, AppColors.surface3],
+            colors: [colors.surface2, colors.surface3],
           ),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
         ),
         child: Stack(
           children: [
@@ -181,9 +183,10 @@ class _MakeableBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final (bg, fg, label) = isMakeable
-        ? (AppColors.greenDim, AppColors.green, '✓ Makeable')
-        : (AppColors.amberDim, AppColors.amber, '$missingCount missing');
+        ? (colors.greenDim, colors.green, '✓ Makeable')
+        : (colors.amberDim, colors.amber, '$missingCount missing');
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -246,13 +249,14 @@ class _Placeholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return SizedBox(
       height: height,
       child: Center(
         child: Icon(
           Icons.restaurant_menu_outlined,
           size: iconSize,
-          color: AppColors.textTertiary,
+          color: colors.textTertiary,
         ),
       ),
     );
@@ -267,30 +271,23 @@ class _MetaRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Row(
       children: [
-        const Icon(Icons.schedule, size: 12, color: AppColors.textTertiary),
+        Icon(Icons.schedule, size: 12, color: colors.textTertiary),
         const SizedBox(width: 4),
         Text('${recipe.cookMinutes}m', style: AppTextStyles.caption),
         const SizedBox(width: 10),
-        const Icon(
-          Icons.people_outline,
-          size: 12,
-          color: AppColors.textTertiary,
-        ),
+        Icon(Icons.people_outline, size: 12, color: colors.textTertiary),
         const SizedBox(width: 4),
         Text('${recipe.servings}', style: AppTextStyles.caption),
         if (missingCount > 0) ...[
           const SizedBox(width: 10),
-          const Icon(
-            Icons.warning_amber_outlined,
-            size: 12,
-            color: AppColors.amber,
-          ),
+          Icon(Icons.warning_amber_outlined, size: 12, color: colors.amber),
           const SizedBox(width: 4),
           Text(
             '$missingCount missing',
-            style: AppTextStyles.caption.copyWith(color: AppColors.amber),
+            style: AppTextStyles.caption.copyWith(color: colors.amber),
           ),
         ],
       ],

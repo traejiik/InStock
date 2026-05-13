@@ -10,8 +10,9 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: navigationShell,
       bottomNavigationBar: AppBottomNav(
         currentIndex: navigationShell.currentIndex,

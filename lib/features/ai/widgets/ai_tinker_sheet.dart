@@ -18,15 +18,16 @@ class AiTinkerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return DraggableScrollableSheet(
       initialChildSize: 0.65,
       minChildSize: 0.4,
       maxChildSize: 0.92,
       builder: (ctx, scrollCtrl) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(top: BorderSide(color: AppColors.border)),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(top: BorderSide(color: colors.border)),
         ),
         child: Column(
           children: [
@@ -35,7 +36,7 @@ class AiTinkerSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.border,
+                color: colors.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -54,7 +55,9 @@ class AiTinkerSheet extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               'Let AI transform this recipe your way',
-                              style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+                              style: AppTextStyles.bodyMd.copyWith(
+                                color: colors.textSecondary,
+                              ),
                             ),
                           ],
                         ),
@@ -63,36 +66,39 @@ class AiTinkerSheet extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  const _AiOption(
+                  _AiOption(
                     emoji: '🔄',
                     title: 'Substitute Ingredient',
                     subtitle: "Swap something you don't have or like",
-                    iconBg: AppColors.amberDim,
+                    iconBg: colors.amberDim,
                   ),
-                  const _AiOption(
+                  _AiOption(
                     emoji: '📏',
                     title: 'Scale Recipe',
                     subtitle: 'Adjust portions + rescale all ingredients',
-                    iconBg: AppColors.blueDim,
+                    iconBg: colors.blueDim,
                   ),
-                  const _AiOption(
+                  _AiOption(
                     emoji: '🥗',
                     title: 'Dietary Transform',
                     subtitle: 'Make it vegan, gluten-free, low-carb…',
-                    iconBg: AppColors.purpleDim,
+                    iconBg: colors.purpleDim,
                   ),
-                  const _AiOption(
+                  _AiOption(
                     emoji: '🏠',
                     title: "What Can I Make?",
                     subtitle: 'Generate recipes from your pantry',
-                    iconBg: AppColors.greenDim,
-                    accentColor: AppColors.green,
+                    iconBg: colors.greenDim,
+                    accentColor: colors.green,
                   ),
                   const SizedBox(height: 16),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
-                      color: AppColors.purpleDim,
+                      color: colors.purpleDim,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -102,7 +108,9 @@ class AiTinkerSheet extends StatelessWidget {
                         Expanded(
                           child: Text(
                             'AI features require internet connection and an active plan',
-                            style: AppTextStyles.caption.copyWith(color: AppColors.purple),
+                            style: AppTextStyles.caption.copyWith(
+                              color: colors.purple,
+                            ),
                           ),
                         ),
                       ],
@@ -123,18 +131,19 @@ class _AiOption extends StatelessWidget {
   final String title;
   final String subtitle;
   final Color iconBg;
-  final Color accentColor;
+  final Color? accentColor;
 
   const _AiOption({
     required this.emoji,
     required this.title,
     required this.subtitle,
     required this.iconBg,
-    this.accentColor = AppColors.textTertiary,
+    this.accentColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: GestureDetector(
@@ -142,9 +151,9 @@ class _AiOption extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           decoration: BoxDecoration(
-            color: AppColors.surface2,
+            color: colors.surface2,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: colors.border),
           ),
           child: Row(
             children: [
@@ -165,12 +174,15 @@ class _AiOption extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title, style: AppTextStyles.label),
-                    Text(subtitle,
-                        style: AppTextStyles.caption),
+                    Text(subtitle, style: AppTextStyles.caption),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: accentColor, size: 20),
+              Icon(
+                Icons.chevron_right,
+                color: accentColor ?? colors.textTertiary,
+                size: 20,
+              ),
             ],
           ),
         ),
@@ -179,11 +191,14 @@ class _AiOption extends StatelessWidget {
   }
 
   void _showComingSoon(BuildContext context) {
+    final colors = AppColors.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('☁️ $title requires an active plan',
-            style: AppTextStyles.bodySm),
-        backgroundColor: AppColors.purpleDim,
+        content: Text(
+          '☁️ $title requires an active plan',
+          style: AppTextStyles.bodySm,
+        ),
+        backgroundColor: colors.purpleDim,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),

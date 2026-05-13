@@ -11,15 +11,16 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = AppColors.of(context);
     final unitPref = ref.watch(unitPreferenceProvider);
     final themePref = ref.watch(themePreferenceProvider);
     final packageInfo = ref.watch(packageInfoProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
         title: Text('Settings', style: AppTextStyles.headingMd),
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         surfaceTintColor: Colors.transparent,
         automaticallyImplyLeading: false,
       ),
@@ -32,9 +33,9 @@ class SettingsScreen extends ConsumerWidget {
               title: 'Preferences',
               children: [
                 _SettingsTile(
-                  leading: const Icon(
+                  leading: Icon(
                     LucideIcons.ruler,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                     size: 20,
                   ),
                   title: Text('Unit System', style: AppTextStyles.label),
@@ -49,9 +50,9 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ),
                 _SettingsTile(
-                  leading: const Icon(
+                  leading: Icon(
                     LucideIcons.moon,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                     size: 20,
                   ),
                   title: Text('Appearance', style: AppTextStyles.label),
@@ -60,6 +61,7 @@ class SettingsScreen extends ConsumerWidget {
                     options: const [
                       (AppThemeMode.dark, 'Dark'),
                       (AppThemeMode.system, 'System'),
+                      (AppThemeMode.light, 'Light'),
                     ],
                     onSelect: (v) =>
                         ref.read(themePreferenceProvider.notifier).set(v),
@@ -72,9 +74,9 @@ class SettingsScreen extends ConsumerWidget {
               title: 'About',
               children: [
                 _SettingsTile(
-                  leading: const Icon(
+                  leading: Icon(
                     LucideIcons.info,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                     size: 20,
                   ),
                   title: Text('Version', style: AppTextStyles.label),
@@ -94,19 +96,19 @@ class SettingsScreen extends ConsumerWidget {
               title: 'Data',
               children: [
                 _SettingsTile(
-                  backgroundColor: AppColors.redDim,
-                  leading: const Icon(
+                  backgroundColor: colors.redDim,
+                  leading: Icon(
                     LucideIcons.trash2,
-                    color: AppColors.red,
+                    color: colors.red,
                     size: 20,
                   ),
                   title: Text(
                     'Clear All Data',
-                    style: AppTextStyles.label.copyWith(color: AppColors.red),
+                    style: AppTextStyles.label.copyWith(color: colors.red),
                   ),
                   subtitle: Text(
                     'Removes all pantry items, recipes, and shopping data',
-                    style: AppTextStyles.caption,
+                    style: AppTextStyles.caption.copyWith(color: colors.redInk),
                   ),
                   onTap: () => _confirmClearData(context, ref),
                 ),
@@ -120,14 +122,15 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   void _confirmClearData(BuildContext context, WidgetRef ref) {
+    final colors = AppColors.of(context);
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: colors.surface,
         title: Text('Clear all data?', style: AppTextStyles.headingSm),
         content: Text(
           'This will permanently delete your pantry, recipes, and shopping list. This cannot be undone.',
-          style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+          style: AppTextStyles.bodyMd.copyWith(color: colors.textSecondary),
         ),
         actions: [
           TextButton(
@@ -141,7 +144,7 @@ class SettingsScreen extends ConsumerWidget {
             },
             child: Text(
               'Clear',
-              style: AppTextStyles.label.copyWith(color: AppColors.red),
+              style: AppTextStyles.label.copyWith(color: colors.red),
             ),
           ),
         ],
@@ -158,6 +161,7 @@ class _SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -168,16 +172,12 @@ class _SettingsSection extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(10),
           child: ColoredBox(
-            color: AppColors.surface,
+            color: colors.surface,
             child: Column(
               children: [
                 for (int i = 0; i < children.length; i++) ...[
                   if (i > 0)
-                    const Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: AppColors.border,
-                    ),
+                    Divider(height: 1, thickness: 1, color: colors.border),
                   children[i],
                 ],
               ],
@@ -235,34 +235,33 @@ class _SegmentedChips<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         for (int i = 0; i < options.length; i++) ...[
           if (i > 0) const SizedBox(width: 4),
-          _buildChip(options[i]),
+          _buildChip(options[i], colors),
         ],
       ],
     );
   }
 
-  Widget _buildChip((T, String) option) {
+  Widget _buildChip((T, String) option, AppColors colors) {
     final isSelected = selected == option.$1;
     return GestureDetector(
       onTap: () => onSelect(option.$1),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.surface3 : AppColors.surface2,
-          border: Border.all(
-            color: isSelected ? AppColors.green : AppColors.border,
-          ),
+          color: isSelected ? colors.surface3 : colors.surface2,
+          border: Border.all(color: isSelected ? colors.green : colors.border),
           borderRadius: BorderRadius.circular(6),
         ),
         child: Text(
           option.$2,
           style: AppTextStyles.caption.copyWith(
-            color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+            color: isSelected ? colors.textPrimary : colors.textSecondary,
           ),
         ),
       ),

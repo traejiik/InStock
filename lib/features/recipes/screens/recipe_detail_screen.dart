@@ -23,14 +23,15 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   bool _servingsInitialized = false;
 
   Future<void> _confirmDelete(String recipeId) async {
+    final colors = AppColors.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: colors.surface,
         title: Text('Delete recipe?', style: AppTextStyles.headingMd),
         content: Text(
           'This cannot be undone.',
-          style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+          style: AppTextStyles.bodyMd.copyWith(color: colors.textSecondary),
         ),
         actions: [
           TextButton(
@@ -41,7 +42,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
               'Delete',
-              style: AppTextStyles.label.copyWith(color: AppColors.red),
+              style: AppTextStyles.label.copyWith(color: colors.red),
             ),
           ),
         ],
@@ -56,19 +57,21 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onWarning = Theme.of(context).brightness == Brightness.light
+        ? colors.textPrimary
+        : colors.background;
     final db = ref.watch(appDatabaseProvider);
     final recipe = db.recipeById(widget.recipeId);
 
     if (recipe == null) {
       return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(backgroundColor: AppColors.background, elevation: 0),
+        backgroundColor: colors.background,
+        appBar: AppBar(backgroundColor: colors.background, elevation: 0),
         body: Center(
           child: Text(
             'Recipe not found',
-            style: AppTextStyles.bodyMd.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: AppTextStyles.bodyMd.copyWith(color: colors.textSecondary),
           ),
         ),
       );
@@ -84,7 +87,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
     final missingCount = db.missingCountForRecipe(recipe.id);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: Column(
         children: [
           Expanded(
@@ -130,14 +133,14 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.surface,
+                          color: colors.surface,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.border),
+                          border: Border.all(color: colors.border),
                         ),
                         child: Text(
                           'No ingredients added yet — tap ✎ to edit',
                           style: AppTextStyles.bodySm.copyWith(
-                            color: AppColors.textSecondary,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ),
@@ -209,10 +212,10 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                   content: Text(
                     msg,
                     style: AppTextStyles.bodySm.copyWith(
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
                   ),
-                  backgroundColor: AppColors.surface2,
+                  backgroundColor: colors.surface2,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -228,11 +231,9 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                   SnackBar(
                     content: Text(
                       "You're missing $missing. Add it to your pantry first, or mark it as optional.",
-                      style: AppTextStyles.bodySm.copyWith(
-                        color: AppColors.background,
-                      ),
+                      style: AppTextStyles.bodySm.copyWith(color: onWarning),
                     ),
-                    backgroundColor: AppColors.amber,
+                    backgroundColor: colors.amber,
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -247,10 +248,10 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                   content: Text(
                     'Pantry updated — enjoy your meal! 🍳',
                     style: AppTextStyles.bodySm.copyWith(
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
                   ),
-                  backgroundColor: AppColors.surface2,
+                  backgroundColor: colors.surface2,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -287,6 +288,7 @@ class _HeroArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final screenHeight = MediaQuery.sizeOf(context).height;
     final headerHeight = (screenHeight * 0.48).clamp(360.0, 430.0);
 
@@ -310,18 +312,18 @@ class _HeroArea extends StatelessWidget {
 
           // Gradient scrim so the back button stays readable over photos
           if (recipe.imageUrl != null)
-            const Positioned.fill(
+            Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0x99000000),
-                      Color(0x22000000),
-                      AppColors.background,
+                      const Color(0x99000000),
+                      const Color(0x22000000),
+                      colors.background,
                     ],
-                    stops: [0.0, 0.46, 1.0],
+                    stops: const [0.0, 0.46, 1.0],
                   ),
                 ),
               ),
@@ -333,9 +335,9 @@ class _HeroArea extends StatelessWidget {
             left: 16,
             child: _CircleButton(
               onTap: () => Navigator.pop(context),
-              child: const Icon(
+              child: Icon(
                 Icons.arrow_back,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
                 size: 20,
               ),
             ),
@@ -347,11 +349,7 @@ class _HeroArea extends StatelessWidget {
             left: 60,
             child: _CircleButton(
               onTap: onDelete,
-              child: const Icon(
-                Icons.delete_outline,
-                color: AppColors.red,
-                size: 20,
-              ),
+              child: Icon(Icons.delete_outline, color: colors.red, size: 20),
             ),
           ),
 
@@ -362,17 +360,17 @@ class _HeroArea extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: isMakeable ? AppColors.greenDim : AppColors.amberDim,
+                color: isMakeable ? colors.greenDim : colors.amberDim,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: isMakeable ? AppColors.green : AppColors.amber,
+                  color: isMakeable ? colors.green : colors.amber,
                   width: 1,
                 ),
               ),
               child: Text(
                 isMakeable ? '✓ Makeable' : '$missingCount missing',
                 style: AppTextStyles.caption.copyWith(
-                  color: isMakeable ? AppColors.green : AppColors.amber,
+                  color: isMakeable ? colors.green : colors.amber,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -389,7 +387,7 @@ class _HeroArea extends StatelessWidget {
                 Text(
                   recipe.title,
                   style: AppTextStyles.displayLg.copyWith(
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                     shadows: const [
                       Shadow(
                         blurRadius: 16,
@@ -421,19 +419,20 @@ class _RecipePlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.surface2, AppColors.background],
+          colors: [colors.surface2, colors.background],
         ),
       ),
-      child: const Center(
+      child: Center(
         child: Icon(
           Icons.restaurant_menu_outlined,
           size: 72,
-          color: AppColors.textTertiary,
+          color: colors.textTertiary,
         ),
       ),
     );
@@ -448,15 +447,16 @@ class _CircleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: AppColors.surface2,
+          color: colors.surface2,
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
         ),
         child: child,
       ),
@@ -492,17 +492,18 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: AppColors.surface2,
+        color: colors.surface2,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: AppColors.textSecondary),
+          Icon(icon, size: 13, color: colors.textSecondary),
           const SizedBox(width: 5),
           Text(label, style: AppTextStyles.caption),
         ],
@@ -524,12 +525,13 @@ class _ServingsControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         children: [
@@ -554,17 +556,18 @@ class _RoundButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: AppColors.surface3,
+          color: colors.surface3,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
         ),
-        child: Icon(icon, size: 16, color: AppColors.textPrimary),
+        child: Icon(icon, size: 16, color: colors.textPrimary),
       ),
     );
   }
@@ -577,6 +580,7 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Row(
       children: [
         Text(title, style: AppTextStyles.headingMd),
@@ -584,7 +588,7 @@ class _SectionHeader extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
-            color: AppColors.surface3,
+            color: colors.surface3,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text('$count', style: AppTextStyles.caption),
@@ -613,6 +617,8 @@ class _BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     return Container(
       padding: EdgeInsets.fromLTRB(
         20,
@@ -620,9 +626,9 @@ class _BottomBar extends StatelessWidget {
         20,
         MediaQuery.of(context).padding.bottom + 12,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(top: BorderSide(color: colors.border)),
       ),
       child: Row(
         children: [
@@ -631,8 +637,8 @@ class _BottomBar extends StatelessWidget {
               flex: 2,
               child: _BarButton(
                 label: '+ Add Missing',
-                bg: AppColors.green,
-                fg: AppColors.background,
+                bg: colors.green,
+                fg: onPrimary,
                 onTap: onAddMissing,
               ),
             ),
@@ -641,16 +647,16 @@ class _BottomBar extends StatelessWidget {
             flex: 2,
             child: _BarButton(
               label: '🍳 Cooked',
-              bg: AppColors.surface3,
-              fg: AppColors.textPrimary,
+              bg: colors.surface3,
+              fg: colors.textPrimary,
               onTap: onCooked,
             ),
           ),
           const SizedBox(width: 8),
           _BarButton(
             label: '✨ AI',
-            bg: AppColors.purpleDim,
-            fg: AppColors.purple,
+            bg: colors.purpleDim,
+            fg: colors.purple,
             onTap: onAI,
           ),
         ],

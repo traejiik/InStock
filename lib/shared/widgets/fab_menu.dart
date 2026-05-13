@@ -53,6 +53,8 @@ class _FabMenuState extends State<FabMenu> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -86,9 +88,12 @@ class _FabMenuState extends State<FabMenu> with SingleTickerProviderStateMixin {
                   decoration: BoxDecoration(
                     color: e.value.background,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: colors.border),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 11,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -96,7 +101,9 @@ class _FabMenuState extends State<FabMenu> with SingleTickerProviderStateMixin {
                       const SizedBox(width: 8),
                       Text(
                         e.value.label,
-                        style: AppTextStyles.label.copyWith(color: e.value.textColor),
+                        style: AppTextStyles.label.copyWith(
+                          color: e.value.textColor,
+                        ),
                       ),
                     ],
                   ),
@@ -108,8 +115,8 @@ class _FabMenuState extends State<FabMenu> with SingleTickerProviderStateMixin {
         FloatingActionButton(
           heroTag: 'recipes_fab',
           onPressed: _toggle,
-          backgroundColor: AppColors.green,
-          foregroundColor: AppColors.background,
+          backgroundColor: colors.green,
+          foregroundColor: onPrimary,
           elevation: 0,
           child: AnimatedRotation(
             turns: _isOpen ? 0.125 : 0,

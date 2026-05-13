@@ -6,8 +6,8 @@ import 'package:instock/core/theme/app_text_styles.dart';
 
 class ToggleRow extends StatelessWidget {
   final IconData icon;
-  final Color iconColor;
-  final Color iconBg;
+  final Color? iconColor;
+  final Color? iconBg;
   final String title;
   final String? subtitle;
   final bool value;
@@ -16,8 +16,8 @@ class ToggleRow extends StatelessWidget {
   const ToggleRow({
     super.key,
     required this.icon,
-    this.iconColor = AppColors.textPrimary,
-    this.iconBg = AppColors.surface3,
+    this.iconColor,
+    this.iconBg,
     required this.title,
     this.subtitle,
     required this.value,
@@ -26,11 +26,15 @@ class ToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final resolvedIconColor = iconColor ?? colors.textPrimary;
+    final resolvedIconBg = iconBg ?? colors.surface3;
+
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface2,
+        color: colors.surface2,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colors.border),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
@@ -39,27 +43,37 @@ class ToggleRow extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: iconBg,
+              color: resolvedIconBg,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: iconColor, size: 18),
+            child: Icon(icon, color: resolvedIconColor, size: 18),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppTextStyles.label),
+                Text(
+                  title,
+                  style: AppTextStyles.label.copyWith(
+                    color: colors.textPrimary,
+                  ),
+                ),
                 if (subtitle != null)
-                  Text(subtitle!, style: AppTextStyles.caption),
+                  Text(
+                    subtitle!,
+                    style: AppTextStyles.caption.copyWith(
+                      color: colors.textSecondary,
+                    ),
+                  ),
               ],
             ),
           ),
           CupertinoSwitch(
             value: value,
             onChanged: onChanged,
-            activeTrackColor: AppColors.green,
-            thumbColor: AppColors.background,
+            activeTrackColor: colors.green,
+            thumbColor: colors.surface,
           ),
         ],
       ),

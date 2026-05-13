@@ -12,7 +12,8 @@ class InStockApp extends ConsumerWidget {
     final themeMode = ref.watch(themePreferenceProvider).toThemeMode();
     return MaterialApp.router(
       title: 'InStock',
-      theme: AppTheme.dark,
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
       themeMode: themeMode,
       routerConfig: appRouter,
       debugShowCheckedModeBanner: false,

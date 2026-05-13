@@ -27,6 +27,7 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final db = ref.watch(appDatabaseProvider);
     var recipes = _makeableOnly
         ? db.recipes.where((r) => db.isRecipeMakeable(r.id)).toList()
@@ -42,7 +43,7 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -58,14 +59,16 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
                           Text('Recipes', style: AppTextStyles.displayLg),
                           Text(
                             '${db.recipes.length} saved',
-                            style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+                            style: AppTextStyles.bodyMd.copyWith(
+                              color: colors.textSecondary,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
                       onPressed: () {},
-                      icon: const Icon(Icons.search, color: AppColors.textSecondary),
+                      icon: Icon(Icons.search, color: colors.textSecondary),
                     ),
                   ],
                 ),
@@ -76,8 +79,8 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
               sliver: SliverToBoxAdapter(
                 child: ToggleRow(
                   icon: Icons.auto_awesome,
-                  iconColor: AppColors.purple,
-                  iconBg: AppColors.purpleDim,
+                  iconColor: colors.purple,
+                  iconBg: colors.purpleDim,
                   title: 'Makeable Now',
                   subtitle: 'Filter to recipes you can cook today',
                   value: _makeableOnly,
@@ -101,9 +104,12 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
               SliverFillRemaining(
                 child: _makeableOnly
                     ? _MakeableEmptyState(
-                        onClearFilter: () => setState(() => _makeableOnly = false),
+                        onClearFilter: () =>
+                            setState(() => _makeableOnly = false),
                       )
-                    : _RecipesEmptyState(onNavigate: (path) => context.push(path)),
+                    : _RecipesEmptyState(
+                        onNavigate: (path) => context.push(path),
+                      ),
               )
             else
               SliverPadding(
@@ -118,22 +124,22 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
           FabOption(
             emoji: '✍️',
             label: 'Write recipe',
-            background: AppColors.surface2,
-            textColor: AppColors.textPrimary,
+            background: colors.surface2,
+            textColor: colors.textPrimary,
             onTap: () => context.push('/recipes/add?tab=0'),
           ),
           FabOption(
             emoji: '🔗',
             label: 'Import URL',
-            background: AppColors.surface2,
-            textColor: AppColors.textPrimary,
+            background: colors.surface2,
+            textColor: colors.textPrimary,
             onTap: () => context.push('/recipes/add?tab=1'),
           ),
           FabOption(
             emoji: '✨',
             label: 'AI Generate ☁️',
-            background: AppColors.purpleDim,
-            textColor: AppColors.purple,
+            background: colors.purpleDim,
+            textColor: colors.purple,
             onTap: () => context.push('/recipes/add?tab=2'),
           ),
         ],
@@ -142,7 +148,9 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
   }
 
   Widget _buildGrid(AppDatabase db, List<Recipe> recipes) {
-    if (recipes.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    if (recipes.isEmpty) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
 
     final first = recipes.first;
     final rest = recipes.skip(1).toList();
@@ -173,31 +181,40 @@ class _RecipesEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(LucideIcons.bookOpen, size: 56, color: AppColors.textTertiary),
+            Icon(LucideIcons.bookOpen, size: 56, color: colors.textTertiary),
             const SizedBox(height: 20),
             Text('No recipes yet', style: AppTextStyles.headingMd),
             const SizedBox(height: 8),
             Text(
               'Write one, import from a URL, or generate with AI',
-              style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMd.copyWith(color: colors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
-            _EmptyActionButton(emoji: '✍️', label: 'Write recipe', onTap: () => onNavigate('/recipes/add?tab=0')),
+            _EmptyActionButton(
+              emoji: '✍️',
+              label: 'Write recipe',
+              onTap: () => onNavigate('/recipes/add?tab=0'),
+            ),
             const SizedBox(height: 10),
-            _EmptyActionButton(emoji: '🔗', label: 'Import URL', onTap: () => onNavigate('/recipes/add?tab=1')),
+            _EmptyActionButton(
+              emoji: '🔗',
+              label: 'Import URL',
+              onTap: () => onNavigate('/recipes/add?tab=1'),
+            ),
             const SizedBox(height: 10),
             _EmptyActionButton(
               emoji: '✨',
               label: 'AI Generate',
-              bg: AppColors.purpleDim,
-              fg: AppColors.purple,
+              bg: colors.purpleDim,
+              fg: colors.purple,
               onTap: () => onNavigate('/recipes/add?tab=2'),
             ),
           ],
@@ -213,27 +230,32 @@ class _MakeableEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(LucideIcons.chefHat, size: 56, color: AppColors.textTertiary),
+            Icon(LucideIcons.chefHat, size: 56, color: colors.textTertiary),
             const SizedBox(height: 20),
-            Text('Nothing makeable right now', style: AppTextStyles.headingMd, textAlign: TextAlign.center),
+            Text(
+              'Nothing makeable right now',
+              style: AppTextStyles.headingMd,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
             Text(
               "You're missing ingredients for all your recipes",
-              style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodyMd.copyWith(color: colors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
             _EmptyActionButton(
               emoji: '🛒',
               label: "See What's Missing",
-              bg: AppColors.amberDim,
-              fg: AppColors.amber,
+              bg: colors.amberDim,
+              fg: colors.amber,
               onTap: onClearFilter,
             ),
           ],
@@ -246,34 +268,37 @@ class _MakeableEmptyState extends StatelessWidget {
 class _EmptyActionButton extends StatelessWidget {
   final String emoji;
   final String label;
-  final Color bg;
-  final Color fg;
+  final Color? bg;
+  final Color? fg;
   final VoidCallback onTap;
 
   const _EmptyActionButton({
     required this.emoji,
     required this.label,
     required this.onTap,
-    this.bg = AppColors.surface2,
-    this.fg = AppColors.textPrimary,
+    this.bg,
+    this.fg,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final background = bg ?? colors.surface2;
+    final foreground = fg ?? colors.textPrimary;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 13),
         decoration: BoxDecoration(
-          color: bg,
+          color: background,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
         ),
         child: Text(
           '$emoji  $label',
           textAlign: TextAlign.center,
-          style: AppTextStyles.label.copyWith(color: fg),
+          style: AppTextStyles.label.copyWith(color: foreground),
         ),
       ),
     );

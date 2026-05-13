@@ -58,13 +58,18 @@ class _AddRecipeScreenState extends ConsumerState<AddRecipeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textSecondary, size: 20),
+          icon: Icon(
+            LucideIcons.arrowLeft,
+            color: colors.textSecondary,
+            size: 20,
+          ),
           onPressed: () => context.pop(),
         ),
         title: Text('Add Recipe', style: AppTextStyles.headingMd),
@@ -89,9 +94,7 @@ class _AddRecipeScreenState extends ConsumerState<AddRecipeScreen> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
               child: [
-                _WriteTabContent(
-                  prefilledTitle: _writePrefilledTitle,
-                ),
+                _WriteTabContent(prefilledTitle: _writePrefilledTitle),
                 _ImportTabContent(
                   urlCtrl: _urlCtrl,
                   aiReview: _aiReview,
@@ -127,7 +130,9 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
   final _timeCtrl = TextEditingController();
   final _sourceCtrl = TextEditingController();
   final List<TextEditingController> _ingNameCtrl = [TextEditingController()];
-  final List<TextEditingController> _ingQtyCtrl = [TextEditingController(text: '1')];
+  final List<TextEditingController> _ingQtyCtrl = [
+    TextEditingController(text: '1'),
+  ];
   final List<String?> _ingUnits = [null];
   final List<TextEditingController> _stepCtrl = [TextEditingController()];
 
@@ -168,7 +173,9 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
 
     setState(() {
       _titleError = title.length < 2 ? 'Required' : null;
-      _servingsError = (servings == null || servings <= 0) ? 'Must be > 0' : null;
+      _servingsError = (servings == null || servings <= 0)
+          ? 'Must be > 0'
+          : null;
       _ingredientsError = !hasIng ? 'Add at least one ingredient' : null;
       _stepsError = !hasStep ? 'Add at least one step' : null;
     });
@@ -184,7 +191,8 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
     if (!_validate()) return;
 
     final db = ref.read(appDatabaseProvider);
-    final ingredients = <({String name, double quantity, String unit, bool isOptional})>[];
+    final ingredients =
+        <({String name, double quantity, String unit, bool isOptional})>[];
 
     for (var i = 0; i < _ingNameCtrl.length; i++) {
       final name = _ingNameCtrl[i].text.trim();
@@ -210,7 +218,9 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
       difficulty: 'Medium',
       instructions: steps,
       ingredients: ingredients,
-      sourceUrl: _sourceCtrl.text.trim().isEmpty ? null : _sourceCtrl.text.trim(),
+      sourceUrl: _sourceCtrl.text.trim().isEmpty
+          ? null
+          : _sourceCtrl.text.trim(),
     );
 
     context.go('/recipes');
@@ -218,26 +228,40 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _InputField(_titleCtrl, 'Recipe Name', errorText: _titleError),
         const SizedBox(height: 10),
-        Row(children: [
-          Expanded(child: _InputField(_servingsCtrl, 'Servings',
-              type: TextInputType.number, errorText: _servingsError)),
-          const SizedBox(width: 10),
-          Expanded(child: _InputField(_timeCtrl, 'Cook time (min)',
-              type: TextInputType.number)),
-        ]),
-        const SizedBox(height: 10),
-        _InputField(_sourceCtrl, 'Source URL (optional)',
-            type: TextInputType.url),
-        const SizedBox(height: 20),
-        _SectionHeader(
-          label: 'Ingredients',
-          error: _ingredientsError,
+        Row(
+          children: [
+            Expanded(
+              child: _InputField(
+                _servingsCtrl,
+                'Servings',
+                type: TextInputType.number,
+                errorText: _servingsError,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _InputField(
+                _timeCtrl,
+                'Cook time (min)',
+                type: TextInputType.number,
+              ),
+            ),
+          ],
         ),
+        const SizedBox(height: 10),
+        _InputField(
+          _sourceCtrl,
+          'Source URL (optional)',
+          type: TextInputType.url,
+        ),
+        const SizedBox(height: 20),
+        _SectionHeader(label: 'Ingredients', error: _ingredientsError),
         const SizedBox(height: 8),
         ..._ingNameCtrl.asMap().entries.map((e) {
           final i = e.key;
@@ -246,29 +270,42 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: [
-                  Expanded(
-                    child: _InputField(_ingNameCtrl[i], 'Ingredient ${i + 1}'),
-                  ),
-                  const SizedBox(width: 8),
-                  _InputField(_ingQtyCtrl[i], 'Qty',
-                      type: const TextInputType.numberWithOptions(decimal: true),
-                      width: 64),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () => setState(() {
-                      if (_ingNameCtrl.length > 1) {
-                        _ingNameCtrl[i].dispose();
-                        _ingQtyCtrl[i].dispose();
-                        _ingNameCtrl.removeAt(i);
-                        _ingQtyCtrl.removeAt(i);
-                        _ingUnits.removeAt(i);
-                      }
-                    }),
-                    child: const Icon(LucideIcons.minusCircle,
-                        color: AppColors.textTertiary, size: 20),
-                  ),
-                ]),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _InputField(
+                        _ingNameCtrl[i],
+                        'Ingredient ${i + 1}',
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    _InputField(
+                      _ingQtyCtrl[i],
+                      'Qty',
+                      type: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      width: 64,
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => setState(() {
+                        if (_ingNameCtrl.length > 1) {
+                          _ingNameCtrl[i].dispose();
+                          _ingQtyCtrl[i].dispose();
+                          _ingNameCtrl.removeAt(i);
+                          _ingQtyCtrl.removeAt(i);
+                          _ingUnits.removeAt(i);
+                        }
+                      }),
+                      child: Icon(
+                        LucideIcons.minusCircle,
+                        color: colors.textTertiary,
+                        size: 20,
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 6),
                 UnitPicker(
                   selectedUnit: _ingUnits[i],
@@ -298,12 +335,13 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 24, height: 24,
+                  width: 24,
+                  height: 24,
                   margin: const EdgeInsets.only(top: 14, right: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.surface3,
+                    color: colors.surface3,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: colors.border),
                   ),
                   alignment: Alignment.center,
                   child: Text(
@@ -323,8 +361,10 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
                     decoration: InputDecoration(
                       hintText: 'Step ${i + 1}…',
                       isDense: true,
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 10,
+                      ),
                     ),
                   ),
                 ),
@@ -336,10 +376,13 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
                       _stepCtrl.removeAt(i);
                     }
                   }),
-                  child: const Padding(
-                    padding: EdgeInsets.only(top: 12),
-                    child: Icon(LucideIcons.minusCircle,
-                        color: AppColors.textTertiary, size: 20),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Icon(
+                      LucideIcons.minusCircle,
+                      color: colors.textTertiary,
+                      size: 20,
+                    ),
                   ),
                 ),
               ],
@@ -378,6 +421,7 @@ class _ImportTabContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = AppColors.of(context);
     final importState = ref.watch(recipeImportProvider);
 
     return Column(
@@ -387,32 +431,39 @@ class _ImportTabContent extends ConsumerWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: colors.surface,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.border, width: 1.5),
+            border: Border.all(color: colors.border, width: 1.5),
           ),
-          child: Column(children: [
-            const Icon(LucideIcons.link, color: AppColors.textTertiary, size: 28),
-            const SizedBox(height: 10),
-            Text('Paste a recipe URL',
-                style: AppTextStyles.headingSm),
-            const SizedBox(height: 6),
-            Text(
-              'Works with most food blogs and sites',
-              style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-          ]),
+          child: Column(
+            children: [
+              Icon(LucideIcons.link, color: colors.textTertiary, size: 28),
+              const SizedBox(height: 10),
+              Text('Paste a recipe URL', style: AppTextStyles.headingSm),
+              const SizedBox(height: 6),
+              Text(
+                'Works with most food blogs and sites',
+                style: AppTextStyles.bodySm.copyWith(
+                  color: colors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: urlCtrl,
           enabled: !importState.isLoading,
           keyboardType: TextInputType.url,
-          style: const TextStyle(color: AppColors.textPrimary),
-          decoration: const InputDecoration(
+          style: TextStyle(color: colors.textPrimary),
+          decoration: InputDecoration(
             hintText: 'https://…',
-            prefixIcon: Icon(LucideIcons.link, color: AppColors.textTertiary, size: 18),
+            prefixIcon: Icon(
+              LucideIcons.link,
+              color: colors.textTertiary,
+              size: 18,
+            ),
           ),
         ),
         const SizedBox(height: 14),
@@ -424,8 +475,8 @@ class _ImportTabContent extends ConsumerWidget {
             onTap: urlCtrl.text.trim().isEmpty
                 ? null
                 : () => ref
-                    .read(recipeImportProvider.notifier)
-                    .scrape(urlCtrl.text.trim()),
+                      .read(recipeImportProvider.notifier)
+                      .scrape(urlCtrl.text.trim()),
           ),
         if (importState.hasError) ...[
           const SizedBox(height: 12),
@@ -457,19 +508,22 @@ class _LoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      const SizedBox(height: 24),
-      const CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation(AppColors.green),
-        strokeWidth: 2,
-      ),
-      const SizedBox(height: 12),
-      Text(
-        'Fetching recipe…',
-        style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary),
-      ),
-      const SizedBox(height: 24),
-    ]);
+    final colors = AppColors.of(context);
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+        CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation(colors.green),
+          strokeWidth: 2,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Fetching recipe…',
+          style: AppTextStyles.bodySm.copyWith(color: colors.textSecondary),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
   }
 }
 
@@ -480,35 +534,36 @@ class _ErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.amberDim,
+        color: colors.amberDim,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: AppColors.amber.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: colors.amber.withValues(alpha: 0.2)),
       ),
-      child: Row(children: [
-        const Icon(LucideIcons.alertTriangle, color: AppColors.amber, size: 16),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            "Couldn't parse this URL automatically.",
-            style: AppTextStyles.bodySm.copyWith(color: AppColors.textPrimary),
-          ),
-        ),
-        GestureDetector(
-          onTap: onEditManually,
-          child: Text(
-            'Edit Manually →',
-            style: AppTextStyles.bodySm.copyWith(
-              color: AppColors.amber,
-              fontWeight: FontWeight.w600,
+      child: Row(
+        children: [
+          Icon(LucideIcons.alertTriangle, color: colors.amber, size: 16),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              "Couldn't parse this URL automatically.",
+              style: AppTextStyles.bodySm.copyWith(color: colors.textPrimary),
             ),
           ),
-        ),
-      ]),
+          GestureDetector(
+            onTap: onEditManually,
+            child: Text(
+              'Edit Manually →',
+              style: AppTextStyles.bodySm.copyWith(
+                color: colors.amber,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -530,32 +585,35 @@ class _PreviewSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [
-          Text('Preview', style: AppTextStyles.headingSm),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: AppColors.greenDim,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: AppColors.greenBorder),
+        Row(
+          children: [
+            Text('Preview', style: AppTextStyles.headingSm),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: colors.greenDim,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: colors.greenBorder),
+              ),
+              child: Text(
+                '✓ Parsed',
+                style: AppTextStyles.caption.copyWith(color: colors.green),
+              ),
             ),
-            child: Text(
-              '✓ Parsed',
-              style: AppTextStyles.caption.copyWith(color: AppColors.green),
-            ),
-          ),
-        ]),
+          ],
+        ),
         const SizedBox(height: 12),
         _RecipePreviewCard(parsed: parsed),
         const SizedBox(height: 16),
         ToggleRow(
           icon: Icons.auto_awesome,
-          iconColor: AppColors.purple,
-          iconBg: AppColors.purpleDim,
+          iconColor: colors.purple,
+          iconBg: colors.purpleDim,
           title: 'AI Review ☁️',
           subtitle: 'Let AI check for improvements',
           value: aiReview,
@@ -563,9 +621,11 @@ class _PreviewSection extends ConsumerWidget {
             if (v) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('AI Review coming soon',
-                      style: AppTextStyles.bodySm),
-                  backgroundColor: AppColors.purpleDim,
+                  content: Text(
+                    'AI Review coming soon',
+                    style: AppTextStyles.bodySm,
+                  ),
+                  backgroundColor: colors.purpleDim,
                 ),
               );
             } else {
@@ -576,8 +636,8 @@ class _PreviewSection extends ConsumerWidget {
         const SizedBox(height: 10),
         ToggleRow(
           icon: Icons.straighten,
-          iconColor: AppColors.blue,
-          iconBg: AppColors.blueDim,
+          iconColor: colors.blue,
+          iconBg: colors.blueDim,
           title: 'Convert to Metric',
           subtitle: 'cups/oz/tbsp → ml/g',
           value: convertMetric,
@@ -609,11 +669,12 @@ class _RecipePreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface2,
+        color: colors.surface2,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colors.border),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -631,11 +692,13 @@ class _RecipePreviewCard extends StatelessWidget {
                     loadingBuilder: (_, child, progress) {
                       if (progress == null) return child;
                       return Container(
-                        color: AppColors.surface3,
+                        color: colors.surface3,
                         alignment: Alignment.center,
-                        child: const CircularProgressIndicator(
+                        child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(AppColors.textTertiary),
+                          valueColor: AlwaysStoppedAnimation(
+                            colors.textTertiary,
+                          ),
                         ),
                       );
                     },
@@ -654,24 +717,38 @@ class _RecipePreviewCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
-                Row(children: [
-                  if (parsed.cookTimeMinutes != null) ...[
-                    const Icon(LucideIcons.clock,
-                        size: 13, color: AppColors.textSecondary),
+                Row(
+                  children: [
+                    if (parsed.cookTimeMinutes != null) ...[
+                      Icon(
+                        LucideIcons.clock,
+                        size: 13,
+                        color: colors.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${parsed.cookTimeMinutes} min',
+                        style: AppTextStyles.caption,
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+                    Icon(
+                      LucideIcons.users,
+                      size: 13,
+                      color: colors.textSecondary,
+                    ),
                     const SizedBox(width: 4),
-                    Text('${parsed.cookTimeMinutes} min',
-                        style: AppTextStyles.caption),
+                    Text(
+                      '${parsed.baseServings} servings',
+                      style: AppTextStyles.caption,
+                    ),
                     const SizedBox(width: 12),
+                    Text(
+                      '${parsed.ingredients.length} ingredients',
+                      style: AppTextStyles.caption,
+                    ),
                   ],
-                  const Icon(LucideIcons.users,
-                      size: 13, color: AppColors.textSecondary),
-                  const SizedBox(width: 4),
-                  Text('${parsed.baseServings} servings',
-                      style: AppTextStyles.caption),
-                  const SizedBox(width: 12),
-                  Text('${parsed.ingredients.length} ingredients',
-                      style: AppTextStyles.caption),
-                ]),
+                ),
               ],
             ),
           ),
@@ -686,8 +763,9 @@ class _ImageFallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
-      color: AppColors.surface3,
+      color: colors.surface3,
       alignment: Alignment.center,
       child: const Text('🍽', style: TextStyle(fontSize: 48)),
     );
@@ -701,6 +779,7 @@ class _AiTabContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       children: [
         const SizedBox(height: 32),
@@ -710,19 +789,19 @@ class _AiTabContent extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           'Coming in a future update',
-          style: AppTextStyles.bodyMd.copyWith(color: AppColors.textSecondary),
+          style: AppTextStyles.bodyMd.copyWith(color: colors.textSecondary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 20),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.purpleDim,
+            color: colors.purpleDim,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
             '☁️  Requires internet + active plan',
-            style: AppTextStyles.caption.copyWith(color: AppColors.purple),
+            style: AppTextStyles.caption.copyWith(color: colors.purple),
           ),
         ),
       ],
@@ -740,14 +819,19 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [
-      Text(label, style: AppTextStyles.headingSm),
-      if (error != null) ...[
-        const SizedBox(width: 10),
-        Text(error!,
-            style: AppTextStyles.caption.copyWith(color: AppColors.red)),
+    final colors = AppColors.of(context);
+    return Row(
+      children: [
+        Text(label, style: AppTextStyles.headingSm),
+        if (error != null) ...[
+          const SizedBox(width: 10),
+          Text(
+            error!,
+            style: AppTextStyles.caption.copyWith(color: colors.red),
+          ),
+        ],
       ],
-    ]);
+    );
   }
 }
 
@@ -759,16 +843,21 @@ class _AddRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(children: [
-          const Icon(LucideIcons.plusCircle, color: AppColors.green, size: 18),
-          const SizedBox(width: 8),
-          Text(label,
-              style: AppTextStyles.bodySm.copyWith(color: AppColors.green)),
-        ]),
+        child: Row(
+          children: [
+            Icon(LucideIcons.plusCircle, color: colors.green, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: AppTextStyles.bodySm.copyWith(color: colors.green),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -816,21 +905,22 @@ class _PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: onTap == null ? AppColors.surface3 : AppColors.green,
+          color: onTap == null ? colors.surface3 : colors.green,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Text(
           label,
           textAlign: TextAlign.center,
           style: AppTextStyles.label.copyWith(
-            color:
-                onTap == null ? AppColors.textTertiary : AppColors.background,
+            color: onTap == null ? colors.textTertiary : onPrimary,
           ),
         ),
       ),
