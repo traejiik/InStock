@@ -136,77 +136,79 @@ Rules:
 <claude-mem-context>
 # Memory Context
 
-# [InStock] recent context, 2026-05-11 11:28pm GMT+2
+# [InStock] recent context, 2026-05-13 3:08am GMT+2
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (16,365t read) | 423,499t work | 96% savings
+Stats: 50 obs (17,493t read) | 277,558t work | 94% savings
 
 ### May 7, 2026
-S57 InStock Flutter app: SharedPreferences → Drift SQLite migration + Graphify knowledge graph generation (May 7 at 2:56 AM)
-S58 InStock Flutter app: SharedPreferences → Drift SQLite migration + Graphify knowledge graph regeneration (in progress) (May 7 at 3:00 AM)
 S59 InStock Flutter App — Bundle ID Migration (com.example → dev.traejiik) + iOS Privacy Manifest + Android Build Fix (May 7 at 3:01 AM)
 S60 InStock Flutter App — Bundle ID Migration + iOS Privacy Manifest + Android Build Fix + graphify graph update (May 7 at 5:42 PM)
 S61 InStock Flutter App — Bundle ID Migration + iOS Privacy Manifest + Android Desugaring Fix — COMMITTED (May 7 at 5:45 PM)
 S62 InStock Flutter: Fix Android SQLite crash after Drift migration and fix splash screen on both platforms to use correct dark brand asset (May 7 at 5:46 PM)
 S63 Audit GPT-introduced changes to InStock Flutter app and fix all issues found (May 7 at 6:23 PM)
 ### May 8, 2026
-468 1:50a 🔵 Data Layer Fully Migrated from SharedPreferences JSON to Drift/SQLite
-470 1:51a 🔵 Critical Bug: @DriftDatabase Annotation Applied to Function, Not Class
-471 " 🔵 Audit Summary: 4 Issues Found Across Tests and Config
-472 " 🔵 AGENTS.md Has 6 Stale Sections After Drift Migration
-473 " 🔵 Two Undocumented Routes Added: /recipes/add and /recipes/review
-474 1:54a 🔵 Audit Plan Created: 5 Issues Prioritized, AGENTS.md Has Committed claude-mem Block
-475 1:55a 🔴 Fixed: @DriftDatabase Annotation Moved to Correct Class
-476 " 🔴 Fixed: Machine-Specific Path Removed from splash_assets_test.dart
-477 " ✅ AGENTS.md Updated: Persistence Stack Corrected in Project Snapshot
-478 " ✅ AGENTS.md Folder Map Updated: main.dart and bootstrap.dart Corrected
-479 " ✅ AGENTS.md Folder Map: Database Directory Updated with Drift Files
-480 1:56a ✅ AGENTS.md Route List Updated: /recipes/add and /recipes/review Added
-481 " 🔵 AGENTS.md Confirmed Clean: No claude-mem-context Block Present
-482 " ✅ AGENTS.md Trailing Blank Lines Removed
-483 1:57a ✅ AGENTS.md Architecture Notes Rewritten to Describe Drift Architecture
-484 " ✅ AGENTS.md Data Rules: JSON Compatibility Rule Clarified for Migration Context
-485 " 🔵 All 16 Tests Pass After Audit Fixes
-486 " 🔵 build_runner Succeeds After @DriftDatabase Annotation Fix — Code Gen Verified
 S64 Restore the claude-mem segment — fix documentation restoration, stale references, annotation placement, and machine-specific test failures in the InStock Flutter app (May 8 at 1:58 AM)
 S65 Audit and fix GPT-introduced issues in InStock Flutter app — annotation placement, initialization pattern, splash assets, and documentation (May 8 at 2:00 AM)
-487 2:01a ✅ Bootstrap pattern implemented for AppDatabase initialization
-488 " ✅ Drift database annotation repositioned to class declaration
-489 " ✅ Flutter native splash assets and configuration updated
-490 " ✅ AGENTS.md updated with accurate architecture and migration information
-491 2:09a 🔵 InStock iOS Podfile Missing Explicit Platform Version
-492 2:11a 🔵 InStock Uses sqlite3_flutter_libs as Direct Dependency with objective_c Transitive
-493 " 🔵 objective_c Package Version 9.3.0 Confirmed in Pub Cache
-494 " 🔵 objective_c 9.3.0 Uses Native Build Hooks and Is Absent from iOS Pods
-495 " 🔵 Exact Dependency Versions Confirmed: sqlite3 2.9.4, sqlite3_flutter_libs 0.5.42, objective_c 9.3.0
-496 2:13a 🔴 Podfile iOS Platform Version Uncommented to Fix Build Issue
-497 " 🔴 Podfile post_install Hook Added to Force IPHONEOS_DEPLOYMENT_TARGET on All Pod Targets
-S66 Fix iOS build error in InStock Flutter app — likely caused by objective_c 9.3.0 deployment target conflict (May 8 at 2:13 AM)
+S66 Fix iOS build error in InStock Flutter app — likely caused by objective_c 9.3.0 deployment target conflict (May 8 at 2:01 AM)
+S67 Group unstaged files into logical commits with conventional messages, then create a global smart-commit skill for reuse (May 8 at 2:13 AM)
 ### May 11, 2026
-498 10:14p 🔵 InStock Flutter App — Codebase Architecture Graph
-499 " 🔴 iOS Podfile — Deployment Target Uncommented and Enforced for All Pods
-500 10:15p 🔵 Drift Database — Schema Version 1 with No Migration Handler
-501 " 🔵 Bootstrap — Hard-coded Colors Outside Design Token System
-502 " 🔵 Dependency Audit — 49 Packages Outdated, sqlite3_flutter_libs at EOL
-503 " 🔵 Flutter Analyze — Zero Issues Found
-504 " 🔵 Flutter Test Suite — All 16 Tests Passing
-505 10:16p 🔵 Android Debug APK — Build Succeeds Clean
-506 " 🔵 iOS pod install — CocoaPods Profile xcconfig Integration Warning
-507 10:17p 🔵 iOS Debug.xcconfig — Correctly Includes Pods xcconfig; Release Likely Missing Profile Include
-508 " 🔵 iOS Profile Build xcconfig Gap — Root Cause Confirmed
-509 10:18p 🔵 iOS Release Build — Succeeds Despite Profile xcconfig Warning
-510 " 🔵 Available Flutter Devices — macOS and Chrome Only; No Mobile Simulators Connected
-511 10:19p 🔵 macOS Build — 192 Compiler Warnings from sqlite3 CocoaPod Amalgamation
-512 10:20p 🔵 macOS Build — Succeeds with Two Warnings: Deployment Target Mismatch and Run Script Overhead
-513 " 🔵 macOS Podfile — Missing Per-Pod Deployment Target Override (Unlike iOS Podfile)
-514 10:21p 🔴 Runtime Bug — google_fonts Network Fetch Blocked by macOS Sandbox; Fonts Fail to Load
-515 10:22p 🔵 macOS Entitlements Missing network.client — Root Cause of Font Load Failure Confirmed
-516 " 🔵 iOS Simulator "Polar" Available — iOS 26.4, Currently Shutdown
-517 10:25p 🔵 iOS Simulator Run — Clean Launch, No Font Errors (Unlike macOS)
-518 " 🔵 iOS Simulator Screenshot — App Renders Correctly with Proper Fonts and Dark Theme
+539 11:36p 🔵 xcrun simctl ui Does Not Support Rotate Command on iOS 26.4
+540 11:37p 🟣 Regression Test Added for Shopping Empty State Compact Layout at 168px Height
+541 " 🔵 AppDatabase Has No close() or dispose() Method — Potential Test Resource Leak
+542 " 🟣 Comprehensive Landscape Viewport Test for Shopping Empty State Replaces Simple Size Test
+543 " 🔵 Shopping Empty State Test Fails — Seeded In-Memory DB Has Shopping Items
+544 11:38p 🔴 Shopping Empty State Test Fixed by Calling clearAllData() After db.init()
+545 " 🔴 Full Test Suite Passes — 19 Tests Green After All iOS Fixes
+546 " 🔴 Final Verification: InStock Launches Clean on Polar iOS 26.4 — All Fixes Confirmed
+### May 12, 2026
+547 12:51p ⚖️ Global Skill Planned for Smart Git Commit Grouping
+548 " 🔵 InStock Repo: 10 Unstaged Modified Files Across 4 Logical Domains
+549 " 🟣 Light Mode Color System Fully Documented in design_system.md
+550 " 🔴 path_provider_foundation Pinned to 2.5.1 to Fix iOS Simulator Load Failure
+551 12:52p ✅ iOS Podfile Activates Platform Target and Hardcodes Deployment Version
+552 " ✅ macOS Plugin Registrant and Podfile Updated for path_provider, package_info_plus, sqflite
+553 " 🟣 Shopping Empty State Gains Responsive Compact Layout for Landscape/Small Viewports
+554 " 🟣 Widget Test Added for Shopping Empty State in Landscape Viewport
+555 " ✅ Committed: fix: pin path_provider_foundation 2.5.1 and enforce iOS 13 deployment target
+556 " ✅ Committed: fix: adapt shopping empty state for compact landscape viewports
+557 " ✅ Committed: docs: add light mode color tokens and theming rules to design system
+558 12:53p ✅ All 10 Unstaged Files Committed into 4 Logical Groups — Working Tree Clean
+559 " 🔵 Global Claude Code Skills Inventory at ~/.claude/skills/
+560 " 🔵 SKILL.md Format: Frontmatter + Titled Steps with Bash Blocks and Inline Rules
+561 12:54p 🟣 Global smart-commit Skill Created at ~/.claude/skills/smart-commit/SKILL.md
+562 " ✅ All 4 Commits Pushed to github.com:traejiik/InStock main
+S68 Group unstaged files into logical commits with conventional messages, push to remote, then create a global smart-commit skill for reuse (May 12 at 12:55 PM)
+### May 13, 2026
+563 2:06a 🔵 Light mode design is complete, but implementation is absent from code
+564 " 🔵 Theme preference infrastructure exists with incomplete light mode support
+565 " 🔵 Settings UI only exposes Dark and System appearance options, not Light
+566 " 🔵 MaterialApp.router theme configuration is incomplete for light mode support
+567 2:08a 🔵 All UI components use semantic AppColors tokens; light mode will automatically adapt once tokens are added
+568 2:22a 🔄 AppColors Refactored to Flutter ThemeExtension with Light/Dark Instances
+569 " 🔴 AppTextStyles Decoupled from Hardcoded AppColors Static References
+570 " 🔄 AppTheme Unified into Single _build Factory Supporting Both Light and Dark Modes
+571 " 🟣 MaterialApp Wired with Both theme and darkTheme for System-Default Theme Switching
+572 2:23a 🔴 ThemePreferenceNotifier Fixed: System Default, Light Mode Persistence, Removed Fallback TODOs
+573 " 🔴 AppShell Migrated to Theme-Aware AppColors.of(context)
+574 " 🔴 Shared Widgets AppBottomNav and SegmentControl Migrated to Theme-Aware AppColors
+575 " 🔴 SortChipRow Migrated to Theme-Aware AppColors.of(context)
+576 " 🔴 ToggleRow API Fixed: Nullable Icon Colors with Runtime Theme Defaults
+577 2:24a 🔴 FabMenu Migrated to Theme-Aware AppColors for FAB and Option Card Borders
+578 " 🔴 CategoryPicker Dropdown Migrated to Theme-Aware Colors
+579 " 🔴 UnitPicker Migrated with AppColors Threaded Through Helper Methods as Parameter
+580 " 🔴 QuantityBar Progress Indicator Migrated to Theme-Aware Colors
+581 2:25a 🔴 Pantry Feature Widgets CategoryDivider and PantryItemRow Migrated to Theme-Aware Colors
+582 " 🔴 StockBadge Corrected to Use Ink Color Tokens for Badge Text
+583 " 🔴 ShoppingListItem Fully Migrated with Checkmark Icon Color Fix
+584 " 🔴 IngredientRow Migrated to Theme-Aware Colors in Recipes Feature
+585 2:27a 🔵 Several Recipes Feature Widgets Still Use Static AppColors — Read Before Migration
+586 2:28a 🔵 Large Remaining Scope: All Screen Files and AI Widget Still Use Static AppColors
+587 " 🔵 Settings Screen Has Theme Toggle But Light Option Missing from UI Options List
+588 2:30a 🔴 StepRow Migrated to Theme-Aware Colors with Checkmark Icon Fix
 
-Access 423k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 278k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>
