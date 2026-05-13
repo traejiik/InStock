@@ -136,13 +136,13 @@ Rules:
 <claude-mem-context>
 # Memory Context
 
-# [InStock] recent context, 2026-05-13 5:40am GMT+2
+# [InStock] recent context, 2026-05-13 12:15pm GMT+2
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (17,493t read) | 277,558t work | 94% savings
+Stats: 50 obs (16,584t read) | 217,130t work | 92% savings
 
 ### May 7, 2026
 S59 InStock Flutter App — Bundle ID Migration (com.example → dev.traejiik) + iOS Privacy Manifest + Android Build Fix (May 7 at 3:01 AM)
@@ -155,47 +155,10 @@ S64 Restore the claude-mem segment — fix documentation restoration, stale refe
 S65 Audit and fix GPT-introduced issues in InStock Flutter app — annotation placement, initialization pattern, splash assets, and documentation (May 8 at 2:00 AM)
 S66 Fix iOS build error in InStock Flutter app — likely caused by objective_c 9.3.0 deployment target conflict (May 8 at 2:01 AM)
 S67 Group unstaged files into logical commits with conventional messages, then create a global smart-commit skill for reuse (May 8 at 2:13 AM)
-### May 11, 2026
-539 11:36p 🔵 xcrun simctl ui Does Not Support Rotate Command on iOS 26.4
-540 11:37p 🟣 Regression Test Added for Shopping Empty State Compact Layout at 168px Height
-541 " 🔵 AppDatabase Has No close() or dispose() Method — Potential Test Resource Leak
-542 " 🟣 Comprehensive Landscape Viewport Test for Shopping Empty State Replaces Simple Size Test
-543 " 🔵 Shopping Empty State Test Fails — Seeded In-Memory DB Has Shopping Items
-544 11:38p 🔴 Shopping Empty State Test Fixed by Calling clearAllData() After db.init()
-545 " 🔴 Full Test Suite Passes — 19 Tests Green After All iOS Fixes
-546 " 🔴 Final Verification: InStock Launches Clean on Polar iOS 26.4 — All Fixes Confirmed
 ### May 12, 2026
-547 12:51p ⚖️ Global Skill Planned for Smart Git Commit Grouping
-548 " 🔵 InStock Repo: 10 Unstaged Modified Files Across 4 Logical Domains
-549 " 🟣 Light Mode Color System Fully Documented in design_system.md
-550 " 🔴 path_provider_foundation Pinned to 2.5.1 to Fix iOS Simulator Load Failure
-551 12:52p ✅ iOS Podfile Activates Platform Target and Hardcodes Deployment Version
-552 " ✅ macOS Plugin Registrant and Podfile Updated for path_provider, package_info_plus, sqflite
-553 " 🟣 Shopping Empty State Gains Responsive Compact Layout for Landscape/Small Viewports
-554 " 🟣 Widget Test Added for Shopping Empty State in Landscape Viewport
-555 " ✅ Committed: fix: pin path_provider_foundation 2.5.1 and enforce iOS 13 deployment target
-556 " ✅ Committed: fix: adapt shopping empty state for compact landscape viewports
-557 " ✅ Committed: docs: add light mode color tokens and theming rules to design system
-558 12:53p ✅ All 10 Unstaged Files Committed into 4 Logical Groups — Working Tree Clean
-559 " 🔵 Global Claude Code Skills Inventory at ~/.claude/skills/
-560 " 🔵 SKILL.md Format: Frontmatter + Titled Steps with Bash Blocks and Inline Rules
-561 12:54p 🟣 Global smart-commit Skill Created at ~/.claude/skills/smart-commit/SKILL.md
-562 " ✅ All 4 Commits Pushed to github.com:traejiik/InStock main
 S68 Group unstaged files into logical commits with conventional messages, push to remote, then create a global smart-commit skill for reuse (May 12 at 12:55 PM)
 ### May 13, 2026
-563 2:06a 🔵 Light mode design is complete, but implementation is absent from code
-564 " 🔵 Theme preference infrastructure exists with incomplete light mode support
-565 " 🔵 Settings UI only exposes Dark and System appearance options, not Light
-566 " 🔵 MaterialApp.router theme configuration is incomplete for light mode support
-567 2:08a 🔵 All UI components use semantic AppColors tokens; light mode will automatically adapt once tokens are added
-568 2:22a 🔄 AppColors Refactored to Flutter ThemeExtension with Light/Dark Instances
-569 " 🔴 AppTextStyles Decoupled from Hardcoded AppColors Static References
-570 " 🔄 AppTheme Unified into Single _build Factory Supporting Both Light and Dark Modes
-571 " 🟣 MaterialApp Wired with Both theme and darkTheme for System-Default Theme Switching
-572 2:23a 🔴 ThemePreferenceNotifier Fixed: System Default, Light Mode Persistence, Removed Fallback TODOs
-573 " 🔴 AppShell Migrated to Theme-Aware AppColors.of(context)
-574 " 🔴 Shared Widgets AppBottomNav and SegmentControl Migrated to Theme-Aware AppColors
-575 " 🔴 SortChipRow Migrated to Theme-Aware AppColors.of(context)
+575 2:23a 🔴 SortChipRow Migrated to Theme-Aware AppColors.of(context)
 576 " 🔴 ToggleRow API Fixed: Nullable Icon Colors with Runtime Theme Defaults
 577 2:24a 🔴 FabMenu Migrated to Theme-Aware AppColors for FAB and Option Card Borders
 578 " 🔴 CategoryPicker Dropdown Migrated to Theme-Aware Colors
@@ -209,6 +172,42 @@ S68 Group unstaged files into logical commits with conventional messages, push t
 586 2:28a 🔵 Large Remaining Scope: All Screen Files and AI Widget Still Use Static AppColors
 587 " 🔵 Settings Screen Has Theme Toggle But Light Option Missing from UI Options List
 588 2:30a 🔴 StepRow Migrated to Theme-Aware Colors with Checkmark Icon Fix
+589 11:41a 🔵 InStock Project Plan Implementation Starting
+590 " 🔵 InStock Implementation Starting on Main Branch
+591 " 🔵 InStock Test Suite Structure Mapped
+592 " 🔵 InStock Core Data Models Mapped
+593 11:42a 🔵 add_recipe_screen.dart Uses GestureDetector Exclusively for Tappable Widgets
+594 " 🔵 _PrimaryButton Implements Disabled State via Manual Color Logic
+595 11:43a 🟣 RecipeScraper TDD Tests Written (Red Phase)
+596 " 🟣 Widget Test Added for Import Recipe Button Enable/Disable State
+597 " 🔵 RecipeScraper TDD Red Phase Confirmed — Class Does Not Exist Yet
+598 11:44a 🔵 Import Recipe Widget Test Red Phase Confirmed — URL Input Not Wired to Button State
+599 11:46a 🟣 RecipeScraper Service Implemented (Green Phase)
+600 11:49a 🟣 RecipeScraper Rewritten with Full Production-Grade Implementation
+601 " 🟣 IngredientFormRow Extended with Notes Field
+602 " 🟣 AppDatabase.saveRecipe() Ingredient Record Type Extended with Notes
+603 11:50a 🔵 Ingredient isOptional Call Sites Audited Across Codebase
+604 " 🔴 add_recipe_screen.dart Manual Ingredient Submission Updated for notes Field
+605 " 🟣 _ImportTabContent Converted to StatefulWidget with URL Validation
+606 11:51a 🟣 IngredientFormRow Gains sectionLabel for Section-Aware Form Rendering
+607 " 🟣 Recipe Review Screen Renders Ingredient Section Headers Inline
+608 11:52a 🔴 Metric Toggle Subtitle Fixed in add_recipe_screen.dart
+609 " 🔵 Two Test Failures Found: Section Label Casing and Anonymous Record Type Mismatch
+610 " 🔴 add_recipe_screen.dart Ingredient List Type Declaration Fixed
+611 " 🔴 RecipeScraper Section Labels Now Use Sentence Case Instead of Title Case
+612 11:53a 🟣 Import Recipe Widget Test Now Passing (Green Phase Complete)
+613 " 🔵 RecipeScraper Ingredient Name Casing Still Failing — title case vs sentence case
+614 " 🔴 RecipeScraper Ingredient Names Now Use Sentence Case
+615 11:54a 🔵 RecipeScraper Parsing 10 Ingredients Instead of 12 — Two Items Dropped
+616 " 🔴 RecipeScraper Test Index Corrected — Flour Is at Index 8 Not 6
+617 " 🟣 Full Test Suite Passes — All 25 Tests Green After RecipeScraper Implementation
+618 " 🔵 _titleCase Deletion Patch Failed Due to dart format Reformatting
+619 " 🔄 Dead _titleCase() Method Removed — RecipeScraper Clean
+620 11:55a ✅ RecipeScraper Feature Changeset Summary — 5 Files Modified, 133 Net Insertions
+621 " 🔵 Complete Pre-Commit Changeset: 7 Modified Files + 1 New Test Directory
+622 " ✅ RecipeScraper.convertToMetric Removed tbsp→ml and tsp→ml Conversions (Intentional)
+623 12:14p 🔵 Recipe Scraper: Two Bugs Identified by User
+624 " 🔵 Recipe Scraper Architecture in InStock Project
 
-Access 278k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 217k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>
