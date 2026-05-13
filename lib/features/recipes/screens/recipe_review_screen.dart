@@ -202,7 +202,7 @@ class _RecipeReviewScreenState extends ConsumerState<RecipeReviewScreen> {
                     iconColor: colors.blue,
                     iconBg: colors.blueDim,
                     title: 'Convert to Metric',
-                    subtitle: 'cups/oz/tbsp → ml/g',
+                    subtitle: 'cups/oz/lb → ml/g',
                     value: state.convertedToMetric,
                     onChanged: _onMetricToggle,
                   ),
@@ -262,41 +262,60 @@ class _RecipeReviewScreenState extends ConsumerState<RecipeReviewScreen> {
 
   List<Widget> _buildIngredientRows(RecipeFormState state) {
     final colors = AppColors.of(context);
-    return state.ingredients.asMap().entries.map((entry) {
+    final widgets = <Widget>[];
+    for (final entry in state.ingredients.asMap().entries) {
       final i = entry.key;
       final row = entry.value;
 
-      return Dismissible(
-        key: ValueKey('ing-$i-rev$_metricRevision'),
-        direction: DismissDirection.endToStart,
-        background: Container(
-          color: colors.redDim,
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 16),
-          child: Icon(LucideIcons.trash2, color: colors.red, size: 18),
-        ),
-        onDismissed: (_) =>
-            ref.read(recipeFormProvider.notifier).removeIngredient(i),
-        child: Padding(
-          key: ValueKey('ing-padding-$i-rev$_metricRevision'),
-          padding: const EdgeInsets.only(bottom: 10),
-          child: _IngredientRow(
-            key: ValueKey('ing-row-$i-rev$_metricRevision'),
-            initialName: row.name,
-            initialQuantity: row.quantity,
-            initialUnit: row.unit,
-            onChanged: (name, qty, unit) {
-              ref
-                  .read(recipeFormProvider.notifier)
-                  .updateIngredient(
-                    i,
-                    row.copyWith(name: name, quantity: qty, unit: unit),
-                  );
-            },
+      if (row.sectionLabel != null) {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 8),
+            child: Text(
+              row.sectionLabel!,
+              style: AppTextStyles.label.copyWith(
+                color: colors.textSecondary,
+                letterSpacing: 0,
+              ),
+            ),
+          ),
+        );
+      }
+
+      widgets.add(
+        Dismissible(
+          key: ValueKey('ing-$i-rev$_metricRevision'),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            color: colors.redDim,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 16),
+            child: Icon(LucideIcons.trash2, color: colors.red, size: 18),
+          ),
+          onDismissed: (_) =>
+              ref.read(recipeFormProvider.notifier).removeIngredient(i),
+          child: Padding(
+            key: ValueKey('ing-padding-$i-rev$_metricRevision'),
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _IngredientRow(
+              key: ValueKey('ing-row-$i-rev$_metricRevision'),
+              initialName: row.name,
+              initialQuantity: row.quantity,
+              initialUnit: row.unit,
+              onChanged: (name, qty, unit) {
+                ref
+                    .read(recipeFormProvider.notifier)
+                    .updateIngredient(
+                      i,
+                      row.copyWith(name: name, quantity: qty, unit: unit),
+                    );
+              },
+            ),
           ),
         ),
       );
-    }).toList();
+    }
+    return widgets;
   }
 
   List<Widget> _buildStepRows(RecipeFormState state) {

@@ -7,12 +7,16 @@ class IngredientFormRow {
   final double quantity;
   final String? unit;
   final bool isOptional;
+  final String? notes;
+  final String? sectionLabel;
 
   const IngredientFormRow({
     required this.name,
     required this.quantity,
     this.unit,
     this.isOptional = false,
+    this.notes,
+    this.sectionLabel,
   });
 
   IngredientFormRow copyWith({
@@ -20,13 +24,16 @@ class IngredientFormRow {
     double? quantity,
     String? unit,
     bool? isOptional,
-  }) =>
-      IngredientFormRow(
-        name: name ?? this.name,
-        quantity: quantity ?? this.quantity,
-        unit: unit ?? this.unit,
-        isOptional: isOptional ?? this.isOptional,
-      );
+    String? notes,
+    String? sectionLabel,
+  }) => IngredientFormRow(
+    name: name ?? this.name,
+    quantity: quantity ?? this.quantity,
+    unit: unit ?? this.unit,
+    isOptional: isOptional ?? this.isOptional,
+    notes: notes ?? this.notes,
+    sectionLabel: sectionLabel ?? this.sectionLabel,
+  );
 }
 
 class RecipeFormState {
@@ -59,17 +66,16 @@ class RecipeFormState {
     List<String>? steps,
     String? sourceUrl,
     bool? convertedToMetric,
-  }) =>
-      RecipeFormState(
-        title: title ?? this.title,
-        imageUrl: imageUrl ?? this.imageUrl,
-        cookTimeMinutes: cookTimeMinutes ?? this.cookTimeMinutes,
-        baseServings: baseServings ?? this.baseServings,
-        ingredients: ingredients ?? this.ingredients,
-        steps: steps ?? this.steps,
-        sourceUrl: sourceUrl ?? this.sourceUrl,
-        convertedToMetric: convertedToMetric ?? this.convertedToMetric,
-      );
+  }) => RecipeFormState(
+    title: title ?? this.title,
+    imageUrl: imageUrl ?? this.imageUrl,
+    cookTimeMinutes: cookTimeMinutes ?? this.cookTimeMinutes,
+    baseServings: baseServings ?? this.baseServings,
+    ingredients: ingredients ?? this.ingredients,
+    steps: steps ?? this.steps,
+    sourceUrl: sourceUrl ?? this.sourceUrl,
+    convertedToMetric: convertedToMetric ?? this.convertedToMetric,
+  );
 }
 
 class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
@@ -78,19 +84,38 @@ class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
   RecipeFormNotifier(this._ref) : super(const RecipeFormState());
 
   void loadFromParsed(ParsedRecipe parsed) {
+    final parsedRows = parsed.ingredientSections.isEmpty
+        ? parsed.ingredients
+              .map(
+                (i) => IngredientFormRow(
+                  name: i.name,
+                  quantity: i.quantity,
+                  unit: i.unit,
+                  isOptional: i.isOptional,
+                  notes: i.notes,
+                ),
+              )
+              .toList()
+        : parsed.ingredientSections.expand((section) sync* {
+            for (var i = 0; i < section.ingredients.length; i++) {
+              final ingredient = section.ingredients[i];
+              yield IngredientFormRow(
+                name: ingredient.name,
+                quantity: ingredient.quantity,
+                unit: ingredient.unit,
+                isOptional: ingredient.isOptional,
+                notes: ingredient.notes,
+                sectionLabel: i == 0 ? section.label : null,
+              );
+            }
+          }).toList();
+
     state = RecipeFormState(
       title: parsed.title,
       imageUrl: parsed.imageUrl,
       cookTimeMinutes: parsed.cookTimeMinutes,
       baseServings: parsed.baseServings,
-      ingredients: parsed.ingredients
-          .map((i) => IngredientFormRow(
-                name: i.name,
-                quantity: i.quantity,
-                unit: i.unit,
-                isOptional: i.isOptional,
-              ))
-          .toList(),
+      ingredients: parsedRows,
       steps: List<String>.from(parsed.steps),
       sourceUrl: parsed.sourceUrl,
       convertedToMetric: false,
@@ -106,14 +131,15 @@ class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
       state = state.copyWith(cookTimeMinutes: minutes);
 
   void addIngredient() => state = state.copyWith(
-        ingredients: [
-          ...state.ingredients,
-          const IngredientFormRow(name: '', quantity: 1),
-        ],
-      );
+    ingredients: [
+      ...state.ingredients,
+      const IngredientFormRow(name: '', quantity: 1),
+    ],
+  );
 
   void removeIngredient(int index) {
-    final list = List<IngredientFormRow>.from(state.ingredients)..removeAt(index);
+    final list = List<IngredientFormRow>.from(state.ingredients)
+      ..removeAt(index);
     state = state.copyWith(ingredients: list);
   }
 
@@ -130,8 +156,7 @@ class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
     state = state.copyWith(ingredients: list);
   }
 
-  void addStep() =>
-      state = state.copyWith(steps: [...state.steps, '']);
+  void addStep() => state = state.copyWith(steps: [...state.steps, '']);
 
   void removeStep(int index) {
     final list = List<String>.from(state.steps)..removeAt(index);
@@ -154,12 +179,19 @@ class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
   void applyMetricConversion() {
     if (state.convertedToMetric) return;
     final converted = state.ingredients.map((row) {
-      final result = RecipeScraper.convertToMetric(ParsedIngredient(
-        name: row.name,
-        quantity: row.quantity,
-        unit: row.unit,
-      ));
-      return row.copyWith(quantity: result.quantity, unit: result.unit);
+      final result = RecipeScraper.convertToMetric(
+        ParsedIngredient(
+          name: row.name,
+          quantity: row.quantity,
+          unit: row.unit,
+          notes: row.notes,
+        ),
+      );
+      return row.copyWith(
+        quantity: result.quantity,
+        unit: result.unit,
+        notes: result.notes,
+      );
     }).toList();
     state = state.copyWith(ingredients: converted, convertedToMetric: true);
   }
@@ -172,12 +204,15 @@ class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
     final db = _ref.read(appDatabaseProvider);
     final ingredients = state.ingredients
         .where((i) => i.name.isNotEmpty)
-        .map((i) => (
-              name: i.name,
-              quantity: i.quantity,
-              unit: i.unit ?? 'pcs',
-              isOptional: i.isOptional,
-            ))
+        .map(
+          (i) => (
+            name: i.name,
+            quantity: i.quantity,
+            unit: i.unit ?? 'pcs',
+            isOptional: i.isOptional,
+            notes: i.notes,
+          ),
+        )
         .toList();
 
     return db.saveRecipe(
@@ -195,5 +230,5 @@ class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
 
 final recipeFormProvider =
     StateNotifierProvider<RecipeFormNotifier, RecipeFormState>(
-  (ref) => RecipeFormNotifier(ref),
-);
+      (ref) => RecipeFormNotifier(ref),
+    );

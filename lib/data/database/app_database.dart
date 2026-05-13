@@ -581,7 +581,13 @@ class AppDatabase extends ChangeNotifier {
     required String difficulty,
     required List<String> instructions,
     required List<
-      ({String name, double quantity, String unit, bool isOptional})
+      ({
+        String name,
+        double quantity,
+        String unit,
+        bool isOptional,
+        String? notes,
+      })
     >
     ingredients,
     String? sourceUrl,
@@ -621,6 +627,7 @@ class AppDatabase extends ChangeNotifier {
           quantity: ing.quantity,
           unit: ing.unit,
           isOptional: ing.isOptional,
+          notes: ing.notes,
         ),
       );
     }

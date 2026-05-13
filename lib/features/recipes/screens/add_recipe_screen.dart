@@ -192,7 +192,15 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
 
     final db = ref.read(appDatabaseProvider);
     final ingredients =
-        <({String name, double quantity, String unit, bool isOptional})>[];
+        <
+          ({
+            String name,
+            double quantity,
+            String unit,
+            bool isOptional,
+            String? notes,
+          })
+        >[];
 
     for (var i = 0; i < _ingNameCtrl.length; i++) {
       final name = _ingNameCtrl[i].text.trim();
@@ -203,6 +211,7 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
         quantity: qty,
         unit: _ingUnits[i] ?? 'pcs',
         isOptional: false,
+        notes: null,
       ));
     }
 
@@ -402,7 +411,7 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
 
 // ─── Import Tab ───────────────────────────────────────────────────────────────
 
-class _ImportTabContent extends ConsumerWidget {
+class _ImportTabContent extends ConsumerStatefulWidget {
   final TextEditingController urlCtrl;
   final bool aiReview;
   final bool convertMetric;
@@ -420,9 +429,37 @@ class _ImportTabContent extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ImportTabContent> createState() => _ImportTabContentState();
+}
+
+class _ImportTabContentState extends ConsumerState<_ImportTabContent> {
+  @override
+  void initState() {
+    super.initState();
+    widget.urlCtrl.addListener(_onUrlChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant _ImportTabContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.urlCtrl == widget.urlCtrl) return;
+    oldWidget.urlCtrl.removeListener(_onUrlChanged);
+    widget.urlCtrl.addListener(_onUrlChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.urlCtrl.removeListener(_onUrlChanged);
+    super.dispose();
+  }
+
+  void _onUrlChanged() => setState(() {});
+
+  @override
+  Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     final importState = ref.watch(recipeImportProvider);
+    final normalizedUrl = RecipeScraper.normalizeUrl(widget.urlCtrl.text);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -453,7 +490,7 @@ class _ImportTabContent extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         TextField(
-          controller: urlCtrl,
+          controller: widget.urlCtrl,
           enabled: !importState.isLoading,
           keyboardType: TextInputType.url,
           style: TextStyle(color: colors.textPrimary),
@@ -472,11 +509,11 @@ class _ImportTabContent extends ConsumerWidget {
         else
           _PrimaryButton(
             label: 'Import Recipe',
-            onTap: urlCtrl.text.trim().isEmpty
+            onTap: normalizedUrl == null
                 ? null
                 : () => ref
                       .read(recipeImportProvider.notifier)
-                      .scrape(urlCtrl.text.trim()),
+                      .scrape(normalizedUrl.toString()),
           ),
         if (importState.hasError) ...[
           const SizedBox(height: 12),
@@ -484,7 +521,7 @@ class _ImportTabContent extends ConsumerWidget {
             onEditManually: () {
               final e = importState.error;
               final title = e is RecipeParseException ? e.pageTitle : null;
-              onSwitchToWrite(title);
+              widget.onSwitchToWrite(title);
             },
           ),
         ],
@@ -492,10 +529,10 @@ class _ImportTabContent extends ConsumerWidget {
           const SizedBox(height: 20),
           _PreviewSection(
             parsed: importState.value!,
-            aiReview: aiReview,
-            convertMetric: convertMetric,
-            onAiToggle: onAiToggle,
-            onMetricToggle: onMetricToggle,
+            aiReview: widget.aiReview,
+            convertMetric: widget.convertMetric,
+            onAiToggle: widget.onAiToggle,
+            onMetricToggle: widget.onMetricToggle,
           ),
         ],
       ],
@@ -639,7 +676,7 @@ class _PreviewSection extends ConsumerWidget {
           iconColor: colors.blue,
           iconBg: colors.blueDim,
           title: 'Convert to Metric',
-          subtitle: 'cups/oz/tbsp → ml/g',
+          subtitle: 'cups/oz/lb → ml/g',
           value: convertMetric,
           onChanged: onMetricToggle,
         ),

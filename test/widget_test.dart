@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:instock/data/database/app_database.dart';
 import 'package:instock/data/database/drift_database.dart';
 import 'package:instock/data/models/app_models.dart';
+import 'package:instock/core/theme/app_theme.dart';
+import 'package:instock/features/recipes/screens/add_recipe_screen.dart';
 import 'package:instock/features/recipes/widgets/recipe_card.dart';
 import 'package:instock/features/shopping/providers/shopping_provider.dart';
 import 'package:instock/features/shopping/screens/shopping_screen.dart';
@@ -113,5 +115,37 @@ void main() {
     expect(find.text('Your list is empty'), findsOneWidget);
     expect(find.text('Add Item'), findsOneWidget);
     expect(find.text('Add from Recipe'), findsOneWidget);
+  });
+
+  testWidgets('Import Recipe button enables for a normalized recipe URL', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          home: const AddRecipeScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    GestureDetector importButton() => tester.widget<GestureDetector>(
+      find.ancestor(
+        of: find.text('Import Recipe'),
+        matching: find.byType(GestureDetector),
+      ),
+    );
+
+    expect(importButton().onTap, isNull);
+
+    await tester.enterText(
+      find.byType(TextField).first,
+      'recipetineats.com/chicken-breast-recipe/',
+    );
+    await tester.pump();
+
+    expect(importButton().onTap, isNotNull);
   });
 }
