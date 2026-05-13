@@ -44,14 +44,27 @@ void main() {
         parsed.ingredients.map((i) => i.name),
         isNot(contains('BUTTER SAUCE:')),
       );
-      expect(parsed.ingredients[0].name, 'Chicken breasts');
+      expect(parsed.ingredients.map((i) => i.name), [
+        'Chicken breast',
+        'Butter',
+        'Paprika',
+        'Onion powder',
+        'Garlic powder',
+        'Cumin',
+        'Salt',
+        'Black pepper',
+        'Flour',
+        'White wine',
+        'Butter',
+        'Parsley',
+      ]);
       expect(
         parsed.ingredients[0].notes,
         contains('250 - 300g/8 - 10 oz each'),
       );
       expect(parsed.ingredients[8].name, 'Flour');
       expect(parsed.ingredients[8].notes, contains('plain/all-purpose'));
-      expect(parsed.ingredients[10].name, 'Unsalted butter');
+      expect(parsed.ingredients[10].name, 'Butter');
       expect(parsed.ingredients[10].quantity, 30);
       expect(parsed.ingredients[10].unit, 'g');
       expect(parsed.ingredients[10].notes, contains('2 tbsp'));
@@ -63,6 +76,42 @@ void main() {
       ]);
       expect(parsed.steps, isNot(contains('ABBREVIATED')));
       expect(parsed.steps, isNot(contains('FULL RECIPE')));
+    });
+
+    test('cleans imported ingredient names down to core pantry items', () {
+      final parsed = RecipeScraper.parseHtml(
+        _messyIngredientHtml,
+        sourceUrl: 'https://example.com/messy',
+      );
+
+      expect(parsed.ingredients.map((i) => i.name), [
+        'Butter',
+        'White wine',
+        'Parsley',
+        'Onion powder',
+        'Garlic powder',
+      ]);
+      expect(parsed.ingredients.map((i) => i.name), everyElement(isNot('')));
+      expect(
+        parsed.ingredients.map((i) => i.name),
+        everyElement(
+          allOf(
+            isNot(contains('(')),
+            isNot(contains(')')),
+            isNot(contains('/ 1')),
+            isNot(contains('roughly')),
+            isNot(contains('chopped')),
+            isNot(contains('unsalted')),
+            isNot(contains('dry')),
+          ),
+        ),
+      );
+
+      expect(parsed.ingredients[0].quantity, 30);
+      expect(parsed.ingredients[0].unit, 'g');
+      expect(parsed.ingredients[0].notes, contains('1 1/2 tbsp'));
+      expect(parsed.ingredients[1].quantity, 80);
+      expect(parsed.ingredients[1].unit, 'ml');
     });
 
     test('extracts nested HowToSection instructions from JSON-LD', () {
@@ -166,6 +215,31 @@ const _howToSectionHtml = '''
       ]
     }
   ]
+}
+</script>
+</head>
+<body></body>
+</html>
+''';
+
+const _messyIngredientHtml = '''
+<!doctype html>
+<html>
+<head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": "Messy Ingredient Soup",
+  "recipeIngredient": [
+    "30g / 1 1/2 tbsp unsalted butter",
+    "80ml dry white wine or chicken stock (low sodium), sub water",
+    "1 tbsp roughly chopped parsley",
+    "0.5 tsp onion powder ()",
+    "0.5 tsp garlic powder ()",
+    "30g"
+  ],
+  "recipeInstructions": ["Cook everything."]
 }
 </script>
 </head>

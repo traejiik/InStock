@@ -198,6 +198,47 @@ class RecipeScraper {
     'fresh',
   };
 
+  static const _prepWords = {
+    'roughly',
+    'finely',
+    'chopped',
+    'minced',
+    'diced',
+    'sliced',
+    'grated',
+    'crushed',
+    'fresh',
+    'dry',
+    'dried',
+    'large',
+    'small',
+    'medium',
+    'regular',
+    'sweet',
+    'plain',
+    'all-purpose',
+    'all',
+    'purpose',
+    'unsalted',
+    'cooking',
+    'whole',
+    'skinless',
+    'boneless',
+  };
+
+  static const _identityCompounds = {
+    'onion powder',
+    'garlic powder',
+    'black pepper',
+    'soy sauce',
+    'miso paste',
+    'tomato sauce',
+    'chicken stock',
+    'olive oil',
+    'white wine',
+    'chicken breast',
+  };
+
   static const _fractions = {
     '½': 0.5,
     '¼': 0.25,
@@ -411,7 +452,10 @@ class RecipeScraper {
         continue;
       }
 
-      currentIngredients.add(_parseIngredientString(line));
+      final ingredient = _parseIngredientString(line);
+      if (_isUsefulIngredient(ingredient)) {
+        currentIngredients.add(ingredient);
+      }
     }
 
     flush();
@@ -606,7 +650,7 @@ class RecipeScraper {
       if (note != null && note.isNotEmpty) notes.add(note);
       return ' ';
     });
-    text = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+    text = _cleanIngredientFragment(text);
 
     double quantity = 1;
     final parsedQuantity = _parseLeadingQuantity(text);
@@ -616,17 +660,10 @@ class RecipeScraper {
     }
 
     String? unit;
-    final sortedUnits = [..._knownUnits]..sort((a, b) => b.length - a.length);
-    for (final candidate in sortedUnits) {
-      final pattern = RegExp(
-        '^${RegExp.escape(candidate)}\\b',
-        caseSensitive: false,
-      );
-      if (pattern.hasMatch(text)) {
-        unit = _normalizeUnit(candidate.toLowerCase());
-        text = text.replaceFirst(pattern, '').trim();
-        break;
-      }
+    final parsedUnit = _parseLeadingUnit(text);
+    if (parsedUnit != null) {
+      unit = parsedUnit.$1;
+      text = text.substring(parsedUnit.$2).trim();
     }
 
     if (unit == null && parsedQuantity != null) {
@@ -638,15 +675,8 @@ class RecipeScraper {
       }
     }
 
-    final alternateUnit = RegExp(
-      r'\s*/\s*((?:\d+(?:\.\d+)?|\d+\s+\d+/\d+|\d+/\d+)\s*(?:'
-      '${_knownUnits.map(RegExp.escape).join('|')})\\b.*)\$',
-      caseSensitive: false,
-    ).firstMatch(text);
-    if (alternateUnit != null) {
-      notes.add(alternateUnit.group(1)!.trim());
-      text = text.substring(0, alternateUnit.start).trim();
-    }
+    text = _extractLeadingAlternateMeasure(text, notes);
+    text = _extractTrailingAlternateMeasure(text, notes);
 
     final orMatch = RegExp(
       r'\s+\bor\b\s+(.+)$',
@@ -663,19 +693,13 @@ class RecipeScraper {
       text = text.substring(0, commaMatch.start).trim();
     }
 
-    text = text
-        .replaceAll(RegExp(r'\boptional\b', caseSensitive: false), '')
-        .replaceFirst(RegExp(r'^[,;/\-\s]+'), '')
-        .replaceFirst(RegExp(r'[,;/\-\s]+$'), '')
-        .trim();
+    text = _cleanIngredientFragment(
+      text.replaceAll(RegExp(r'\boptional\b', caseSensitive: false), ''),
+    );
 
-    final name = text.isEmpty ? rawText : _sentenceCase(text);
+    final name = _canonicalIngredientName(text);
     final cleanNotes = notes
-        .map(
-          (note) => note
-              .replaceAll(RegExp(r'\boptional\b', caseSensitive: false), '')
-              .trim(),
-        )
+        .map(_cleanNoteText)
         .where((note) => note.isNotEmpty)
         .join('; ');
 
@@ -694,17 +718,36 @@ class RecipeScraper {
     for (final entry in _fractions.entries) {
       text = text.replaceAll(entry.key, ' ${entry.value} ');
     }
-    text = text.replaceAllMapped(RegExp(r'(\d+)\s*/\s*(\d+)'), (m) {
-      final numerator = int.parse(m.group(1)!);
-      final denominator = int.parse(m.group(2)!);
-      return denominator == 0 ? '$numerator' : '${numerator / denominator}';
-    });
     return text.replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 
   static (double, int)? _parseLeadingQuantity(String text) {
+    final mixedFraction = RegExp(
+      r'^(\d+(?:\.\d+)?)\s+(\d+)\s*/\s*(\d+)(?=\D|$)',
+    ).firstMatch(text);
+    if (mixedFraction != null) {
+      final whole = double.tryParse(mixedFraction.group(1)!);
+      final numerator = int.tryParse(mixedFraction.group(2)!);
+      final denominator = int.tryParse(mixedFraction.group(3)!);
+      if (whole != null &&
+          numerator != null &&
+          denominator != null &&
+          denominator != 0) {
+        return (whole + (numerator / denominator), mixedFraction.end);
+      }
+    }
+
+    final fraction = RegExp(r'^(\d+)\s*/\s*(\d+)(?=\D|$)').firstMatch(text);
+    if (fraction != null) {
+      final numerator = int.tryParse(fraction.group(1)!);
+      final denominator = int.tryParse(fraction.group(2)!);
+      if (numerator != null && denominator != null && denominator != 0) {
+        return (numerator / denominator, fraction.end);
+      }
+    }
+
     final mixed = RegExp(
-      r'^(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\b',
+      r'^(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)(?=\D|$)',
     ).firstMatch(text);
     if (mixed != null) {
       final whole = double.tryParse(mixed.group(1)!);
@@ -714,9 +757,134 @@ class RecipeScraper {
       }
     }
 
-    final single = RegExp(r'^(\d+(?:\.\d+)?)\b').firstMatch(text);
+    final single = RegExp(r'^(\d+(?:\.\d+)?)(?=\D|$)').firstMatch(text);
     if (single == null) return null;
     return (double.tryParse(single.group(1)!) ?? 1, single.end);
+  }
+
+  static (String, int)? _parseLeadingUnit(String text) {
+    final sortedUnits = [..._knownUnits]..sort((a, b) => b.length - a.length);
+    for (final candidate in sortedUnits) {
+      final pattern = RegExp(
+        '^${RegExp.escape(candidate)}(?=\\s|\$|[,;/)\\-])',
+        caseSensitive: false,
+      );
+      final match = pattern.firstMatch(text);
+      if (match != null) {
+        return (_normalizeUnit(candidate.toLowerCase()), match.end);
+      }
+    }
+    return null;
+  }
+
+  static String _extractLeadingAlternateMeasure(
+    String text,
+    List<String> notes,
+  ) {
+    var remaining = text.trim();
+    while (remaining.startsWith('/')) {
+      final alternate = remaining.substring(1).trimLeft();
+      final quantity = _parseLeadingQuantity(alternate);
+      if (quantity == null) break;
+
+      final afterQuantity = alternate.substring(quantity.$2).trimLeft();
+      final unit = _parseLeadingUnit(afterQuantity);
+      if (unit == null) break;
+
+      final consumedLength =
+          quantity.$2 +
+          alternate.substring(quantity.$2).length -
+          afterQuantity.substring(unit.$2).trimLeft().length;
+      final note = alternate.substring(0, consumedLength).trim();
+      if (note.isNotEmpty) notes.add(note);
+      remaining = afterQuantity.substring(unit.$2).trimLeft();
+    }
+    return remaining;
+  }
+
+  static String _extractTrailingAlternateMeasure(
+    String text,
+    List<String> notes,
+  ) {
+    final slashIndex = text.lastIndexOf('/');
+    if (slashIndex < 0) return text;
+
+    final alternate = text.substring(slashIndex + 1).trimLeft();
+    final quantity = _parseLeadingQuantity(alternate);
+    if (quantity == null) return text;
+
+    final afterQuantity = alternate.substring(quantity.$2).trimLeft();
+    final unit = _parseLeadingUnit(afterQuantity);
+    if (unit == null) return text;
+
+    notes.add(alternate.trim());
+    return text.substring(0, slashIndex).trimRight();
+  }
+
+  static String _cleanIngredientFragment(String text) => text
+      .replaceAll(RegExp(r'\(\s*\)'), ' ')
+      .replaceAll(RegExp(r'[()]'), ' ')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .replaceFirst(RegExp(r'^[,;/\-\s]+'), '')
+      .replaceFirst(RegExp(r'[,;/\-\s]+$'), '')
+      .trim();
+
+  static String _cleanNoteText(String text) => _cleanIngredientFragment(
+    text.replaceAll(RegExp(r'\boptional\b', caseSensitive: false), ''),
+  );
+
+  static bool _isUsefulIngredient(ParsedIngredient ingredient) {
+    final name = ingredient.name.trim();
+    if (name.isEmpty) return false;
+    if (RegExp(r'^\d+(?:\.\d+)?$').hasMatch(name)) return false;
+    return true;
+  }
+
+  static String _canonicalIngredientName(String text) {
+    var candidate = _cleanIngredientFragment(text).toLowerCase();
+    if (candidate.isEmpty) return '';
+
+    candidate = candidate
+        .replaceAll(RegExp(r'\bsub(?:stitute)?\b.*$'), '')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    if (candidate.isEmpty) return '';
+
+    final primary = candidate.split(RegExp(r'\s*/\s*')).first.trim();
+    final tokens = primary
+        .split(RegExp(r'[^a-zA-Z-]+'))
+        .where((token) => token.isNotEmpty)
+        .where((token) => !_prepWords.contains(token))
+        .toList();
+    if (tokens.isEmpty) return '';
+
+    var reduced = _normalizeIngredientPlurals(tokens.join(' '));
+    final compound = _findIdentityCompound(reduced);
+    if (compound != null) return _sentenceCase(compound);
+
+    if (reduced.split(' ').contains('salt')) {
+      return 'Salt';
+    }
+
+    return _sentenceCase(reduced);
+  }
+
+  static String? _findIdentityCompound(String text) {
+    for (final compound in _identityCompounds) {
+      final pattern = RegExp(
+        r'(^|\s)' + RegExp.escape(compound) + r'($|\s)',
+        caseSensitive: false,
+      );
+      if (pattern.hasMatch(text)) return compound;
+    }
+    return null;
+  }
+
+  static String _normalizeIngredientPlurals(String text) {
+    return text
+        .replaceAll(RegExp(r'\bbreasts\b'), 'breast')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
   }
 
   static String _normalizeUnit(String unit) {
