@@ -85,6 +85,17 @@ class ShoppingItems extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@DataClassName('AppFlagData')
+class AppFlags extends Table {
+  TextColumn get id => text()();
+  IntColumn get onboardingCompleted => integer()();
+  IntColumn get onboardingCompletedAt => integer().nullable()();
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 QueryExecutor _openDatabase() {
   return LazyDatabase(() async {
     if (Platform.isAndroid) {
@@ -97,7 +108,14 @@ QueryExecutor _openDatabase() {
 }
 
 @DriftDatabase(
-  tables: [Ingredients, PantryItems, Recipes, RecipeIngredients, ShoppingItems],
+  tables: [
+    Ingredients,
+    PantryItems,
+    Recipes,
+    RecipeIngredients,
+    ShoppingItems,
+    AppFlags,
+  ],
 )
 class InStockDriftDb extends _$InStockDriftDb {
   InStockDriftDb() : super(_openDatabase());
@@ -105,7 +123,7 @@ class InStockDriftDb extends _$InStockDriftDb {
   InStockDriftDb.memory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -113,6 +131,16 @@ class InStockDriftDb extends _$InStockDriftDb {
     onUpgrade: (m, from, to) async {
       if (from < 2) {
         await m.addColumn(recipes, recipes.notes);
+      }
+      if (from < 3) {
+        await m.createTable(appFlags);
+        await into(appFlags).insert(
+          AppFlagsCompanion.insert(
+            id: 'singleton',
+            onboardingCompleted: 1,
+            updatedAt: DateTime.now().millisecondsSinceEpoch,
+          ),
+        );
       }
     },
   );

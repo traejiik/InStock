@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
 import 'data/database/app_database.dart';
+import 'data/database/drift_database.dart';
+import 'data/repositories/app_flags_repository.dart';
+import 'features/onboarding/providers/onboarding_provider.dart';
 import 'features/shopping/providers/shopping_provider.dart';
 
 class InStockBootstrap extends StatefulWidget {
@@ -13,23 +16,40 @@ class InStockBootstrap extends StatefulWidget {
 }
 
 class _InStockBootstrapState extends State<InStockBootstrap> {
-  late final Future<AppDatabase> _database = _initDatabase();
+  late final Future<_BootstrapData> _bootstrapData = _initDatabase();
 
-  Future<AppDatabase> _initDatabase() async {
-    final db = AppDatabase();
-    await db.init();
-    return db;
+  Future<_BootstrapData> _initDatabase() async {
+    final driftDb = InStockDriftDb();
+    final appDatabase = AppDatabase(db: driftDb);
+    await appDatabase.init();
+
+    final appFlagsRepository = AppFlagsRepository(driftDb);
+    final onboardingComplete = await appFlagsRepository.isOnboardingComplete();
+
+    return _BootstrapData(
+      appDatabase: appDatabase,
+      appFlagsRepository: appFlagsRepository,
+      onboardingComplete: onboardingComplete,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<AppDatabase>(
-      future: _database,
+    return FutureBuilder<_BootstrapData>(
+      future: _bootstrapData,
       builder: (context, snapshot) {
-        final db = snapshot.data;
-        if (db != null) {
+        final data = snapshot.data;
+        if (data != null) {
           return ProviderScope(
-            overrides: [appDatabaseProvider.overrideWith((ref) => db)],
+            overrides: [
+              appDatabaseProvider.overrideWith((ref) => data.appDatabase),
+              appFlagsRepositoryProvider.overrideWithValue(
+                data.appFlagsRepository,
+              ),
+              onboardingInitialStateProvider.overrideWithValue(
+                data.onboardingComplete,
+              ),
+            ],
             child: const InStockApp(),
           );
         }
@@ -42,6 +62,18 @@ class _InStockBootstrapState extends State<InStockBootstrap> {
       },
     );
   }
+}
+
+class _BootstrapData {
+  const _BootstrapData({
+    required this.appDatabase,
+    required this.appFlagsRepository,
+    required this.onboardingComplete,
+  });
+
+  final AppDatabase appDatabase;
+  final AppFlagsRepository appFlagsRepository;
+  final bool onboardingComplete;
 }
 
 class InStockSplashApp extends StatelessWidget {

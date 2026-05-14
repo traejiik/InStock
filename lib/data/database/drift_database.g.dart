@@ -2751,6 +2751,342 @@ class ShoppingItemsCompanion extends UpdateCompanion<ShoppingItemData> {
   }
 }
 
+class $AppFlagsTable extends AppFlags
+    with TableInfo<$AppFlagsTable, AppFlagData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AppFlagsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _onboardingCompletedMeta =
+      const VerificationMeta('onboardingCompleted');
+  @override
+  late final GeneratedColumn<int> onboardingCompleted = GeneratedColumn<int>(
+    'onboarding_completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _onboardingCompletedAtMeta =
+      const VerificationMeta('onboardingCompletedAt');
+  @override
+  late final GeneratedColumn<int> onboardingCompletedAt = GeneratedColumn<int>(
+    'onboarding_completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    onboardingCompleted,
+    onboardingCompletedAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'app_flags';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AppFlagData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('onboarding_completed')) {
+      context.handle(
+        _onboardingCompletedMeta,
+        onboardingCompleted.isAcceptableOrUnknown(
+          data['onboarding_completed']!,
+          _onboardingCompletedMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_onboardingCompletedMeta);
+    }
+    if (data.containsKey('onboarding_completed_at')) {
+      context.handle(
+        _onboardingCompletedAtMeta,
+        onboardingCompletedAt.isAcceptableOrUnknown(
+          data['onboarding_completed_at']!,
+          _onboardingCompletedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AppFlagData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AppFlagData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      onboardingCompleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}onboarding_completed'],
+      )!,
+      onboardingCompletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}onboarding_completed_at'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AppFlagsTable createAlias(String alias) {
+    return $AppFlagsTable(attachedDatabase, alias);
+  }
+}
+
+class AppFlagData extends DataClass implements Insertable<AppFlagData> {
+  final String id;
+  final int onboardingCompleted;
+  final int? onboardingCompletedAt;
+  final int updatedAt;
+  const AppFlagData({
+    required this.id,
+    required this.onboardingCompleted,
+    this.onboardingCompletedAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['onboarding_completed'] = Variable<int>(onboardingCompleted);
+    if (!nullToAbsent || onboardingCompletedAt != null) {
+      map['onboarding_completed_at'] = Variable<int>(onboardingCompletedAt);
+    }
+    map['updated_at'] = Variable<int>(updatedAt);
+    return map;
+  }
+
+  AppFlagsCompanion toCompanion(bool nullToAbsent) {
+    return AppFlagsCompanion(
+      id: Value(id),
+      onboardingCompleted: Value(onboardingCompleted),
+      onboardingCompletedAt: onboardingCompletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(onboardingCompletedAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory AppFlagData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AppFlagData(
+      id: serializer.fromJson<String>(json['id']),
+      onboardingCompleted: serializer.fromJson<int>(
+        json['onboardingCompleted'],
+      ),
+      onboardingCompletedAt: serializer.fromJson<int?>(
+        json['onboardingCompletedAt'],
+      ),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'onboardingCompleted': serializer.toJson<int>(onboardingCompleted),
+      'onboardingCompletedAt': serializer.toJson<int?>(onboardingCompletedAt),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+    };
+  }
+
+  AppFlagData copyWith({
+    String? id,
+    int? onboardingCompleted,
+    Value<int?> onboardingCompletedAt = const Value.absent(),
+    int? updatedAt,
+  }) => AppFlagData(
+    id: id ?? this.id,
+    onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+    onboardingCompletedAt: onboardingCompletedAt.present
+        ? onboardingCompletedAt.value
+        : this.onboardingCompletedAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  AppFlagData copyWithCompanion(AppFlagsCompanion data) {
+    return AppFlagData(
+      id: data.id.present ? data.id.value : this.id,
+      onboardingCompleted: data.onboardingCompleted.present
+          ? data.onboardingCompleted.value
+          : this.onboardingCompleted,
+      onboardingCompletedAt: data.onboardingCompletedAt.present
+          ? data.onboardingCompletedAt.value
+          : this.onboardingCompletedAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppFlagData(')
+          ..write('id: $id, ')
+          ..write('onboardingCompleted: $onboardingCompleted, ')
+          ..write('onboardingCompletedAt: $onboardingCompletedAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, onboardingCompleted, onboardingCompletedAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AppFlagData &&
+          other.id == this.id &&
+          other.onboardingCompleted == this.onboardingCompleted &&
+          other.onboardingCompletedAt == this.onboardingCompletedAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class AppFlagsCompanion extends UpdateCompanion<AppFlagData> {
+  final Value<String> id;
+  final Value<int> onboardingCompleted;
+  final Value<int?> onboardingCompletedAt;
+  final Value<int> updatedAt;
+  final Value<int> rowid;
+  const AppFlagsCompanion({
+    this.id = const Value.absent(),
+    this.onboardingCompleted = const Value.absent(),
+    this.onboardingCompletedAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AppFlagsCompanion.insert({
+    required String id,
+    required int onboardingCompleted,
+    this.onboardingCompletedAt = const Value.absent(),
+    required int updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       onboardingCompleted = Value(onboardingCompleted),
+       updatedAt = Value(updatedAt);
+  static Insertable<AppFlagData> custom({
+    Expression<String>? id,
+    Expression<int>? onboardingCompleted,
+    Expression<int>? onboardingCompletedAt,
+    Expression<int>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (onboardingCompleted != null)
+        'onboarding_completed': onboardingCompleted,
+      if (onboardingCompletedAt != null)
+        'onboarding_completed_at': onboardingCompletedAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AppFlagsCompanion copyWith({
+    Value<String>? id,
+    Value<int>? onboardingCompleted,
+    Value<int?>? onboardingCompletedAt,
+    Value<int>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return AppFlagsCompanion(
+      id: id ?? this.id,
+      onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+      onboardingCompletedAt:
+          onboardingCompletedAt ?? this.onboardingCompletedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (onboardingCompleted.present) {
+      map['onboarding_completed'] = Variable<int>(onboardingCompleted.value);
+    }
+    if (onboardingCompletedAt.present) {
+      map['onboarding_completed_at'] = Variable<int>(
+        onboardingCompletedAt.value,
+      );
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppFlagsCompanion(')
+          ..write('id: $id, ')
+          ..write('onboardingCompleted: $onboardingCompleted, ')
+          ..write('onboardingCompletedAt: $onboardingCompletedAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$InStockDriftDb extends GeneratedDatabase {
   _$InStockDriftDb(QueryExecutor e) : super(e);
   $InStockDriftDbManager get managers => $InStockDriftDbManager(this);
@@ -2760,6 +3096,7 @@ abstract class _$InStockDriftDb extends GeneratedDatabase {
   late final $RecipeIngredientsTable recipeIngredients =
       $RecipeIngredientsTable(this);
   late final $ShoppingItemsTable shoppingItems = $ShoppingItemsTable(this);
+  late final $AppFlagsTable appFlags = $AppFlagsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2770,6 +3107,7 @@ abstract class _$InStockDriftDb extends GeneratedDatabase {
     recipes,
     recipeIngredients,
     shoppingItems,
+    appFlags,
   ];
 }
 
@@ -4155,6 +4493,191 @@ typedef $$ShoppingItemsTableProcessedTableManager =
       ShoppingItemData,
       PrefetchHooks Function()
     >;
+typedef $$AppFlagsTableCreateCompanionBuilder =
+    AppFlagsCompanion Function({
+      required String id,
+      required int onboardingCompleted,
+      Value<int?> onboardingCompletedAt,
+      required int updatedAt,
+      Value<int> rowid,
+    });
+typedef $$AppFlagsTableUpdateCompanionBuilder =
+    AppFlagsCompanion Function({
+      Value<String> id,
+      Value<int> onboardingCompleted,
+      Value<int?> onboardingCompletedAt,
+      Value<int> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$AppFlagsTableFilterComposer
+    extends Composer<_$InStockDriftDb, $AppFlagsTable> {
+  $$AppFlagsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get onboardingCompleted => $composableBuilder(
+    column: $table.onboardingCompleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get onboardingCompletedAt => $composableBuilder(
+    column: $table.onboardingCompletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AppFlagsTableOrderingComposer
+    extends Composer<_$InStockDriftDb, $AppFlagsTable> {
+  $$AppFlagsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get onboardingCompleted => $composableBuilder(
+    column: $table.onboardingCompleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get onboardingCompletedAt => $composableBuilder(
+    column: $table.onboardingCompletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AppFlagsTableAnnotationComposer
+    extends Composer<_$InStockDriftDb, $AppFlagsTable> {
+  $$AppFlagsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get onboardingCompleted => $composableBuilder(
+    column: $table.onboardingCompleted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get onboardingCompletedAt => $composableBuilder(
+    column: $table.onboardingCompletedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$AppFlagsTableTableManager
+    extends
+        RootTableManager<
+          _$InStockDriftDb,
+          $AppFlagsTable,
+          AppFlagData,
+          $$AppFlagsTableFilterComposer,
+          $$AppFlagsTableOrderingComposer,
+          $$AppFlagsTableAnnotationComposer,
+          $$AppFlagsTableCreateCompanionBuilder,
+          $$AppFlagsTableUpdateCompanionBuilder,
+          (
+            AppFlagData,
+            BaseReferences<_$InStockDriftDb, $AppFlagsTable, AppFlagData>,
+          ),
+          AppFlagData,
+          PrefetchHooks Function()
+        > {
+  $$AppFlagsTableTableManager(_$InStockDriftDb db, $AppFlagsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AppFlagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AppFlagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AppFlagsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<int> onboardingCompleted = const Value.absent(),
+                Value<int?> onboardingCompletedAt = const Value.absent(),
+                Value<int> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AppFlagsCompanion(
+                id: id,
+                onboardingCompleted: onboardingCompleted,
+                onboardingCompletedAt: onboardingCompletedAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required int onboardingCompleted,
+                Value<int?> onboardingCompletedAt = const Value.absent(),
+                required int updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => AppFlagsCompanion.insert(
+                id: id,
+                onboardingCompleted: onboardingCompleted,
+                onboardingCompletedAt: onboardingCompletedAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AppFlagsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$InStockDriftDb,
+      $AppFlagsTable,
+      AppFlagData,
+      $$AppFlagsTableFilterComposer,
+      $$AppFlagsTableOrderingComposer,
+      $$AppFlagsTableAnnotationComposer,
+      $$AppFlagsTableCreateCompanionBuilder,
+      $$AppFlagsTableUpdateCompanionBuilder,
+      (
+        AppFlagData,
+        BaseReferences<_$InStockDriftDb, $AppFlagsTable, AppFlagData>,
+      ),
+      AppFlagData,
+      PrefetchHooks Function()
+    >;
 
 class $InStockDriftDbManager {
   final _$InStockDriftDb _db;
@@ -4169,4 +4692,6 @@ class $InStockDriftDbManager {
       $$RecipeIngredientsTableTableManager(_db, _db.recipeIngredients);
   $$ShoppingItemsTableTableManager get shoppingItems =>
       $$ShoppingItemsTableTableManager(_db, _db.shoppingItems);
+  $$AppFlagsTableTableManager get appFlags =>
+      $$AppFlagsTableTableManager(_db, _db.appFlags);
 }
