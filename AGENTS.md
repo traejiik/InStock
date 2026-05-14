@@ -133,13 +133,13 @@ Rules:
 <claude-mem-context>
 # Memory Context
 
-# [InStock] recent context, 2026-05-13 12:15pm GMT+2
+# [InStock] recent context, 2026-05-13 1:33pm GMT+2
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (16,584t read) | 217,130t work | 92% savings
+Stats: 50 obs (17,567t read) | 246,162t work | 93% savings
 
 ### May 7, 2026
 S59 InStock Flutter App — Bundle ID Migration (com.example → dev.traejiik) + iOS Privacy Manifest + Android Build Fix (May 7 at 3:01 AM)
@@ -155,56 +155,55 @@ S67 Group unstaged files into logical commits with conventional messages, then c
 ### May 12, 2026
 S68 Group unstaged files into logical commits with conventional messages, push to remote, then create a global smart-commit skill for reuse (May 12 at 12:55 PM)
 ### May 13, 2026
-575 2:23a 🔴 SortChipRow Migrated to Theme-Aware AppColors.of(context)
-576 " 🔴 ToggleRow API Fixed: Nullable Icon Colors with Runtime Theme Defaults
-577 2:24a 🔴 FabMenu Migrated to Theme-Aware AppColors for FAB and Option Card Borders
-578 " 🔴 CategoryPicker Dropdown Migrated to Theme-Aware Colors
-579 " 🔴 UnitPicker Migrated with AppColors Threaded Through Helper Methods as Parameter
-580 " 🔴 QuantityBar Progress Indicator Migrated to Theme-Aware Colors
-581 2:25a 🔴 Pantry Feature Widgets CategoryDivider and PantryItemRow Migrated to Theme-Aware Colors
-582 " 🔴 StockBadge Corrected to Use Ink Color Tokens for Badge Text
-583 " 🔴 ShoppingListItem Fully Migrated with Checkmark Icon Color Fix
-584 " 🔴 IngredientRow Migrated to Theme-Aware Colors in Recipes Feature
-585 2:27a 🔵 Several Recipes Feature Widgets Still Use Static AppColors — Read Before Migration
-586 2:28a 🔵 Large Remaining Scope: All Screen Files and AI Widget Still Use Static AppColors
-587 " 🔵 Settings Screen Has Theme Toggle But Light Option Missing from UI Options List
-588 2:30a 🔴 StepRow Migrated to Theme-Aware Colors with Checkmark Icon Fix
-589 11:41a 🔵 InStock Project Plan Implementation Starting
-590 " 🔵 InStock Implementation Starting on Main Branch
-591 " 🔵 InStock Test Suite Structure Mapped
-592 " 🔵 InStock Core Data Models Mapped
-593 11:42a 🔵 add_recipe_screen.dart Uses GestureDetector Exclusively for Tappable Widgets
-594 " 🔵 _PrimaryButton Implements Disabled State via Manual Color Logic
-595 11:43a 🟣 RecipeScraper TDD Tests Written (Red Phase)
-596 " 🟣 Widget Test Added for Import Recipe Button Enable/Disable State
-597 " 🔵 RecipeScraper TDD Red Phase Confirmed — Class Does Not Exist Yet
-598 11:44a 🔵 Import Recipe Widget Test Red Phase Confirmed — URL Input Not Wired to Button State
-599 11:46a 🟣 RecipeScraper Service Implemented (Green Phase)
-600 11:49a 🟣 RecipeScraper Rewritten with Full Production-Grade Implementation
-601 " 🟣 IngredientFormRow Extended with Notes Field
-602 " 🟣 AppDatabase.saveRecipe() Ingredient Record Type Extended with Notes
-603 11:50a 🔵 Ingredient isOptional Call Sites Audited Across Codebase
-604 " 🔴 add_recipe_screen.dart Manual Ingredient Submission Updated for notes Field
-605 " 🟣 _ImportTabContent Converted to StatefulWidget with URL Validation
-606 11:51a 🟣 IngredientFormRow Gains sectionLabel for Section-Aware Form Rendering
-607 " 🟣 Recipe Review Screen Renders Ingredient Section Headers Inline
-608 11:52a 🔴 Metric Toggle Subtitle Fixed in add_recipe_screen.dart
-609 " 🔵 Two Test Failures Found: Section Label Casing and Anonymous Record Type Mismatch
-610 " 🔴 add_recipe_screen.dart Ingredient List Type Declaration Fixed
-611 " 🔴 RecipeScraper Section Labels Now Use Sentence Case Instead of Title Case
-612 11:53a 🟣 Import Recipe Widget Test Now Passing (Green Phase Complete)
-613 " 🔵 RecipeScraper Ingredient Name Casing Still Failing — title case vs sentence case
-614 " 🔴 RecipeScraper Ingredient Names Now Use Sentence Case
-615 11:54a 🔵 RecipeScraper Parsing 10 Ingredients Instead of 12 — Two Items Dropped
-616 " 🔴 RecipeScraper Test Index Corrected — Flour Is at Index 8 Not 6
-617 " 🟣 Full Test Suite Passes — All 25 Tests Green After RecipeScraper Implementation
-618 " 🔵 _titleCase Deletion Patch Failed Due to dart format Reformatting
-619 " 🔄 Dead _titleCase() Method Removed — RecipeScraper Clean
-620 11:55a ✅ RecipeScraper Feature Changeset Summary — 5 Files Modified, 133 Net Insertions
-621 " 🔵 Complete Pre-Commit Changeset: 7 Modified Files + 1 New Test Directory
-622 " ✅ RecipeScraper.convertToMetric Removed tbsp→ml and tsp→ml Conversions (Intentional)
-623 12:14p 🔵 Recipe Scraper: Two Bugs Identified by User
-624 " 🔵 Recipe Scraper Architecture in InStock Project
+642 12:42p 🔵 Recipe Scraper Implementation: JSON-LD First, Heuristic Fallback
+643 " 🔵 RecipeScraper: Ingredient Parsing Pipeline and Name Simplification Gap
+644 " 🟣 Branch Created: codex/canonical-ingredient-names
+645 12:43p 🟣 Failing Tests Written for "Core Pantry Item" Name Canonicalization (TDD RED Step)
+646 " 🔵 TDD RED Confirmed: 5 Specific Scraper Bugs Exposed by Failing Tests
+647 12:45p 🟣 Ingredient Name Canonicalization Implemented in recipe_scraper.dart
+648 12:46p 🔴 All 6 Recipe Scraper Tests Pass — TDD GREEN Step Complete
+649 " ✅ dart format Applied: Only Test File Needed Reformatting
+650 12:47p 🔴 Full Test Suite: 26/26 Pass Including Import Button Enable Test
+651 " ✅ Codebase Graph Updated: 700 Nodes, 889 Edges After Recipe Scraper Changes
+652 12:48p ✅ Branch codex/canonical-ingredient-names Ready for Integration: 305 Lines Added
+653 12:57p 🔵 InStock Project Pending Changes Before Smart Commit
+654 " 🔵 Recipe Scraper Overhaul — Large Diff Before Commit
+655 " 🟣 Recipe Scraper Canonical Ingredient Name Normalization
+656 " 🔵 InStock Codebase Graph: 700 Nodes, Core Abstractions Identified
+657 12:58p 🟣 Recipe Scraper Normalization Passes All Tests — 26/26 Green
+658 " ✅ Committed "fix: canonicalize imported ingredient names" on Branch codex/canonical-ingredient-names
+659 1:12p 🟣 Recipe Instructions Enhancement: Detailed Steps + Notes Section
+660 " 🔵 InStock Flutter App Codebase Structure via Graph Report
+661 1:13p 🔵 Recipe Notes Field Exists in DB but Not Wired Through Form Save
+662 " 🔵 Recipe Instruction Extraction Uses Short _chooseSteps(), Not Full Sections
+663 1:14p 🔵 Recipe Model Has No Notes Field — Only RecipeIngredient Does
+664 " 🔵 _chooseSteps() Selects Full Recipe Section Over Abbreviated via Name Matching
+665 " 🔵 RecipeReviewScreen Instructions Section Has No Notes Section After Steps
+666 " 🔵 Recipes Drift Table Has No Notes Column — Schema Migration Required
+667 " 🔵 _StepRow Already Uses maxLines: null — Step Text Display Is Not Truncated
+668 1:15p ⚖️ Recipe Import: Richest Instructions + Persist Notes Design Decisions
+669 1:16p ✅ Created Feature Branch codex/rich-recipe-instructions-notes
+670 " ✅ Implementation Plan Defined: 5-Step TDD Approach for Rich Instructions + Notes
+671 " 🔵 Test Infrastructure Patterns for InStock Recipe Feature
+672 " 🔵 add_recipe_screen.dart Write Tab Also Missing Notes Section
+673 1:17p 🟣 Failing Tests Written for Rich Instructions and Recipe Notes Scraping
+674 1:18p 🔴 Scraper Tests Finalized: Two HTML Fixtures for Rich Instruction Selection
+675 " 🟣 Failing DB Tests Written for Recipe Notes Persistence and Serialization
+676 " 🟣 Failing Widget Tests Written for Notes UI in Review and Detail Screens
+677 1:19p 🔵 All Failing Tests Compile-Error as Expected — RED Phase Confirmed
+678 1:20p 🟣 RecipeScraper Upgraded: Rich Instruction Scoring, Visible Notes Extraction, HTML Entity Decoding
+679 " 🟣 Recipe Model Gains notes Field with Full Serialization Support
+680 " 🟣 Drift Schema Updated to v2: notes Column Added to Recipes Table with Migration
+681 " 🟣 app_database.dart Wired for Recipe Notes: saveRecipe, _mapRecipe, _recipeCompanion Updated
+683 " 🟣 RecipeFormState and RecipeFormNotifier Updated with Notes Support
+684 " 🟣 RecipeReviewScreen Gains Notes Section After Instructions
+685 " 🟣 add_recipe_screen.dart Write Tab Gains Notes Section Before Save Button
+686 1:22p 🔵 recipe_detail_screen _SectionHeader Requires count Param — Notes Section Needs Different Widget
+687 " 🟣 Recipe Detail Screen Conditionally Shows Notes Section After Instructions
+688 " 🟣 Step 4 UI Complete: All Three Screens Updated for Notes Display and Editing
+689 " ✅ dart run build_runner build Started for Drift Codegen After Schema v2 Change
+690 1:23p 🔵 build_runner Warning: SDK Language Version Mismatch (3.11.0 vs analyzer 3.9.0)
+691 " ✅ Drift Codegen Completed Successfully: drift_database.g.dart Regenerated
 
-Access 217k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 246k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>
