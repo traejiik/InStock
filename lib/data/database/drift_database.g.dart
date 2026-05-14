@@ -2786,6 +2786,30 @@ class $AppFlagsTable extends AppFlags
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _unitSystemMeta = const VerificationMeta(
+    'unitSystem',
+  );
+  @override
+  late final GeneratedColumn<String> unitSystem = GeneratedColumn<String>(
+    'unit_system',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('metric'),
+  );
+  static const VerificationMeta _themeModeMeta = const VerificationMeta(
+    'themeMode',
+  );
+  @override
+  late final GeneratedColumn<String> themeMode = GeneratedColumn<String>(
+    'theme_mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('system'),
+  );
   static const VerificationMeta _updatedAtMeta = const VerificationMeta(
     'updatedAt',
   );
@@ -2802,6 +2826,8 @@ class $AppFlagsTable extends AppFlags
     id,
     onboardingCompleted,
     onboardingCompletedAt,
+    unitSystem,
+    themeMode,
     updatedAt,
   ];
   @override
@@ -2841,6 +2867,18 @@ class $AppFlagsTable extends AppFlags
         ),
       );
     }
+    if (data.containsKey('unit_system')) {
+      context.handle(
+        _unitSystemMeta,
+        unitSystem.isAcceptableOrUnknown(data['unit_system']!, _unitSystemMeta),
+      );
+    }
+    if (data.containsKey('theme_mode')) {
+      context.handle(
+        _themeModeMeta,
+        themeMode.isAcceptableOrUnknown(data['theme_mode']!, _themeModeMeta),
+      );
+    }
     if (data.containsKey('updated_at')) {
       context.handle(
         _updatedAtMeta,
@@ -2870,6 +2908,14 @@ class $AppFlagsTable extends AppFlags
         DriftSqlType.int,
         data['${effectivePrefix}onboarding_completed_at'],
       ),
+      unitSystem: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit_system'],
+      )!,
+      themeMode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}theme_mode'],
+      )!,
       updatedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}updated_at'],
@@ -2887,11 +2933,15 @@ class AppFlagData extends DataClass implements Insertable<AppFlagData> {
   final String id;
   final int onboardingCompleted;
   final int? onboardingCompletedAt;
+  final String unitSystem;
+  final String themeMode;
   final int updatedAt;
   const AppFlagData({
     required this.id,
     required this.onboardingCompleted,
     this.onboardingCompletedAt,
+    required this.unitSystem,
+    required this.themeMode,
     required this.updatedAt,
   });
   @override
@@ -2902,6 +2952,8 @@ class AppFlagData extends DataClass implements Insertable<AppFlagData> {
     if (!nullToAbsent || onboardingCompletedAt != null) {
       map['onboarding_completed_at'] = Variable<int>(onboardingCompletedAt);
     }
+    map['unit_system'] = Variable<String>(unitSystem);
+    map['theme_mode'] = Variable<String>(themeMode);
     map['updated_at'] = Variable<int>(updatedAt);
     return map;
   }
@@ -2913,6 +2965,8 @@ class AppFlagData extends DataClass implements Insertable<AppFlagData> {
       onboardingCompletedAt: onboardingCompletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(onboardingCompletedAt),
+      unitSystem: Value(unitSystem),
+      themeMode: Value(themeMode),
       updatedAt: Value(updatedAt),
     );
   }
@@ -2930,6 +2984,8 @@ class AppFlagData extends DataClass implements Insertable<AppFlagData> {
       onboardingCompletedAt: serializer.fromJson<int?>(
         json['onboardingCompletedAt'],
       ),
+      unitSystem: serializer.fromJson<String>(json['unitSystem']),
+      themeMode: serializer.fromJson<String>(json['themeMode']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
     );
   }
@@ -2940,6 +2996,8 @@ class AppFlagData extends DataClass implements Insertable<AppFlagData> {
       'id': serializer.toJson<String>(id),
       'onboardingCompleted': serializer.toJson<int>(onboardingCompleted),
       'onboardingCompletedAt': serializer.toJson<int?>(onboardingCompletedAt),
+      'unitSystem': serializer.toJson<String>(unitSystem),
+      'themeMode': serializer.toJson<String>(themeMode),
       'updatedAt': serializer.toJson<int>(updatedAt),
     };
   }
@@ -2948,6 +3006,8 @@ class AppFlagData extends DataClass implements Insertable<AppFlagData> {
     String? id,
     int? onboardingCompleted,
     Value<int?> onboardingCompletedAt = const Value.absent(),
+    String? unitSystem,
+    String? themeMode,
     int? updatedAt,
   }) => AppFlagData(
     id: id ?? this.id,
@@ -2955,6 +3015,8 @@ class AppFlagData extends DataClass implements Insertable<AppFlagData> {
     onboardingCompletedAt: onboardingCompletedAt.present
         ? onboardingCompletedAt.value
         : this.onboardingCompletedAt,
+    unitSystem: unitSystem ?? this.unitSystem,
+    themeMode: themeMode ?? this.themeMode,
     updatedAt: updatedAt ?? this.updatedAt,
   );
   AppFlagData copyWithCompanion(AppFlagsCompanion data) {
@@ -2966,6 +3028,10 @@ class AppFlagData extends DataClass implements Insertable<AppFlagData> {
       onboardingCompletedAt: data.onboardingCompletedAt.present
           ? data.onboardingCompletedAt.value
           : this.onboardingCompletedAt,
+      unitSystem: data.unitSystem.present
+          ? data.unitSystem.value
+          : this.unitSystem,
+      themeMode: data.themeMode.present ? data.themeMode.value : this.themeMode,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
@@ -2976,14 +3042,22 @@ class AppFlagData extends DataClass implements Insertable<AppFlagData> {
           ..write('id: $id, ')
           ..write('onboardingCompleted: $onboardingCompleted, ')
           ..write('onboardingCompletedAt: $onboardingCompletedAt, ')
+          ..write('unitSystem: $unitSystem, ')
+          ..write('themeMode: $themeMode, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, onboardingCompleted, onboardingCompletedAt, updatedAt);
+  int get hashCode => Object.hash(
+    id,
+    onboardingCompleted,
+    onboardingCompletedAt,
+    unitSystem,
+    themeMode,
+    updatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2991,6 +3065,8 @@ class AppFlagData extends DataClass implements Insertable<AppFlagData> {
           other.id == this.id &&
           other.onboardingCompleted == this.onboardingCompleted &&
           other.onboardingCompletedAt == this.onboardingCompletedAt &&
+          other.unitSystem == this.unitSystem &&
+          other.themeMode == this.themeMode &&
           other.updatedAt == this.updatedAt);
 }
 
@@ -2998,12 +3074,16 @@ class AppFlagsCompanion extends UpdateCompanion<AppFlagData> {
   final Value<String> id;
   final Value<int> onboardingCompleted;
   final Value<int?> onboardingCompletedAt;
+  final Value<String> unitSystem;
+  final Value<String> themeMode;
   final Value<int> updatedAt;
   final Value<int> rowid;
   const AppFlagsCompanion({
     this.id = const Value.absent(),
     this.onboardingCompleted = const Value.absent(),
     this.onboardingCompletedAt = const Value.absent(),
+    this.unitSystem = const Value.absent(),
+    this.themeMode = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -3011,6 +3091,8 @@ class AppFlagsCompanion extends UpdateCompanion<AppFlagData> {
     required String id,
     required int onboardingCompleted,
     this.onboardingCompletedAt = const Value.absent(),
+    this.unitSystem = const Value.absent(),
+    this.themeMode = const Value.absent(),
     required int updatedAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -3020,6 +3102,8 @@ class AppFlagsCompanion extends UpdateCompanion<AppFlagData> {
     Expression<String>? id,
     Expression<int>? onboardingCompleted,
     Expression<int>? onboardingCompletedAt,
+    Expression<String>? unitSystem,
+    Expression<String>? themeMode,
     Expression<int>? updatedAt,
     Expression<int>? rowid,
   }) {
@@ -3029,6 +3113,8 @@ class AppFlagsCompanion extends UpdateCompanion<AppFlagData> {
         'onboarding_completed': onboardingCompleted,
       if (onboardingCompletedAt != null)
         'onboarding_completed_at': onboardingCompletedAt,
+      if (unitSystem != null) 'unit_system': unitSystem,
+      if (themeMode != null) 'theme_mode': themeMode,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -3038,6 +3124,8 @@ class AppFlagsCompanion extends UpdateCompanion<AppFlagData> {
     Value<String>? id,
     Value<int>? onboardingCompleted,
     Value<int?>? onboardingCompletedAt,
+    Value<String>? unitSystem,
+    Value<String>? themeMode,
     Value<int>? updatedAt,
     Value<int>? rowid,
   }) {
@@ -3046,6 +3134,8 @@ class AppFlagsCompanion extends UpdateCompanion<AppFlagData> {
       onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
       onboardingCompletedAt:
           onboardingCompletedAt ?? this.onboardingCompletedAt,
+      unitSystem: unitSystem ?? this.unitSystem,
+      themeMode: themeMode ?? this.themeMode,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -3065,6 +3155,12 @@ class AppFlagsCompanion extends UpdateCompanion<AppFlagData> {
         onboardingCompletedAt.value,
       );
     }
+    if (unitSystem.present) {
+      map['unit_system'] = Variable<String>(unitSystem.value);
+    }
+    if (themeMode.present) {
+      map['theme_mode'] = Variable<String>(themeMode.value);
+    }
     if (updatedAt.present) {
       map['updated_at'] = Variable<int>(updatedAt.value);
     }
@@ -3080,6 +3176,8 @@ class AppFlagsCompanion extends UpdateCompanion<AppFlagData> {
           ..write('id: $id, ')
           ..write('onboardingCompleted: $onboardingCompleted, ')
           ..write('onboardingCompletedAt: $onboardingCompletedAt, ')
+          ..write('unitSystem: $unitSystem, ')
+          ..write('themeMode: $themeMode, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -4498,6 +4596,8 @@ typedef $$AppFlagsTableCreateCompanionBuilder =
       required String id,
       required int onboardingCompleted,
       Value<int?> onboardingCompletedAt,
+      Value<String> unitSystem,
+      Value<String> themeMode,
       required int updatedAt,
       Value<int> rowid,
     });
@@ -4506,6 +4606,8 @@ typedef $$AppFlagsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<int> onboardingCompleted,
       Value<int?> onboardingCompletedAt,
+      Value<String> unitSystem,
+      Value<String> themeMode,
       Value<int> updatedAt,
       Value<int> rowid,
     });
@@ -4531,6 +4633,16 @@ class $$AppFlagsTableFilterComposer
 
   ColumnFilters<int> get onboardingCompletedAt => $composableBuilder(
     column: $table.onboardingCompletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unitSystem => $composableBuilder(
+    column: $table.unitSystem,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get themeMode => $composableBuilder(
+    column: $table.themeMode,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4564,6 +4676,16 @@ class $$AppFlagsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get unitSystem => $composableBuilder(
+    column: $table.unitSystem,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get themeMode => $composableBuilder(
+    column: $table.themeMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
@@ -4591,6 +4713,14 @@ class $$AppFlagsTableAnnotationComposer
     column: $table.onboardingCompletedAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get unitSystem => $composableBuilder(
+    column: $table.unitSystem,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get themeMode =>
+      $composableBuilder(column: $table.themeMode, builder: (column) => column);
 
   GeneratedColumn<int> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
@@ -4630,12 +4760,16 @@ class $$AppFlagsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<int> onboardingCompleted = const Value.absent(),
                 Value<int?> onboardingCompletedAt = const Value.absent(),
+                Value<String> unitSystem = const Value.absent(),
+                Value<String> themeMode = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AppFlagsCompanion(
                 id: id,
                 onboardingCompleted: onboardingCompleted,
                 onboardingCompletedAt: onboardingCompletedAt,
+                unitSystem: unitSystem,
+                themeMode: themeMode,
                 updatedAt: updatedAt,
                 rowid: rowid,
               ),
@@ -4644,12 +4778,16 @@ class $$AppFlagsTableTableManager
                 required String id,
                 required int onboardingCompleted,
                 Value<int?> onboardingCompletedAt = const Value.absent(),
+                Value<String> unitSystem = const Value.absent(),
+                Value<String> themeMode = const Value.absent(),
                 required int updatedAt,
                 Value<int> rowid = const Value.absent(),
               }) => AppFlagsCompanion.insert(
                 id: id,
                 onboardingCompleted: onboardingCompleted,
                 onboardingCompletedAt: onboardingCompletedAt,
+                unitSystem: unitSystem,
+                themeMode: themeMode,
                 updatedAt: updatedAt,
                 rowid: rowid,
               ),

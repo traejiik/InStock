@@ -1,14 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../data/repositories/app_flags_repository.dart';
+import 'package:instock/data/repositories/app_flags_repository.dart';
 
 final onboardingInitialStateProvider = Provider<bool>((ref) => false);
-
-final appFlagsRepositoryProvider = Provider<AppFlagsRepository>(
-  (ref) => throw UnimplementedError(
-    'Override appFlagsRepositoryProvider in ProviderScope',
-  ),
-);
 
 final onboardingControllerProvider =
     NotifierProvider<OnboardingController, bool>(OnboardingController.new);

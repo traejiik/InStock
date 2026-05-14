@@ -13,8 +13,7 @@ The app uses:
 - Flutter with Material 3
 - Riverpod for dependency injection and reactive state
 - go_router with a stateful shell for bottom-tab navigation
-- Drift SQLite for core data persistence (ingredients, pantry, recipes, shopping)
-- shared_preferences for user preferences only (unit system, theme)
+- Drift SQLite for persistence (ingredients, pantry, recipes, shopping, app flags, and preferences)
 - google_fonts for typography
 - lucide_icons is available, though much of the current UI still uses Material icons
 
@@ -47,7 +46,6 @@ lib/
   data/
     database/app_database.dart     # ChangeNotifier facade wrapping InStockDriftDb
     database/drift_database.dart   # Drift table definitions and InStockDriftDb class
-    database/migration_service.dart # One-time SharedPreferences → Drift migration
     models/app_models.dart         # Ingredient, pantry, recipe, shopping models
     repositories/                  # Compatibility re-exports of AppDatabase
   features/
@@ -67,7 +65,7 @@ graphify-out/
 
 ## Architecture Notes
 
-`AppDatabase` in `lib/data/database/app_database.dart` is the central state holder. It extends `ChangeNotifier` and owns an immutable `AppState` in memory. The backing store is Drift SQLite via `InStockDriftDb` (`drift_database.dart`). On first run, `MigrationService` migrates any legacy `fridge_state_v1` data from SharedPreferences into the SQLite tables and sets a flag so migration only runs once. User preferences (unit system, theme) remain in SharedPreferences via the settings providers — this is intentional and separate from core data.
+`AppDatabase` in `lib/data/database/app_database.dart` is the central state holder. It extends `ChangeNotifier` and owns an immutable `AppState` in memory. The backing store is Drift SQLite via `InStockDriftDb` (`drift_database.dart`). On first run, the app seeds default data if the ingredients table is empty. App-level flags and preferences live in the `AppFlags` singleton row.
 
 Provider setup lives in `lib/features/shopping/providers/shopping_provider.dart`. `appDatabaseProvider` must be overridden in `main.dart` after `AppDatabase.init()`. Pantry and recipe provider files currently re-export the shopping provider file, so do not assume they contain separate feature-specific provider logic.
 
@@ -93,7 +91,6 @@ If adding routes, decide explicitly whether the screen should keep the bottom na
 ## Data and State Rules
 
 - Use `AppDatabase` methods for mutations instead of editing lists from widgets.
-- Preserve JSON compatibility when changing models. `MigrationService` reads the legacy `fridge_state_v1` JSON blob from SharedPreferences once during first launch — deserialization must not regress for existing users.
 - `AppDatabase._applyMigrations()` is where persisted data upgrades currently live.
 - `IngredientCategory` drives both grouping and category color.
 - Unit logic belongs in `UnitConverter`, not directly in screens.

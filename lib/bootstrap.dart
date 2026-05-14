@@ -6,6 +6,7 @@ import 'data/database/app_database.dart';
 import 'data/database/drift_database.dart';
 import 'data/repositories/app_flags_repository.dart';
 import 'features/onboarding/providers/onboarding_provider.dart';
+import 'features/settings/providers/settings_provider.dart';
 import 'features/shopping/providers/shopping_provider.dart';
 
 class InStockBootstrap extends StatefulWidget {
@@ -24,12 +25,12 @@ class _InStockBootstrapState extends State<InStockBootstrap> {
     await appDatabase.init();
 
     final appFlagsRepository = AppFlagsRepository(driftDb);
-    final onboardingComplete = await appFlagsRepository.isOnboardingComplete();
+    final appFlags = await appFlagsRepository.load();
 
     return _BootstrapData(
       appDatabase: appDatabase,
       appFlagsRepository: appFlagsRepository,
-      onboardingComplete: onboardingComplete,
+      appFlags: appFlags,
     );
   }
 
@@ -47,7 +48,13 @@ class _InStockBootstrapState extends State<InStockBootstrap> {
                 data.appFlagsRepository,
               ),
               onboardingInitialStateProvider.overrideWithValue(
-                data.onboardingComplete,
+                data.appFlags.onboardingCompleted,
+              ),
+              unitInitialStateProvider.overrideWithValue(
+                data.appFlags.unitSystem,
+              ),
+              themeInitialStateProvider.overrideWithValue(
+                data.appFlags.themeMode,
               ),
             ],
             child: const InStockApp(),
@@ -68,12 +75,12 @@ class _BootstrapData {
   const _BootstrapData({
     required this.appDatabase,
     required this.appFlagsRepository,
-    required this.onboardingComplete,
+    required this.appFlags,
   });
 
   final AppDatabase appDatabase;
   final AppFlagsRepository appFlagsRepository;
-  final bool onboardingComplete;
+  final AppFlagsSnapshot appFlags;
 }
 
 class InStockSplashApp extends StatelessWidget {

@@ -15,7 +15,6 @@ import 'package:instock/features/recipes/widgets/recipe_card.dart';
 import 'package:instock/features/shopping/providers/shopping_provider.dart';
 import 'package:instock/features/shopping/screens/shopping_screen.dart';
 import 'package:instock/shared/widgets/category_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   setUpAll(() {
@@ -107,7 +106,6 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    SharedPreferences.setMockInitialValues({});
     final db = AppDatabase(db: InStockDriftDb.memory());
     await db.init();
     await db.clearAllData();

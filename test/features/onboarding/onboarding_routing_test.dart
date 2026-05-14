@@ -7,7 +7,6 @@ import 'package:instock/data/database/drift_database.dart';
 import 'package:instock/data/repositories/app_flags_repository.dart';
 import 'package:instock/features/onboarding/providers/onboarding_provider.dart';
 import 'package:instock/features/shopping/providers/shopping_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   setUpAll(() {
@@ -17,7 +16,6 @@ void main() {
   testWidgets('first launch routes to onboarding before the app shell', (
     tester,
   ) async {
-    SharedPreferences.setMockInitialValues({});
     final driftDb = InStockDriftDb.memory();
     final appDatabase = AppDatabase(db: driftDb);
     await appDatabase.init();
@@ -41,7 +39,6 @@ void main() {
   });
 
   testWidgets('completed onboarding routes to the app shell', (tester) async {
-    SharedPreferences.setMockInitialValues({});
     final driftDb = InStockDriftDb.memory();
     final appDatabase = AppDatabase(db: driftDb);
     await appDatabase.init();

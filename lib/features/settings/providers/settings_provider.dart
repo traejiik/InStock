@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-const _kUnitPrefKey = 'instock_unit_pref';
-const _kThemePrefKey = 'instock_theme_pref';
+import 'package:instock/data/repositories/app_flags_repository.dart';
 
 enum UnitSystem { metric, imperial }
 
@@ -19,58 +16,51 @@ extension AppThemeModeX on AppThemeMode {
 }
 
 class UnitPreferenceNotifier extends StateNotifier<UnitSystem> {
-  UnitPreferenceNotifier() : super(UnitSystem.metric) {
-    SharedPreferences.getInstance().then((prefs) {
-      _prefs = prefs;
-      final raw = prefs.getString(_kUnitPrefKey);
-      if (raw == 'imperial') state = UnitSystem.imperial;
-    });
-  }
+  UnitPreferenceNotifier(this._repository, UnitSystem initialState)
+    : super(initialState);
 
-  SharedPreferences? _prefs;
+  final AppFlagsRepository _repository;
 
-  void set(UnitSystem value) {
+  Future<void> set(UnitSystem value) async {
     state = value;
-    _prefs?.setString(
-      _kUnitPrefKey,
-      value == UnitSystem.imperial ? 'imperial' : 'metric',
-    );
+    await _repository.setUnitSystem(value);
   }
 }
 
 class ThemePreferenceNotifier extends StateNotifier<AppThemeMode> {
-  ThemePreferenceNotifier() : super(AppThemeMode.system) {
-    SharedPreferences.getInstance().then((prefs) {
-      _prefs = prefs;
-      final raw = prefs.getString(_kThemePrefKey);
-      state = switch (raw) {
-        'dark' => AppThemeMode.dark,
-        'light' => AppThemeMode.light,
-        _ => AppThemeMode.system,
-      };
-    });
-  }
+  ThemePreferenceNotifier(this._repository, AppThemeMode initialState)
+    : super(initialState);
 
-  SharedPreferences? _prefs;
+  final AppFlagsRepository _repository;
 
-  void set(AppThemeMode value) {
+  Future<void> set(AppThemeMode value) async {
     state = value;
-    _prefs?.setString(_kThemePrefKey, switch (value) {
-      AppThemeMode.dark => 'dark',
-      AppThemeMode.light => 'light',
-      AppThemeMode.system => 'system',
-    });
+    await _repository.setThemeMode(value);
   }
 }
 
+final unitInitialStateProvider = Provider<UnitSystem>(
+  (ref) => UnitSystem.metric,
+);
+
+final themeInitialStateProvider = Provider<AppThemeMode>(
+  (ref) => AppThemeMode.system,
+);
+
 final unitPreferenceProvider =
     StateNotifierProvider<UnitPreferenceNotifier, UnitSystem>(
-      (ref) => UnitPreferenceNotifier(),
+      (ref) => UnitPreferenceNotifier(
+        ref.watch(appFlagsRepositoryProvider),
+        ref.watch(unitInitialStateProvider),
+      ),
     );
 
 final themePreferenceProvider =
     StateNotifierProvider<ThemePreferenceNotifier, AppThemeMode>(
-      (ref) => ThemePreferenceNotifier(),
+      (ref) => ThemePreferenceNotifier(
+        ref.watch(appFlagsRepositoryProvider),
+        ref.watch(themeInitialStateProvider),
+      ),
     );
 
 final packageInfoProvider = FutureProvider<PackageInfo>((ref) async {

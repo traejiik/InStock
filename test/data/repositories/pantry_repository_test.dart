@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:instock/data/database/app_database.dart';
 import 'package:instock/data/database/drift_database.dart';
 import 'package:instock/data/models/app_models.dart';
@@ -14,7 +13,6 @@ void main() {
     late AppDatabase db;
 
     setUp(() async {
-      SharedPreferences.setMockInitialValues({});
       db = AppDatabase(db: InStockDriftDb.memory());
       await db.init(); // seeds with default data
     });
@@ -77,7 +75,6 @@ void main() {
     late AppDatabase db;
 
     setUp(() async {
-      SharedPreferences.setMockInitialValues({});
       db = AppDatabase(db: InStockDriftDb.memory());
       await db.init();
     });
@@ -122,7 +119,6 @@ void main() {
     late AppDatabase db;
 
     setUp(() async {
-      SharedPreferences.setMockInitialValues({});
       db = AppDatabase(db: InStockDriftDb.memory());
       await db.init();
       await db.clearAllData();

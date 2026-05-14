@@ -90,6 +90,8 @@ class AppFlags extends Table {
   TextColumn get id => text()();
   IntColumn get onboardingCompleted => integer()();
   IntColumn get onboardingCompletedAt => integer().nullable()();
+  TextColumn get unitSystem => text().withDefault(const Constant('metric'))();
+  TextColumn get themeMode => text().withDefault(const Constant('system'))();
   IntColumn get updatedAt => integer()();
 
   @override
@@ -123,7 +125,7 @@ class InStockDriftDb extends _$InStockDriftDb {
   InStockDriftDb.memory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -141,6 +143,10 @@ class InStockDriftDb extends _$InStockDriftDb {
             updatedAt: DateTime.now().millisecondsSinceEpoch,
           ),
         );
+      }
+      if (from < 4) {
+        await m.addColumn(appFlags, appFlags.unitSystem);
+        await m.addColumn(appFlags, appFlags.themeMode);
       }
     },
   );

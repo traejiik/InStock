@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:instock/core/theme/app_colors.dart';
+import 'package:instock/data/database/drift_database.dart';
+import 'package:instock/data/repositories/app_flags_repository.dart';
 import 'package:instock/features/settings/providers/settings_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -23,17 +24,23 @@ void main() {
   });
 
   test('theme preference maps and persists light mode', () async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final container = ProviderContainer();
+    final db = InStockDriftDb.memory();
+    final repository = AppFlagsRepository(db);
+    final container = ProviderContainer(
+      overrides: [
+        appFlagsRepositoryProvider.overrideWithValue(repository),
+        themeInitialStateProvider.overrideWithValue(AppThemeMode.system),
+      ],
+    );
+    addTearDown(db.close);
     addTearDown(container.dispose);
-    container.read(themePreferenceProvider);
-    await Future<void>.delayed(const Duration(milliseconds: 10));
 
-    container.read(themePreferenceProvider.notifier).set(AppThemeMode.light);
+    await container
+        .read(themePreferenceProvider.notifier)
+        .set(AppThemeMode.light);
 
     expect(AppThemeMode.light.toThemeMode(), ThemeMode.light);
     expect(container.read(themePreferenceProvider), AppThemeMode.light);
-    expect(prefs.getString('instock_theme_pref'), 'light');
+    expect(await repository.getThemeMode(), AppThemeMode.light);
   });
 }

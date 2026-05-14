@@ -1,12 +1,11 @@
 import 'dart:async' show unawaited;
 import 'dart:convert';
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show Value, countAll;
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/app_models.dart';
 import '../../core/utils/unit_converter.dart';
 import 'drift_database.dart';
-import 'migration_service.dart';
 
 const _uuid = Uuid();
 
@@ -75,8 +74,8 @@ class AppDatabase extends ChangeNotifier {
   // ─── Init ─────────────────────────────────────────────────────────────────
 
   Future<void> init() async {
-    final outcome = await MigrationService.migrateIfNeeded(_db);
-    if (outcome == MigrationOutcome.freshInstall) {
+    final hasData = await _hasAnyData();
+    if (!hasData) {
       await _seed();
     }
     await _reload();
@@ -84,6 +83,14 @@ class AppDatabase extends ChangeNotifier {
   }
 
   // ─── Private helpers ─────────────────────────────────────────────────────
+
+  Future<bool> _hasAnyData() async {
+    final count = countAll();
+    final row = await (_db.selectOnly(
+      _db.ingredients,
+    )..addColumns([count])).getSingle();
+    return (row.read(count) ?? 0) > 0;
+  }
 
   Future<void> _reload() async {
     final ingRows = await _db.select(_db.ingredients).get();
