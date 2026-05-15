@@ -669,6 +669,103 @@ class AppDatabase extends ChangeNotifier {
     return recipeId;
   }
 
+  Future<void> updateRecipe({
+    required String id,
+    required String title,
+    required int servings,
+    required int cookMinutes,
+    required String difficulty,
+    required List<String> instructions,
+    required List<
+      ({
+        String name,
+        double quantity,
+        String unit,
+        bool isOptional,
+        String? notes,
+      })
+    >
+    ingredients,
+    String? sourceUrl,
+    String? imageUrl,
+    String? notes,
+  }) async {
+    final now = DateTime.now();
+
+    // Hard-delete old recipe ingredients from Drift — _persistFullState only
+    // upserts so stale rows would survive if we only update in-memory state.
+    await (_db.delete(_db.recipeIngredients)
+          ..where((t) => t.recipeId.equals(id)))
+        .go();
+
+    var workingState = _state;
+
+    final updatedRecipes = workingState.recipes.map((r) {
+      if (r.id != id) return r;
+      return r.copyWith(
+        title: title,
+        instructions: instructions,
+        servings: servings,
+        cookMinutes: cookMinutes,
+        difficulty: difficulty,
+        sourceUrl: sourceUrl,
+        imageUrl: imageUrl,
+        notes: notes,
+        updatedAt: now,
+      );
+    }).toList();
+    workingState = workingState.copyWith(recipes: updatedRecipes);
+
+    workingState = workingState.copyWith(
+      recipeIngredients: workingState.recipeIngredients
+          .where((ri) => ri.recipeId != id)
+          .toList(),
+    );
+
+    final newRis = <RecipeIngredient>[];
+    for (final ing in ingredients) {
+      final normalized = ing.name.trim().toLowerCase();
+      var ingredient = workingState.ingredients
+          .where(
+            (i) =>
+                i.canonicalName.toLowerCase() == normalized ||
+                i.aliases.any((a) => a.toLowerCase() == normalized),
+          )
+          .firstOrNull;
+
+      if (ingredient == null) {
+        ingredient = Ingredient(
+          id: 'ing-${normalized.replaceAll(' ', '-')}-${now.millisecondsSinceEpoch}',
+          canonicalName: ing.name.trim(),
+          category: IngredientCategory.custom,
+          aliases: [],
+          createdAt: now,
+        );
+        workingState = workingState.copyWith(
+          ingredients: [...workingState.ingredients, ingredient],
+        );
+      }
+
+      newRis.add(
+        RecipeIngredient(
+          id: _uuid.v4(),
+          recipeId: id,
+          ingredientId: ingredient.id,
+          quantity: ing.quantity,
+          unit: ing.unit,
+          isOptional: ing.isOptional,
+          notes: ing.notes,
+        ),
+      );
+    }
+
+    _update(
+      workingState.copyWith(
+        recipeIngredients: [...workingState.recipeIngredients, ...newRis],
+      ),
+    );
+  }
+
   // ─── Seed ─────────────────────────────────────────────────────────────────
 
   Future<void> _seed() async {
