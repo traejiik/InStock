@@ -675,7 +675,10 @@ class _PreviewSection extends ConsumerWidget {
                   )
                 : parsed;
             ref.read(recipeFormProvider.notifier).loadFromParsed(effective);
-            context.push('/recipes/review', extra: effective);
+            context.push(
+              '/recipes/review',
+              extra: (parsed: effective, editingId: null as String?),
+            );
           },
         ),
       ],

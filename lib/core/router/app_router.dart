@@ -81,7 +81,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/recipes/review',
-        builder: (c, s) => RecipeReviewScreen(parsed: s.extra as ParsedRecipe),
+        builder: (c, s) {
+          final extra =
+              s.extra as ({ParsedRecipe parsed, String? editingId});
+          return RecipeReviewScreen(
+            parsed: extra.parsed,
+            editingId: extra.editingId,
+          );
+        },
       ),
       GoRoute(
         path: '/recipes/:id',
