@@ -406,7 +406,9 @@ class _HeroArea extends StatelessWidget {
                 Text(
                   recipe.title,
                   style: AppTextStyles.displayLg.copyWith(
-                    color: colors.textPrimary,
+                    color: recipe.imageUrl != null
+                        ? Colors.white
+                        : colors.textPrimary,
                     shadows: const [
                       Shadow(
                         blurRadius: 16,
@@ -674,7 +676,7 @@ class _BottomBar extends StatelessWidget {
             Expanded(
               flex: 2,
               child: _BarButton(
-                label: '+ Add Missing',
+                label: '🛒 Add to List',
                 bg: colors.green,
                 fg: onPrimary,
                 onTap: onAddMissing,
