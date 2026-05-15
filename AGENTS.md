@@ -133,18 +133,15 @@ Rules:
 <claude-mem-context>
 # Memory Context
 
-# [InStock] recent context, 2026-05-13 1:33pm GMT+2
+# [InStock] recent context, 2026-05-15 10:42pm GMT+2
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (17,567t read) | 246,162t work | 93% savings
+Stats: 50 obs (16,673t read) | 489,330t work | 97% savings
 
 ### May 7, 2026
-S59 InStock Flutter App — Bundle ID Migration (com.example → dev.traejiik) + iOS Privacy Manifest + Android Build Fix (May 7 at 3:01 AM)
-S60 InStock Flutter App — Bundle ID Migration + iOS Privacy Manifest + Android Build Fix + graphify graph update (May 7 at 5:42 PM)
-S61 InStock Flutter App — Bundle ID Migration + iOS Privacy Manifest + Android Desugaring Fix — COMMITTED (May 7 at 5:45 PM)
 S62 InStock Flutter: Fix Android SQLite crash after Drift migration and fix splash screen on both platforms to use correct dark brand asset (May 7 at 5:46 PM)
 S63 Audit GPT-introduced changes to InStock Flutter app and fix all issues found (May 7 at 6:23 PM)
 ### May 8, 2026
@@ -153,37 +150,10 @@ S65 Audit and fix GPT-introduced issues in InStock Flutter app — annotation pl
 S66 Fix iOS build error in InStock Flutter app — likely caused by objective_c 9.3.0 deployment target conflict (May 8 at 2:01 AM)
 S67 Group unstaged files into logical commits with conventional messages, then create a global smart-commit skill for reuse (May 8 at 2:13 AM)
 ### May 12, 2026
-S68 Group unstaged files into logical commits with conventional messages, push to remote, then create a global smart-commit skill for reuse (May 12 at 12:55 PM)
+S68 Group unstaged files into logical commits with conventional messages, push to remote, then create a global smart-commit skill for reuse (May 12 at 12:54 PM)
+S69 Codebase health audit — "What do I need to fix in my code base?" for InStock Flutter app (May 12 at 12:55 PM)
 ### May 13, 2026
-642 12:42p 🔵 Recipe Scraper Implementation: JSON-LD First, Heuristic Fallback
-643 " 🔵 RecipeScraper: Ingredient Parsing Pipeline and Name Simplification Gap
-644 " 🟣 Branch Created: codex/canonical-ingredient-names
-645 12:43p 🟣 Failing Tests Written for "Core Pantry Item" Name Canonicalization (TDD RED Step)
-646 " 🔵 TDD RED Confirmed: 5 Specific Scraper Bugs Exposed by Failing Tests
-647 12:45p 🟣 Ingredient Name Canonicalization Implemented in recipe_scraper.dart
-648 12:46p 🔴 All 6 Recipe Scraper Tests Pass — TDD GREEN Step Complete
-649 " ✅ dart format Applied: Only Test File Needed Reformatting
-650 12:47p 🔴 Full Test Suite: 26/26 Pass Including Import Button Enable Test
-651 " ✅ Codebase Graph Updated: 700 Nodes, 889 Edges After Recipe Scraper Changes
-652 12:48p ✅ Branch codex/canonical-ingredient-names Ready for Integration: 305 Lines Added
-653 12:57p 🔵 InStock Project Pending Changes Before Smart Commit
-654 " 🔵 Recipe Scraper Overhaul — Large Diff Before Commit
-655 " 🟣 Recipe Scraper Canonical Ingredient Name Normalization
-656 " 🔵 InStock Codebase Graph: 700 Nodes, Core Abstractions Identified
-657 12:58p 🟣 Recipe Scraper Normalization Passes All Tests — 26/26 Green
-658 " ✅ Committed "fix: canonicalize imported ingredient names" on Branch codex/canonical-ingredient-names
-659 1:12p 🟣 Recipe Instructions Enhancement: Detailed Steps + Notes Section
-660 " 🔵 InStock Flutter App Codebase Structure via Graph Report
-661 1:13p 🔵 Recipe Notes Field Exists in DB but Not Wired Through Form Save
-662 " 🔵 Recipe Instruction Extraction Uses Short _chooseSteps(), Not Full Sections
-663 1:14p 🔵 Recipe Model Has No Notes Field — Only RecipeIngredient Does
-664 " 🔵 _chooseSteps() Selects Full Recipe Section Over Abbreviated via Name Matching
-665 " 🔵 RecipeReviewScreen Instructions Section Has No Notes Section After Steps
-666 " 🔵 Recipes Drift Table Has No Notes Column — Schema Migration Required
-667 " 🔵 _StepRow Already Uses maxLines: null — Step Text Display Is Not Truncated
-668 1:15p ⚖️ Recipe Import: Richest Instructions + Persist Notes Design Decisions
-669 1:16p ✅ Created Feature Branch codex/rich-recipe-instructions-notes
-670 " ✅ Implementation Plan Defined: 5-Step TDD Approach for Rich Instructions + Notes
+670 1:16p ✅ Implementation Plan Defined: 5-Step TDD Approach for Rich Instructions + Notes
 671 " 🔵 Test Infrastructure Patterns for InStock Recipe Feature
 672 " 🔵 add_recipe_screen.dart Write Tab Also Missing Notes Section
 673 1:17p 🟣 Failing Tests Written for Rich Instructions and Recipe Notes Scraping
@@ -195,6 +165,7 @@ S68 Group unstaged files into logical commits with conventional messages, push t
 679 " 🟣 Recipe Model Gains notes Field with Full Serialization Support
 680 " 🟣 Drift Schema Updated to v2: notes Column Added to Recipes Table with Migration
 681 " 🟣 app_database.dart Wired for Recipe Notes: saveRecipe, _mapRecipe, _recipeCompanion Updated
+682 1:21p 🟣 migration_service.dart Updated with notes Field for Legacy Data Migration
 683 " 🟣 RecipeFormState and RecipeFormNotifier Updated with Notes Support
 684 " 🟣 RecipeReviewScreen Gains Notes Section After Instructions
 685 " 🟣 add_recipe_screen.dart Write Tab Gains Notes Section Before Save Button
@@ -204,6 +175,46 @@ S68 Group unstaged files into logical commits with conventional messages, push t
 689 " ✅ dart run build_runner build Started for Drift Codegen After Schema v2 Change
 690 1:23p 🔵 build_runner Warning: SDK Language Version Mismatch (3.11.0 vs analyzer 3.9.0)
 691 " ✅ Drift Codegen Completed Successfully: drift_database.g.dart Regenerated
+### May 14, 2026
+692 10:25p 🔵 InStock Flutter test suite fully green — no immediate fixes required
+S70 Fix 6 bugs in InStock Flutter app: recipe form bleed, light mode contrast, shopping list UX, unit conversion display, version number confusion, and AI UI removal (May 14 at 10:25 PM)
+693 10:30p 🔵 Recipe App Bug Report & Feature Requests Logged
+694 " 🔵 InStock Flutter App Codebase Structure Mapped
+695 " 🔵 Recipe Form State Located in Two Files
+696 10:31p 🔵 Recipe Form State Not Auto-Disposed — Causes Cross-Recipe Bleed
+697 " 🔵 Recipe Card Title Contrast Bug Traced to Hardcoded Black Gradient + Theme-Adaptive Text
+698 " 🔵 Unit Converter Handles Stock Status But Not Display Conversion
+699 " 🔵 Settings Screen Displays Version as "x.y.z (buildNumber)" — Confusing to Users
+700 " 🔵 AI Feature Surface Area Mapped — 4 Screens Reference AiTinkerSheet
+701 " 🔵 Shopping Screen Add-Item Flow Requires Multiple Steps for Category Selection
+702 10:32p 🔵 AI Entry Points in Import Screen: Tab + Two Toggles
+703 " 🔵 Recipe Detail Screen AI Button Lives in _BottomBar as "✨ AI" Label
+704 " 🔵 IngredientRow Shows Stored Unit Only — No Display-Unit Conversion
+705 10:33p 🔵 AddRecipeScreen is the Real Screen — ImportRecipeScreen is a Prototype
+706 " 🔵 RecipeReviewScreen Loads Form via postFrameCallback — Race Condition Confirmed
+707 " 🔵 Version Display Bug: pubspec "1.0.0+1" Becomes "1.0.0 (1)" in Settings
+708 " 🔵 matchStatus Uses UnitConverter Correctly — Unit Display Bug is Separate
+709 10:35p 🔴 Fixed Recipe Form Bleed — loadFromParsed Now Called Synchronously in initState
+710 10:36p 🔴 Fixed Light Mode Contrast Bug in RecipeCard — Title Forces White Over Images
+711 " 🔴 Fixed Light Mode Contrast in RecipeCardSm — Title and Meta Text Force White Over Images
+712 " 🔴 _MetaRow Contrast Fixed — Icons and Text Now White70 Over Recipe Card Images
+713 " 🔴 Shopping Add-Item Default Unit Changed from 'g' to 'pcs'
+714 " 🔴 Match Status Now Uses Scaled Quantity — Pantry Check Respects Current Serving Count
+715 " 🔴 Settings Version Display Simplified to "vX.Y.Z" — Build Number Removed
+716 " ✅ AI Tab Removed from AddRecipeScreen — SegmentControl Now Has Two Tabs Only
+717 10:37p ✅ AI Review State and Callbacks Fully Removed from AddRecipeScreen and _ImportTabContent
+### May 15, 2026
+718 10:31p 🔵 AI Recipe Generation Is a UI Stub in InStock
+719 " 🔴 Removed Stub AI Generate Entry Points from Recipes Screen
+S71 Codebase audit: identify and fix issues — removed stub AI Generate UI from recipes screen (May 15 at 10:31 PM)
+**Investigated**: The InStock Flutter app's recipes feature directory was searched for AI-related references. Files examined include recipes_screen.dart, import_recipe_screen.dart, recipe_import_provider.dart, and recipe_scraper.dart. The investigation confirmed that AI recipe generation (the "AI Generate ☁️" tab) was entirely a UI placeholder with no real backend integration.
 
-Access 246k tokens of past work via get_observations([IDs]) or mem-search skill.
+**Learned**: The AI Generate feature in the recipes flow was a stub: the `_AiTab` widget in import_recipe_screen.dart runs a 2-second `Future.delayed` then shows a "requires active plan" SnackBar — no Anthropic SDK or other AI API is called. The `_aiReview` toggle in Write and Import tabs similarly has no functional backend. The only real recipe-fetching logic is `RecipeScraper().scrape(url)` for URL import. The app's route `/recipes/add?tab=2` led directly to this dead-end stub.
+
+**Completed**: Removed the "AI Generate ☁️" FabOption from the FAB menu in recipes_screen.dart (was third option with purple styling, routing to tab=2). Removed the "AI Generate" empty-state button from `_RecipesEmptyState`. Updated the empty-state subtitle from "Write one, import from a URL, or generate with AI" to "Write one or import from a URL". `flutter analyze` confirmed no issues after changes.
+
+**Next Steps**: The session appears to be continuing the codebase audit. Likely next areas: checking import_recipe_screen.dart for the remaining AI tab code that is now unreachable (may need cleanup or removal), and auditing other parts of the codebase for similar stub or broken features.
+
+
+Access 489k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>
