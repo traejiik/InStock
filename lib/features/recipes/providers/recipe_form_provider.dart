@@ -87,6 +87,8 @@ class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
 
   RecipeFormNotifier(this._ref) : super(const RecipeFormState());
 
+  void reset() => state = const RecipeFormState();
+
   void loadFromParsed(ParsedRecipe parsed) {
     final parsedRows = parsed.ingredientSections.isEmpty
         ? parsed.ingredients

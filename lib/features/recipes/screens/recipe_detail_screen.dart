@@ -5,7 +5,6 @@ import 'package:instock/core/theme/app_text_styles.dart';
 import 'package:instock/core/utils/unit_converter.dart';
 import 'package:instock/data/models/app_models.dart';
 import 'package:instock/features/shopping/providers/shopping_provider.dart';
-import 'package:instock/features/ai/widgets/ai_tinker_sheet.dart';
 import '../widgets/ingredient_row.dart';
 import '../widgets/step_row.dart';
 
@@ -154,19 +153,20 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                         final ri = recipeIngredients[i];
                         final ing = db.ingredientById(ri.ingredientId);
                         if (ing == null) return const SizedBox.shrink();
+                        final scaledQty = UnitConverter.scaleQuantity(
+                          ri.quantity,
+                          recipe.servings,
+                          _servings,
+                        );
                         return IngredientRow(
                           recipeIngredient: ri,
                           ingredient: ing,
                           matchStatus: db.matchStatus(
                             ri.ingredientId,
-                            ri.quantity,
+                            scaledQty,
                             ri.unit,
                           ),
-                          scaledQuantity: UnitConverter.scaleQuantity(
-                            ri.quantity,
-                            recipe.servings,
-                            _servings,
-                          ),
+                          scaledQuantity: scaledQty,
                         );
                       }, childCount: recipeIngredients.length),
                     ),
@@ -279,7 +279,6 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                 ),
               );
             },
-            onAI: () => AiTinkerSheet.show(context, recipeName: recipe.title),
           ),
         ],
       ),
@@ -645,7 +644,6 @@ class _BottomBar extends StatelessWidget {
   final int missingCount;
   final VoidCallback onAddMissing;
   final VoidCallback onCooked;
-  final VoidCallback onAI;
 
   const _BottomBar({
     required this.recipe,
@@ -653,7 +651,6 @@ class _BottomBar extends StatelessWidget {
     required this.missingCount,
     required this.onAddMissing,
     required this.onCooked,
-    required this.onAI,
   });
 
   @override
@@ -692,13 +689,6 @@ class _BottomBar extends StatelessWidget {
               fg: colors.textPrimary,
               onTap: onCooked,
             ),
-          ),
-          const SizedBox(width: 8),
-          _BarButton(
-            label: '✨ AI',
-            bg: colors.purpleDim,
-            fg: colors.purple,
-            onTap: onAI,
           ),
         ],
       ),

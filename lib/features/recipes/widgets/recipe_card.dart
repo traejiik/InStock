@@ -69,7 +69,12 @@ class RecipeCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(recipe.title, style: AppTextStyles.headingMd),
+                  Text(
+                    recipe.title,
+                    style: AppTextStyles.headingMd.copyWith(
+                      color: recipe.imageUrl != null ? Colors.white : null,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   _MetaRow(recipe: recipe, missingCount: missingCount),
                 ],
@@ -151,14 +156,18 @@ class RecipeCardSm extends StatelessWidget {
                 children: [
                   Text(
                     recipe.title,
-                    style: AppTextStyles.headingSm,
+                    style: AppTextStyles.headingSm.copyWith(
+                      color: recipe.imageUrl != null ? Colors.white : null,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 3),
                   Text(
                     '${recipe.cookMinutes}m · ${recipe.servings} servings',
-                    style: AppTextStyles.caption,
+                    style: AppTextStyles.caption.copyWith(
+                      color: recipe.imageUrl != null ? Colors.white70 : null,
+                    ),
                   ),
                 ],
               ),
@@ -272,15 +281,23 @@ class _MetaRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
+    final overImage = recipe.imageUrl != null;
+    final metaColor = overImage ? Colors.white70 : colors.textTertiary;
     return Row(
       children: [
-        Icon(Icons.schedule, size: 12, color: colors.textTertiary),
+        Icon(Icons.schedule, size: 12, color: metaColor),
         const SizedBox(width: 4),
-        Text('${recipe.cookMinutes}m', style: AppTextStyles.caption),
+        Text(
+          '${recipe.cookMinutes}m',
+          style: AppTextStyles.caption.copyWith(color: metaColor),
+        ),
         const SizedBox(width: 10),
-        Icon(Icons.people_outline, size: 12, color: colors.textTertiary),
+        Icon(Icons.people_outline, size: 12, color: metaColor),
         const SizedBox(width: 4),
-        Text('${recipe.servings}', style: AppTextStyles.caption),
+        Text(
+          '${recipe.servings}',
+          style: AppTextStyles.caption.copyWith(color: metaColor),
+        ),
         if (missingCount > 0) ...[
           const SizedBox(width: 10),
           Icon(Icons.warning_amber_outlined, size: 12, color: colors.amber),

@@ -135,13 +135,6 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
             textColor: colors.textPrimary,
             onTap: () => context.push('/recipes/add?tab=1'),
           ),
-          FabOption(
-            emoji: '✨',
-            label: 'AI Generate ☁️',
-            background: colors.purpleDim,
-            textColor: colors.purple,
-            onTap: () => context.push('/recipes/add?tab=2'),
-          ),
         ],
       ),
     );
@@ -193,7 +186,7 @@ class _RecipesEmptyState extends StatelessWidget {
             Text('No recipes yet', style: AppTextStyles.headingMd),
             const SizedBox(height: 8),
             Text(
-              'Write one, import from a URL, or generate with AI',
+              'Write one or import from a URL',
               style: AppTextStyles.bodyMd.copyWith(color: colors.textSecondary),
               textAlign: TextAlign.center,
             ),
@@ -208,14 +201,6 @@ class _RecipesEmptyState extends StatelessWidget {
               emoji: '🔗',
               label: 'Import URL',
               onTap: () => onNavigate('/recipes/add?tab=1'),
-            ),
-            const SizedBox(height: 10),
-            _EmptyActionButton(
-              emoji: '✨',
-              label: 'AI Generate',
-              bg: colors.purpleDim,
-              fg: colors.purple,
-              onTap: () => onNavigate('/recipes/add?tab=2'),
             ),
           ],
         ),

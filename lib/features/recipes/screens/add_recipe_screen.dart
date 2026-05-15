@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instock/core/theme/app_colors.dart';
 import 'package:instock/core/theme/app_text_styles.dart';
+import 'package:instock/features/recipes/providers/recipe_form_provider.dart';
 import 'package:instock/features/recipes/providers/recipe_import_provider.dart';
 import 'package:instock/features/recipes/services/recipe_scraper.dart';
 import 'package:instock/features/shopping/providers/shopping_provider.dart';
@@ -16,7 +17,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 const _kTabWrite = 0;
 const _kTabImport = 1;
 
-const _kTabLabels = ['✍️ Write', '🔗 Import', '✨ AI'];
+const _kTabLabels = ['✍️ Write', '🔗 Import'];
 
 class AddRecipeScreen extends ConsumerStatefulWidget {
   final int initialTab;
@@ -30,7 +31,6 @@ class AddRecipeScreen extends ConsumerStatefulWidget {
 class _AddRecipeScreenState extends ConsumerState<AddRecipeScreen> {
   late int _tabIndex;
   final _urlCtrl = TextEditingController();
-  bool _aiReview = false;
   bool _convertMetric = false;
   String? _writePrefilledTitle;
 
@@ -40,6 +40,7 @@ class _AddRecipeScreenState extends ConsumerState<AddRecipeScreen> {
     _tabIndex = widget.initialTab;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(recipeImportProvider.notifier).reset();
+      ref.read(recipeFormProvider.notifier).reset();
     });
   }
 
@@ -97,13 +98,10 @@ class _AddRecipeScreenState extends ConsumerState<AddRecipeScreen> {
                 _WriteTabContent(prefilledTitle: _writePrefilledTitle),
                 _ImportTabContent(
                   urlCtrl: _urlCtrl,
-                  aiReview: _aiReview,
                   convertMetric: _convertMetric,
-                  onAiToggle: (v) => setState(() => _aiReview = v),
                   onMetricToggle: (v) => setState(() => _convertMetric = v),
                   onSwitchToWrite: _switchToWrite,
                 ),
-                const _AiTabContent(),
               ][_tabIndex],
             ),
           ),
@@ -432,17 +430,13 @@ class _WriteTabContentState extends ConsumerState<_WriteTabContent> {
 
 class _ImportTabContent extends ConsumerStatefulWidget {
   final TextEditingController urlCtrl;
-  final bool aiReview;
   final bool convertMetric;
-  final ValueChanged<bool> onAiToggle;
   final ValueChanged<bool> onMetricToggle;
   final void Function(String? pageTitle) onSwitchToWrite;
 
   const _ImportTabContent({
     required this.urlCtrl,
-    required this.aiReview,
     required this.convertMetric,
-    required this.onAiToggle,
     required this.onMetricToggle,
     required this.onSwitchToWrite,
   });
@@ -548,9 +542,7 @@ class _ImportTabContentState extends ConsumerState<_ImportTabContent> {
           const SizedBox(height: 20),
           _PreviewSection(
             parsed: importState.value!,
-            aiReview: widget.aiReview,
             convertMetric: widget.convertMetric,
-            onAiToggle: widget.onAiToggle,
             onMetricToggle: widget.onMetricToggle,
           ),
         ],
@@ -626,16 +618,12 @@ class _ErrorBanner extends StatelessWidget {
 
 class _PreviewSection extends ConsumerWidget {
   final ParsedRecipe parsed;
-  final bool aiReview;
   final bool convertMetric;
-  final ValueChanged<bool> onAiToggle;
   final ValueChanged<bool> onMetricToggle;
 
   const _PreviewSection({
     required this.parsed,
-    required this.aiReview,
     required this.convertMetric,
-    required this.onAiToggle,
     required this.onMetricToggle,
   });
 
@@ -667,30 +655,6 @@ class _PreviewSection extends ConsumerWidget {
         _RecipePreviewCard(parsed: parsed),
         const SizedBox(height: 16),
         ToggleRow(
-          icon: Icons.auto_awesome,
-          iconColor: colors.purple,
-          iconBg: colors.purpleDim,
-          title: 'AI Review ☁️',
-          subtitle: 'Let AI check for improvements',
-          value: aiReview,
-          onChanged: (v) {
-            if (v) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'AI Review coming soon',
-                    style: AppTextStyles.bodySm,
-                  ),
-                  backgroundColor: colors.purpleDim,
-                ),
-              );
-            } else {
-              onAiToggle(false);
-            }
-          },
-        ),
-        const SizedBox(height: 10),
-        ToggleRow(
           icon: Icons.straighten,
           iconColor: colors.blue,
           iconBg: colors.blueDim,
@@ -710,6 +674,7 @@ class _PreviewSection extends ConsumerWidget {
                     ),
                   )
                 : parsed;
+            ref.read(recipeFormProvider.notifier).loadFromParsed(effective);
             context.push('/recipes/review', extra: effective);
           },
         ),
@@ -824,43 +789,6 @@ class _ImageFallback extends StatelessWidget {
       color: colors.surface3,
       alignment: Alignment.center,
       child: const Text('🍽', style: TextStyle(fontSize: 48)),
-    );
-  }
-}
-
-// ─── AI Tab ───────────────────────────────────────────────────────────────────
-
-class _AiTabContent extends StatelessWidget {
-  const _AiTabContent();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-    return Column(
-      children: [
-        const SizedBox(height: 32),
-        const Text('✨', style: TextStyle(fontSize: 32)),
-        const SizedBox(height: 16),
-        Text('AI Generate', style: AppTextStyles.headingLg),
-        const SizedBox(height: 8),
-        Text(
-          'Coming in a future update',
-          style: AppTextStyles.bodyMd.copyWith(color: colors.textSecondary),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 20),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: colors.purpleDim,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            '☁️  Requires internet + active plan',
-            style: AppTextStyles.caption.copyWith(color: colors.purple),
-          ),
-        ),
-      ],
     );
   }
 }

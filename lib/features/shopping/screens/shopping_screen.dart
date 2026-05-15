@@ -142,7 +142,7 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
     final db = ref.read(appDatabaseProvider);
     final nameCtrl = TextEditingController();
     final qtyCtrl = TextEditingController(text: '1');
-    String selectedUnit = 'g';
+    String selectedUnit = 'pcs';
     var selectedCategory = IngredientCategory.custom;
     String? nameError;
     String? qtyError;

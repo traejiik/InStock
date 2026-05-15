@@ -81,10 +81,8 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   title: Text('Version', style: AppTextStyles.label),
                   trailing: packageInfo.when(
-                    data: (info) => Text(
-                      '${info.version} (${info.buildNumber})',
-                      style: AppTextStyles.caption,
-                    ),
+                    data: (info) =>
+                        Text('v${info.version}', style: AppTextStyles.caption),
                     loading: () => Text('—', style: AppTextStyles.caption),
                     error: (_, __) => Text('—', style: AppTextStyles.caption),
                   ),
