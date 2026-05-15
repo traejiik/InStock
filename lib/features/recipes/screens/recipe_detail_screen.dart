@@ -1,12 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:instock/core/theme/app_colors.dart';
 import 'package:instock/core/theme/app_text_styles.dart';
 import 'package:instock/core/utils/unit_converter.dart';
+import 'package:instock/data/database/app_database.dart';
 import 'package:instock/data/models/app_models.dart';
+import 'package:instock/features/recipes/providers/recipe_form_provider.dart';
+import 'package:instock/features/recipes/services/recipe_scraper.dart';
 import 'package:instock/features/shopping/providers/shopping_provider.dart';
 import '../widgets/ingredient_row.dart';
 import '../widgets/step_row.dart';
+
+ParsedRecipe _recipeToParseRecipe(
+  Recipe recipe,
+  List<RecipeIngredient> riList,
+  AppDatabase db,
+) {
+  return ParsedRecipe(
+    title: recipe.title,
+    imageUrl: recipe.imageUrl,
+    cookTimeMinutes: recipe.cookMinutes == 0 ? null : recipe.cookMinutes,
+    baseServings: recipe.servings,
+    ingredients: riList.map((ri) {
+      final ing = db.ingredientById(ri.ingredientId);
+      return ParsedIngredient(
+        name: ing?.canonicalName ?? '',
+        quantity: ri.quantity,
+        unit: ri.unit,
+        isOptional: ri.isOptional,
+        notes: ri.notes,
+      );
+    }).toList(),
+    steps: recipe.instructions,
+    notes: recipe.notes,
+    sourceUrl: recipe.sourceUrl,
+  );
+}
 
 class RecipeDetailScreen extends ConsumerStatefulWidget {
   final String recipeId;
@@ -99,6 +129,20 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                     missingCount: missingCount,
                     servings: _servings,
                     onDelete: () => _confirmDelete(recipe.id),
+                    onEdit: () {
+                      final db = ref.read(appDatabaseProvider);
+                      final riList = db.ingredientsForRecipe(recipe.id);
+                      ref
+                          .read(recipeFormProvider.notifier)
+                          .loadFromRecipe(recipe, riList, db);
+                      context.push(
+                        '/recipes/review',
+                        extra: (
+                          parsed: _recipeToParseRecipe(recipe, riList, db),
+                          editingId: recipe.id as String?,
+                        ),
+                      );
+                    },
                     onServingsDecrement: () => setState(
                       () => _servings = (_servings - 1).clamp(1, 99),
                     ),
@@ -292,6 +336,7 @@ class _HeroArea extends StatelessWidget {
   final int missingCount;
   final int servings;
   final VoidCallback onDelete;
+  final VoidCallback onEdit;
   final VoidCallback onServingsDecrement;
   final VoidCallback onServingsIncrement;
 
@@ -301,6 +346,7 @@ class _HeroArea extends StatelessWidget {
     required this.missingCount,
     required this.servings,
     required this.onDelete,
+    required this.onEdit,
     required this.onServingsDecrement,
     required this.onServingsIncrement,
   });
@@ -362,10 +408,24 @@ class _HeroArea extends StatelessWidget {
             ),
           ),
 
-          // Delete button
+          // Edit button
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
             left: 60,
+            child: _CircleButton(
+              onTap: onEdit,
+              child: Icon(
+                Icons.edit_outlined,
+                color: colors.textPrimary,
+                size: 20,
+              ),
+            ),
+          ),
+
+          // Delete button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            left: 104,
             child: _CircleButton(
               onTap: onDelete,
               child: Icon(Icons.delete_outline, color: colors.red, size: 20),
