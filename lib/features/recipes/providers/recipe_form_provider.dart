@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/recipe_scraper.dart';
+import '../../../data/database/app_database.dart';
+import '../../../data/models/app_models.dart';
 import '../../../features/shopping/providers/shopping_provider.dart';
 
 class IngredientFormRow {
@@ -37,6 +39,7 @@ class IngredientFormRow {
 }
 
 class RecipeFormState {
+  final String? editingId; // null = creating new, non-null = editing existing
   final String title;
   final String? imageUrl;
   final int? cookTimeMinutes;
@@ -48,6 +51,7 @@ class RecipeFormState {
   final bool convertedToMetric;
 
   const RecipeFormState({
+    this.editingId,
     this.title = '',
     this.imageUrl,
     this.cookTimeMinutes,
@@ -60,6 +64,8 @@ class RecipeFormState {
   });
 
   RecipeFormState copyWith({
+    String? editingId,
+    bool clearEditingId = false,
     String? title,
     String? imageUrl,
     int? cookTimeMinutes,
@@ -70,6 +76,7 @@ class RecipeFormState {
     String? sourceUrl,
     bool? convertedToMetric,
   }) => RecipeFormState(
+    editingId: clearEditingId ? null : (editingId ?? this.editingId),
     title: title ?? this.title,
     imageUrl: imageUrl ?? this.imageUrl,
     cookTimeMinutes: cookTimeMinutes ?? this.cookTimeMinutes,
@@ -125,6 +132,36 @@ class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
       steps: List<String>.from(parsed.steps),
       notes: parsed.notes ?? '',
       sourceUrl: parsed.sourceUrl,
+      convertedToMetric: false,
+    );
+  }
+
+  void loadFromRecipe(
+    Recipe recipe,
+    List<RecipeIngredient> riList,
+    AppDatabase db,
+  ) {
+    final rows = riList.map((ri) {
+      final ing = db.ingredientById(ri.ingredientId);
+      return IngredientFormRow(
+        name: ing?.canonicalName ?? '',
+        quantity: ri.quantity,
+        unit: ri.unit,
+        isOptional: ri.isOptional,
+        notes: ri.notes,
+      );
+    }).toList();
+
+    state = RecipeFormState(
+      editingId: recipe.id,
+      title: recipe.title,
+      imageUrl: recipe.imageUrl,
+      cookTimeMinutes: recipe.cookMinutes == 0 ? null : recipe.cookMinutes,
+      baseServings: recipe.servings,
+      ingredients: rows,
+      steps: List<String>.from(recipe.instructions),
+      notes: recipe.notes ?? '',
+      sourceUrl: recipe.sourceUrl,
       convertedToMetric: false,
     );
   }
@@ -209,7 +246,7 @@ class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
     state = state.copyWith(ingredients: original, convertedToMetric: false);
   }
 
-  String save() {
+  Future<String> save() async {
     final db = _ref.read(appDatabaseProvider);
     final ingredients = state.ingredients
         .where((i) => i.name.isNotEmpty)
@@ -223,6 +260,23 @@ class RecipeFormNotifier extends StateNotifier<RecipeFormState> {
           ),
         )
         .toList();
+
+    final editId = state.editingId;
+    if (editId != null) {
+      await db.updateRecipe(
+        id: editId,
+        title: state.title,
+        servings: state.baseServings,
+        cookMinutes: state.cookTimeMinutes ?? 0,
+        difficulty: 'Medium',
+        instructions: state.steps.where((s) => s.isNotEmpty).toList(),
+        ingredients: ingredients,
+        sourceUrl: state.sourceUrl,
+        imageUrl: state.imageUrl,
+        notes: state.notes.trim().isEmpty ? null : state.notes.trim(),
+      );
+      return editId;
+    }
 
     return db.saveRecipe(
       title: state.title,
