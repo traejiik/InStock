@@ -11,8 +11,9 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 class RecipeReviewScreen extends ConsumerStatefulWidget {
   final ParsedRecipe parsed;
+  final String? editingId;
 
-  const RecipeReviewScreen({super.key, required this.parsed});
+  const RecipeReviewScreen({super.key, required this.parsed, this.editingId});
 
   @override
   ConsumerState<RecipeReviewScreen> createState() => _RecipeReviewScreenState();
@@ -35,9 +36,11 @@ class _RecipeReviewScreenState extends ConsumerState<RecipeReviewScreen> {
       text: widget.parsed.cookTimeMinutes?.toString() ?? '',
     );
     _notesCtrl = TextEditingController(text: widget.parsed.notes ?? '');
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(recipeFormProvider.notifier).loadFromParsed(widget.parsed);
-    });
+    if (widget.editingId == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(recipeFormProvider.notifier).loadFromParsed(widget.parsed);
+      });
+    }
   }
 
   @override
@@ -64,7 +67,7 @@ class _RecipeReviewScreenState extends ConsumerState<RecipeReviewScreen> {
     setState(() => _metricRevision++);
   }
 
-  void _save() {
+  void _save() async {
     final colors = AppColors.of(context);
     final state = ref.read(recipeFormProvider);
     final title = _titleCtrl.text.trim();
@@ -88,8 +91,13 @@ class _RecipeReviewScreenState extends ConsumerState<RecipeReviewScreen> {
     final cookMins = int.tryParse(_cookTimeCtrl.text);
     ref.read(recipeFormProvider.notifier).updateCookTime(cookMins);
     ref.read(recipeFormProvider.notifier).updateNotes(_notesCtrl.text);
-    ref.read(recipeFormProvider.notifier).save();
-    context.go('/recipes');
+    final savedId = await ref.read(recipeFormProvider.notifier).save();
+    if (!mounted) return;
+    if (widget.editingId != null) {
+      context.go('/recipes/$savedId');
+    } else {
+      context.go('/recipes');
+    }
   }
 
   @override
@@ -110,7 +118,10 @@ class _RecipeReviewScreenState extends ConsumerState<RecipeReviewScreen> {
           ),
           onPressed: () => context.pop(),
         ),
-        title: Text('Review Recipe', style: AppTextStyles.headingMd),
+        title: Text(
+          widget.editingId != null ? 'Edit Recipe' : 'Review Recipe',
+          style: AppTextStyles.headingMd,
+        ),
         actions: [
           TextButton(
             onPressed: _save,
