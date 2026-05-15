@@ -91,10 +91,10 @@ class _RecipeReviewScreenState extends ConsumerState<RecipeReviewScreen> {
     final cookMins = int.tryParse(_cookTimeCtrl.text);
     ref.read(recipeFormProvider.notifier).updateCookTime(cookMins);
     ref.read(recipeFormProvider.notifier).updateNotes(_notesCtrl.text);
-    final savedId = await ref.read(recipeFormProvider.notifier).save();
+    await ref.read(recipeFormProvider.notifier).save();
     if (!mounted) return;
     if (widget.editingId != null) {
-      context.go('/recipes/$savedId');
+      context.pop(); // RecipeDetailScreen is already in the stack and auto-updates via ref.watch
     } else {
       context.go('/recipes');
     }
