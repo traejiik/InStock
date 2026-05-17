@@ -3,10 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:instock/app.dart';
+import 'package:instock/core/router/app_router.dart';
 import 'package:instock/data/database/app_database.dart';
 import 'package:instock/data/database/drift_database.dart';
 import 'package:instock/data/models/app_models.dart';
 import 'package:instock/core/theme/app_theme.dart';
+import 'package:instock/data/repositories/app_flags_repository.dart';
+import 'package:instock/features/onboarding/providers/onboarding_provider.dart';
+import 'package:instock/features/recipes/providers/recipe_form_provider.dart';
 import 'package:instock/features/recipes/screens/add_recipe_screen.dart';
 import 'package:instock/features/recipes/screens/recipe_detail_screen.dart';
 import 'package:instock/features/recipes/screens/recipe_review_screen.dart';
@@ -156,6 +161,34 @@ void main() {
     expect(importButton().onTap, isNotNull);
   });
 
+  testWidgets('legacy recipe import route opens the current add/import flow', (
+    tester,
+  ) async {
+    final setup = await _pumpInStockApp(tester);
+
+    setup.router.go('/recipes/import');
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Add Recipe'), findsOneWidget);
+    expect(find.text('✍️ Write'), findsOneWidget);
+    expect(find.text('🔗 Import'), findsOneWidget);
+    expect(find.text('AI'), findsNothing);
+  });
+
+  testWidgets(
+    'recipe review route without extras falls back instead of crashing',
+    (tester) async {
+      final setup = await _pumpInStockApp(tester);
+
+      setup.router.go('/recipes/review');
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Add Recipe'), findsOneWidget);
+    },
+  );
+
   testWidgets('Recipe review displays imported notes after instructions', (
     tester,
   ) async {
@@ -293,6 +326,76 @@ void main() {
 
     expect(find.text('Notes'), findsNothing);
   });
+
+  testWidgets('Recipe detail edit preloads fields and saves back to detail', (
+    tester,
+  ) async {
+    final setup = await _pumpInStockApp(tester);
+    final id = setup.db.saveRecipe(
+      title: 'Original Soup',
+      servings: 2,
+      cookMinutes: 15,
+      difficulty: 'Easy',
+      instructions: const ['Warm everything together.'],
+      notes: 'Use the small pot.',
+      ingredients: const [
+        (
+          name: 'Chicken breast',
+          quantity: 2,
+          unit: 'pcs',
+          isOptional: false,
+          notes: null,
+        ),
+      ],
+    );
+
+    setup.router.go('/recipes/$id');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.edit_outlined));
+    await tester.pumpAndSettle();
+
+    final formState = setup.container.read(recipeFormProvider);
+    expect(find.text('Edit Recipe'), findsOneWidget);
+    expect(formState.title, 'Original Soup');
+    expect(formState.ingredients.single.name, 'Chicken Breast');
+    expect(formState.steps.single, 'Warm everything together.');
+    expect(formState.notes, 'Use the small pot.');
+
+    await tester.enterText(find.byType(TextField).first, 'Updated Soup');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Updated Soup'), findsOneWidget);
+    expect(find.text('Edit Recipe'), findsNothing);
+    expect(setup.db.recipeById(id)?.title, 'Updated Soup');
+  });
+}
+
+Future<({AppDatabase db, GoRouter router, ProviderContainer container})>
+_pumpInStockApp(WidgetTester tester) async {
+  final driftDb = InStockDriftDb.memory();
+  final db = AppDatabase(db: driftDb);
+  await db.init();
+  final appFlagsRepository = AppFlagsRepository(driftDb);
+  await appFlagsRepository.markOnboardingComplete();
+  addTearDown(driftDb.close);
+
+  final container = ProviderContainer(
+    overrides: [
+      appDatabaseProvider.overrideWith((ref) => db),
+      appFlagsRepositoryProvider.overrideWithValue(appFlagsRepository),
+      onboardingInitialStateProvider.overrideWithValue(true),
+    ],
+  );
+  addTearDown(container.dispose);
+  final router = container.read(appRouterProvider);
+
+  await tester.pumpWidget(
+    UncontrolledProviderScope(container: container, child: const InStockApp()),
+  );
+  await tester.pumpAndSettle();
+  return (db: db, router: router, container: container);
 }
 
 ParsedRecipe _parsedRecipeWithNotes() => const ParsedRecipe(

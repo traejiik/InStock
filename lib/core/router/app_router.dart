@@ -7,7 +7,6 @@ import 'package:instock/features/onboarding/providers/onboarding_provider.dart';
 import 'package:instock/features/onboarding/screens/onboarding_screen.dart';
 import 'package:instock/features/recipes/screens/recipes_screen.dart';
 import 'package:instock/features/recipes/screens/recipe_detail_screen.dart';
-import 'package:instock/features/recipes/screens/import_recipe_screen.dart';
 import 'package:instock/features/recipes/screens/add_recipe_screen.dart';
 import 'package:instock/features/recipes/screens/recipe_review_screen.dart';
 import 'package:instock/features/recipes/services/recipe_scraper.dart';
@@ -70,7 +69,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/recipes/import',
-        builder: (c, s) => const ImportRecipeScreen(),
+        builder: (c, s) => const AddRecipeScreen(initialTab: 1),
       ),
       GoRoute(
         path: '/recipes/add',
@@ -82,8 +81,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/recipes/review',
         builder: (c, s) {
-          final extra =
-              s.extra as ({ParsedRecipe parsed, String? editingId});
+          final extra = s.extra;
+          if (extra is! ({ParsedRecipe parsed, String? editingId})) {
+            return const AddRecipeScreen(initialTab: 1);
+          }
           return RecipeReviewScreen(
             parsed: extra.parsed,
             editingId: extra.editingId,
