@@ -78,6 +78,8 @@ class Ingredient {
 }
 
 class PantryItem {
+  static const Object _unset = Object();
+
   final String id;
   final String ingredientId;
   final double quantity;
@@ -105,8 +107,8 @@ class PantryItem {
     double? quantity,
     double? initialQuantity,
     DateTime? lastVerifiedAt,
-    DateTime? deletedAt,
-    DateTime? depletedAt,
+    Object? deletedAt = _unset,
+    Object? depletedAt = _unset,
   }) => PantryItem(
     id: id,
     ingredientId: ingredientId,
@@ -115,8 +117,12 @@ class PantryItem {
     unit: unit,
     addedAt: addedAt,
     lastVerifiedAt: lastVerifiedAt ?? this.lastVerifiedAt,
-    deletedAt: deletedAt ?? this.deletedAt,
-    depletedAt: depletedAt ?? this.depletedAt,
+    deletedAt: identical(deletedAt, _unset)
+        ? this.deletedAt
+        : deletedAt as DateTime?,
+    depletedAt: identical(depletedAt, _unset)
+        ? this.depletedAt
+        : depletedAt as DateTime?,
   );
 
   double get fillLevel =>

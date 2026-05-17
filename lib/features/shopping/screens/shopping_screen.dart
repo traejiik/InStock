@@ -1,3 +1,5 @@
+import 'dart:async' show Timer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +15,8 @@ import 'package:instock/shared/widgets/unit_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/shopping_list_item.dart';
 
+const _checkoffUndoDuration = Duration(milliseconds: 2500);
+
 class ShoppingScreen extends ConsumerStatefulWidget {
   const ShoppingScreen({super.key});
 
@@ -22,6 +26,13 @@ class ShoppingScreen extends ConsumerStatefulWidget {
 
 class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
   int _sortIndex = 0;
+  Timer? _checkoffUndoTimer;
+
+  @override
+  void dispose() {
+    _checkoffUndoTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -130,10 +141,53 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
         ingredient: ing,
         stockStatus: db.stockStatusForIngredient(item.ingredientId),
         sourceRecipeName: sourceRecipeName,
-        onToggle: () =>
-            ref.read(appDatabaseProvider).toggleShoppingItem(item.id),
+        onToggle: () {
+          final wasChecked = item.checked;
+          ref.read(appDatabaseProvider).toggleShoppingItem(item.id);
+          if (!wasChecked) {
+            _showCheckoffUndo(context, item.id, ing.canonicalName);
+          }
+        },
       ),
     );
+  }
+
+  void _showCheckoffUndo(
+    BuildContext context,
+    String itemId,
+    String ingredientName,
+  ) {
+    final colors = AppColors.of(context);
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    late final ScaffoldFeatureController<SnackBar, SnackBarClosedReason>
+    controller;
+    _checkoffUndoTimer?.cancel();
+    controller = messenger.showSnackBar(
+      SnackBar(
+        duration: _checkoffUndoDuration,
+        content: Text('$ingredientName added to pantry'),
+        action: SnackBarAction(
+          label: 'Undo',
+          textColor: colors.green,
+          onPressed: () {
+            final db = ref.read(appDatabaseProvider);
+            final item = db.shoppingItems
+                .where((shoppingItem) => shoppingItem.id == itemId)
+                .firstOrNull;
+            if (item?.checked ?? false) {
+              db.toggleShoppingItem(itemId);
+            }
+            _checkoffUndoTimer?.cancel();
+            controller.close();
+          },
+        ),
+      ),
+    );
+    _checkoffUndoTimer = Timer(_checkoffUndoDuration, () {
+      if (mounted) {
+        controller.close();
+      }
+    });
   }
 
   void _showAddSheet(BuildContext context) {

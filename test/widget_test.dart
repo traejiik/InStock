@@ -19,6 +19,7 @@ import 'package:instock/features/recipes/services/recipe_scraper.dart';
 import 'package:instock/features/recipes/widgets/recipe_card.dart';
 import 'package:instock/features/shopping/providers/shopping_provider.dart';
 import 'package:instock/features/shopping/screens/shopping_screen.dart';
+import 'package:instock/features/shopping/widgets/shopping_list_item.dart';
 import 'package:instock/shared/widgets/category_picker.dart';
 
 void main() {
@@ -127,6 +128,78 @@ void main() {
     expect(find.text('Your list is empty'), findsOneWidget);
     expect(find.text('Add Item'), findsOneWidget);
     expect(find.text('Add from Recipe'), findsOneWidget);
+  });
+
+  testWidgets('Shopping checkoff undo reverses the pantry update', (
+    tester,
+  ) async {
+    final db = AppDatabase(db: InStockDriftDb.memory());
+    await db.init();
+    await db.clearAllData();
+    final ingredient = db.findOrCreateIngredient('Sparkling water');
+    db.addShoppingItem(ingredientId: ingredient.id, quantity: 6, unit: 'pcs');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWith((ref) => db)],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          home: const ShoppingScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final itemRect = tester.getRect(find.byType(ShoppingListItem));
+    await tester.tapAt(Offset(itemRect.left + 28, itemRect.center.dy));
+    await tester.pumpAndSettle();
+
+    expect(db.shoppingItems.single.checked, isTrue);
+    expect(db.pantryItemForIngredient(ingredient.id)?.quantity, 6);
+    expect(find.text('Undo'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+
+    expect(db.shoppingItems.single.checked, isFalse);
+    expect(db.pantryItemForIngredient(ingredient.id)?.quantity, 0);
+    expect(find.text('Undo'), findsNothing);
+  });
+
+  testWidgets('Shopping checkoff undo prompt does not linger', (tester) async {
+    final db = AppDatabase(db: InStockDriftDb.memory());
+    await db.init();
+    await db.clearAllData();
+    final ingredient = db.findOrCreateIngredient('Sparkling water');
+    db.addShoppingItem(ingredientId: ingredient.id, quantity: 6, unit: 'pcs');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWith((ref) => db)],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(accessibleNavigation: true),
+            child: child!,
+          ),
+          home: const ShoppingScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final itemRect = tester.getRect(find.byType(ShoppingListItem));
+    await tester.tapAt(Offset(itemRect.left + 28, itemRect.center.dy));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Undo'), findsOneWidget);
+
+    await tester.pump(const Duration(milliseconds: 2600));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Undo'), findsNothing);
   });
 
   testWidgets('Import Recipe button enables for a normalized recipe URL', (

@@ -256,6 +256,12 @@ class AppDatabase extends ChangeNotifier {
           toggled.quantity,
           toggled.unit,
         );
+      } else {
+        _decrementPantryInternal(
+          toggled.ingredientId,
+          toggled.quantity,
+          toggled.unit,
+        );
       }
       return toggled;
     }).toList();
@@ -387,7 +393,9 @@ class AppDatabase extends ChangeNotifier {
   ) {
     final existing = pantryItemForIngredient(ingredientId);
     if (existing != null) {
-      final newQty = existing.quantity + qty;
+      final convertedQty =
+          UnitConverter.convertQuantity(qty, unit, existing.unit) ?? qty;
+      final newQty = existing.quantity + convertedQty;
       final updated = existing.copyWith(
         quantity: newQty,
         lastVerifiedAt: DateTime.now(),
@@ -409,6 +417,28 @@ class AppDatabase extends ChangeNotifier {
       );
       _state = _state.copyWith(pantryItems: [..._state.pantryItems, item]);
     }
+  }
+
+  void _decrementPantryInternal(String ingredientId, double qty, String unit) {
+    final existing = pantryItemForIngredient(ingredientId);
+    if (existing == null) return;
+
+    final now = DateTime.now();
+    final convertedQty =
+        UnitConverter.convertQuantity(qty, unit, existing.unit) ?? qty;
+    final newQty = (existing.quantity - convertedQty).clamp(
+      0.0,
+      double.infinity,
+    );
+    final updated = existing.copyWith(
+      quantity: newQty,
+      lastVerifiedAt: now,
+      depletedAt: newQty == 0 ? now : existing.depletedAt,
+    );
+    final items = _state.pantryItems
+        .map((p) => p.id == existing.id ? updated : p)
+        .toList();
+    _state = _state.copyWith(pantryItems: items);
   }
 
   void addOrIncrementPantry(String ingredientId, double qty, String unit) {
@@ -694,9 +724,9 @@ class AppDatabase extends ChangeNotifier {
 
     // Hard-delete old recipe ingredients from Drift — _persistFullState only
     // upserts so stale rows would survive if we only update in-memory state.
-    await (_db.delete(_db.recipeIngredients)
-          ..where((t) => t.recipeId.equals(id)))
-        .go();
+    await (_db.delete(
+      _db.recipeIngredients,
+    )..where((t) => t.recipeId.equals(id))).go();
 
     var workingState = _state;
 

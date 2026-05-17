@@ -2,7 +2,15 @@ import 'package:instock/data/models/app_models.dart';
 
 class UnitConverter {
   static const _weightUnits = {'g', 'kg', 'oz', 'lb', 'lbs'};
-  static const _volumeUnits = {'ml', 'l', 'cup', 'cups', 'tbsp', 'tsp', 'fl oz'};
+  static const _volumeUnits = {
+    'ml',
+    'l',
+    'cup',
+    'cups',
+    'tbsp',
+    'tsp',
+    'fl oz',
+  };
 
   static double toGrams(double value, String unit) {
     return switch (unit.toLowerCase()) {
@@ -26,12 +34,60 @@ class UnitConverter {
     };
   }
 
+  static double? convertQuantity(double value, String fromUnit, String toUnit) {
+    final from = fromUnit.toLowerCase().trim();
+    final to = toUnit.toLowerCase().trim();
+    if (from == to) return value;
+
+    final fromIsWeight = _weightUnits.contains(from);
+    final toIsWeight = _weightUnits.contains(to);
+    if (fromIsWeight && toIsWeight) {
+      return _gramsToUnit(toGrams(value, from), to);
+    }
+
+    final fromIsVolume = _volumeUnits.contains(from);
+    final toIsVolume = _volumeUnits.contains(to);
+    if (fromIsVolume && toIsVolume) {
+      return _millilitersToUnit(toMilliliters(value, from), to);
+    }
+
+    return null;
+  }
+
+  static double _gramsToUnit(double grams, String unit) {
+    return switch (unit.toLowerCase()) {
+      'kg' => grams / 1000,
+      'g' => grams,
+      'oz' => grams / 28.3495,
+      'lb' || 'lbs' => grams / 453.592,
+      _ => grams,
+    };
+  }
+
+  static double _millilitersToUnit(double milliliters, String unit) {
+    return switch (unit.toLowerCase()) {
+      'l' => milliliters / 1000,
+      'ml' => milliliters,
+      'cup' || 'cups' => milliliters / 240,
+      'tbsp' => milliliters / 15,
+      'tsp' => milliliters / 5,
+      'fl oz' => milliliters / 29.5735,
+      _ => milliliters,
+    };
+  }
+
   static String formatQty(double qty, String unit) {
-    final display = qty == qty.truncateToDouble() ? qty.toInt().toString() : qty.toStringAsFixed(1);
+    final display = qty == qty.truncateToDouble()
+        ? qty.toInt().toString()
+        : qty.toStringAsFixed(1);
     return '$display $unit';
   }
 
-  static double scaleQuantity(double qty, int originalServings, int newServings) {
+  static double scaleQuantity(
+    double qty,
+    int originalServings,
+    int newServings,
+  ) {
     if (originalServings == 0) return qty;
     return qty * newServings / originalServings;
   }

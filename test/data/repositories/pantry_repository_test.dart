@@ -115,6 +115,81 @@ void main() {
     );
   });
 
+  group('Shopping checkoff safety', () {
+    late AppDatabase db;
+
+    setUp(() async {
+      db = AppDatabase(db: InStockDriftDb.memory());
+      await db.init();
+      await db.clearAllData();
+    });
+
+    test(
+      'unchecking a completed shopping item reverses the pantry increment',
+      () {
+        final ingredient = db.findOrCreateIngredient('Sparkling water');
+        db.addShoppingItem(
+          ingredientId: ingredient.id,
+          quantity: 6,
+          unit: 'pcs',
+        );
+
+        final itemId = db.shoppingItems.single.id;
+
+        db.toggleShoppingItem(itemId);
+        expect(db.shoppingItems.single.checked, isTrue);
+        expect(db.pantryItemForIngredient(ingredient.id)?.quantity, 6);
+
+        db.toggleShoppingItem(itemId);
+        expect(db.shoppingItems.single.checked, isFalse);
+        expect(db.pantryItemForIngredient(ingredient.id)?.quantity, 0);
+      },
+    );
+
+    test(
+      'checkoff converts compatible units before changing pantry quantity',
+      () {
+        final ingredient = db.findOrCreateIngredient('Milk');
+        db.addOrIncrementPantry(ingredient.id, 1, 'L');
+        db.addShoppingItem(
+          ingredientId: ingredient.id,
+          quantity: 500,
+          unit: 'ml',
+        );
+
+        final itemId = db.shoppingItems.single.id;
+
+        db.toggleShoppingItem(itemId);
+        expect(
+          db.pantryItemForIngredient(ingredient.id)?.quantity,
+          closeTo(1.5, 0.001),
+        );
+
+        db.toggleShoppingItem(itemId);
+        expect(
+          db.pantryItemForIngredient(ingredient.id)?.quantity,
+          closeTo(1.0, 0.001),
+        );
+      },
+    );
+
+    test('checking again after an undo clears the depleted marker', () {
+      final ingredient = db.findOrCreateIngredient('Sparkling water');
+      db.addShoppingItem(ingredientId: ingredient.id, quantity: 6, unit: 'pcs');
+
+      final itemId = db.shoppingItems.single.id;
+
+      db.toggleShoppingItem(itemId);
+      db.toggleShoppingItem(itemId);
+      expect(db.pantryItemForIngredient(ingredient.id)?.depletedAt, isNotNull);
+
+      db.toggleShoppingItem(itemId);
+      final pantryItem = db.pantryItemForIngredient(ingredient.id);
+      expect(pantryItem?.quantity, 6);
+      expect(pantryItem?.depletedAt, isNull);
+    });
+  });
+
   group('Recipe notes', () {
     late AppDatabase db;
 
