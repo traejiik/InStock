@@ -141,12 +141,117 @@ class _ShoppingScreenState extends ConsumerState<ShoppingScreen> {
         ingredient: ing,
         stockStatus: db.stockStatusForIngredient(item.ingredientId),
         sourceRecipeName: sourceRecipeName,
+        onLongPress: () => _showShoppingQuickActions(context, item, ing),
         onToggle: () {
           final wasChecked = item.checked;
           ref.read(appDatabaseProvider).toggleShoppingItem(item.id);
           if (!wasChecked) {
             _showCheckoffUndo(context, item.id, ing.canonicalName);
           }
+        },
+      ),
+    );
+  }
+
+  void _showShoppingQuickActions(
+    BuildContext context,
+    ShoppingItem item,
+    Ingredient ing,
+  ) {
+    final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
+    final qtyCtrl = TextEditingController(text: item.quantity.toString());
+    var selectedCategory = ing.category;
+    var selectedUnit = item.unit;
+    String? qtyError;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: colors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) {
+          void save() {
+            final qty = double.tryParse(qtyCtrl.text);
+            if (qty == null || qty <= 0) {
+              setLocal(() => qtyError = 'Enter a quantity greater than 0');
+              return;
+            }
+            ref
+                .read(appDatabaseProvider)
+                .updateShoppingItem(item.id, quantity: qty, unit: selectedUnit);
+            Navigator.pop(ctx);
+          }
+
+          return SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              20,
+              20,
+              MediaQuery.of(ctx).viewInsets.bottom + 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Quick Adjust', style: AppTextStyles.headingMd),
+                const SizedBox(height: 4),
+                Text(
+                  ing.canonicalName,
+                  style: AppTextStyles.bodyMd.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: qtyCtrl,
+                  keyboardType: TextInputType.number,
+                  style: TextStyle(color: colors.textPrimary),
+                  decoration: InputDecoration(
+                    labelText: 'Quantity',
+                    errorText: qtyError,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                UnitPicker(
+                  selectedUnit: selectedUnit,
+                  onChanged: (unit) => setLocal(() => selectedUnit = unit),
+                  allowCustom: true,
+                ),
+                const SizedBox(height: 12),
+                CategoryPicker(
+                  selectedCategory: selectedCategory,
+                  onChanged: (category) {
+                    ref
+                        .read(appDatabaseProvider)
+                        .updateIngredientCategory(item.ingredientId, category);
+                    setLocal(() => selectedCategory = category);
+                  },
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.green,
+                      foregroundColor: onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: save,
+                    child: Text(
+                      'Save',
+                      style: AppTextStyles.label.copyWith(color: onPrimary),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
         },
       ),
     );

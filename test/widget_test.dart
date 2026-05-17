@@ -11,6 +11,8 @@ import 'package:instock/data/models/app_models.dart';
 import 'package:instock/core/theme/app_theme.dart';
 import 'package:instock/data/repositories/app_flags_repository.dart';
 import 'package:instock/features/onboarding/providers/onboarding_provider.dart';
+import 'package:instock/features/pantry/screens/pantry_screen.dart';
+import 'package:instock/features/pantry/widgets/pantry_item_row.dart';
 import 'package:instock/features/recipes/providers/recipe_form_provider.dart';
 import 'package:instock/features/recipes/screens/add_recipe_screen.dart';
 import 'package:instock/features/recipes/screens/recipe_detail_screen.dart';
@@ -200,6 +202,93 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Undo'), findsNothing);
+  });
+
+  testWidgets(
+    'Shopping list item quick adjust edits quantity, unit, and category',
+    (tester) async {
+      final db = AppDatabase(db: InStockDriftDb.memory());
+      await db.init();
+      await db.clearAllData();
+      final ingredient = db.findOrCreateIngredient('Soba noodles');
+      db.addShoppingItem(
+        ingredientId: ingredient.id,
+        quantity: 1,
+        unit: 'pack',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [appDatabaseProvider.overrideWith((ref) => db)],
+          child: MaterialApp(
+            theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            home: const ShoppingScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.longPress(find.byType(ShoppingListItem));
+      await tester.pumpAndSettle();
+      expect(find.text('Quick Adjust'), findsOneWidget);
+
+      final quantityField = find.widgetWithText(TextField, 'Quantity');
+      expect(quantityField, findsOneWidget);
+      await tester.enterText(quantityField, '2.5');
+      await tester.tap(find.text('kg'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('📦 Other'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('🌾 Grains').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(db.shoppingItems.single.quantity, 2.5);
+      expect(db.shoppingItems.single.unit, 'kg');
+      expect(
+        db.ingredientById(ingredient.id)?.category,
+        IngredientCategory.grain,
+      );
+    },
+  );
+
+  testWidgets('Pantry quick adjust edits quantity and unit', (tester) async {
+    final db = AppDatabase(db: InStockDriftDb.memory());
+    await db.init();
+    await db.clearAllData();
+    final ingredient = db.findOrCreateIngredient('Rice');
+    db.addOrIncrementPantry(ingredient.id, 10, 'kg');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWith((ref) => db)],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          home: const PantryScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.byType(PantryItemRow));
+    await tester.pumpAndSettle();
+
+    final quantityField = find.widgetWithText(TextField, 'Quantity');
+    expect(quantityField, findsOneWidget);
+
+    await tester.enterText(quantityField, '750');
+    await tester.tap(find.text('g'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    final item = db.pantryItemForIngredient(ingredient.id);
+    expect(item?.quantity, 750);
+    expect(item?.unit, 'g');
   });
 
   testWidgets('Import Recipe button enables for a normalized recipe URL', (

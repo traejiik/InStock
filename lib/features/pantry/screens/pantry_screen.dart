@@ -302,50 +302,98 @@ class _PantryScreenState extends ConsumerState<PantryScreen> {
     Ingredient ing,
   ) {
     final colors = AppColors.of(context);
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
+    final qtyCtrl = TextEditingController(text: item.quantity.toString());
+    var selectedUnit = item.unit;
+    String? qtyError;
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Text(ing.canonicalName, style: AppTextStyles.headingMd),
-            ),
-            ListTile(
-              leading: Icon(Icons.remove_circle_outline, color: colors.amber),
-              title: Text(
-                'Quick decrement (−1 ${item.unit})',
-                style: AppTextStyles.label,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) {
+          void save() {
+            final qty = double.tryParse(qtyCtrl.text);
+            if (qty == null || qty < 0) {
+              setLocal(() => qtyError = 'Enter a quantity of 0 or more');
+              return;
+            }
+            ref
+                .read(appDatabaseProvider)
+                .updatePantryItem(item.id, quantity: qty, unit: selectedUnit);
+            Navigator.pop(ctx);
+          }
+
+          return SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                20,
+                20,
+                MediaQuery.of(ctx).viewInsets.bottom + 12,
               ),
-              onTap: () {
-                ref
-                    .read(appDatabaseProvider)
-                    .updatePantryQuantity(
-                      item.id,
-                      (item.quantity - 1).clamp(0.0, double.infinity),
-                    );
-                Navigator.pop(ctx);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.close, color: colors.red),
-              title: Text(
-                'Mark as out of stock',
-                style: AppTextStyles.label.copyWith(color: colors.red),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(ing.canonicalName, style: AppTextStyles.headingMd),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: qtyCtrl,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(color: colors.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: 'Quantity',
+                      errorText: qtyError,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  UnitPicker(
+                    selectedUnit: selectedUnit,
+                    onChanged: (unit) => setLocal(() => selectedUnit = unit),
+                    allowCustom: true,
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.green,
+                        foregroundColor: onPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: save,
+                      icon: const Icon(Icons.save_outlined, size: 18),
+                      label: Text(
+                        'Save',
+                        style: AppTextStyles.label.copyWith(color: onPrimary),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.close, color: colors.red),
+                    title: Text(
+                      'Mark as out of stock',
+                      style: AppTextStyles.label.copyWith(color: colors.red),
+                    ),
+                    onTap: () {
+                      ref.read(appDatabaseProvider).markPantryItemOut(item.id);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                ],
               ),
-              onTap: () {
-                ref.read(appDatabaseProvider).markPantryItemOut(item.id);
-                Navigator.pop(ctx);
-              },
             ),
-            const SizedBox(height: 8),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

@@ -113,6 +113,70 @@ void main() {
         expect(categorized.category, IngredientCategory.produce);
       },
     );
+
+    test('updates an ingredient category directly', () {
+      final ingredient = db.findOrCreateIngredient('Soba noodles');
+
+      db.updateIngredientCategory(ingredient.id, IngredientCategory.grain);
+
+      expect(
+        db.ingredientById(ingredient.id)?.category,
+        IngredientCategory.grain,
+      );
+    });
+
+    test('updates shopping item quantity and unit directly', () async {
+      await db.clearAllData();
+      final ingredient = db.findOrCreateIngredient('Soba noodles');
+      db.addShoppingItem(
+        ingredientId: ingredient.id,
+        quantity: 1,
+        unit: 'pack',
+      );
+
+      final itemId = db.shoppingItems.single.id;
+
+      db.updateShoppingItem(itemId, quantity: 2.5, unit: 'kg');
+
+      expect(db.shoppingItems.single.quantity, 2.5);
+      expect(db.shoppingItems.single.unit, 'kg');
+    });
+
+    test(
+      'updating a checked shopping item keeps pantry quantity in sync',
+      () async {
+        await db.clearAllData();
+        final ingredient = db.findOrCreateIngredient('Milk');
+        db.addShoppingItem(
+          ingredientId: ingredient.id,
+          quantity: 500,
+          unit: 'ml',
+        );
+
+        final itemId = db.shoppingItems.single.id;
+        db.toggleShoppingItem(itemId);
+
+        db.updateShoppingItem(itemId, quantity: 1, unit: 'l');
+
+        expect(db.shoppingItems.single.quantity, 1);
+        expect(db.shoppingItems.single.unit, 'l');
+        expect(db.pantryItemForIngredient(ingredient.id)?.quantity, 1000);
+        expect(db.pantryItemForIngredient(ingredient.id)?.unit, 'ml');
+      },
+    );
+
+    test('updates pantry item quantity and unit directly', () async {
+      await db.clearAllData();
+      final ingredient = db.findOrCreateIngredient('Rice');
+      db.addOrIncrementPantry(ingredient.id, 10, 'kg');
+
+      final itemId = db.pantryItems.single.id;
+
+      db.updatePantryItem(itemId, quantity: 750, unit: 'g');
+
+      expect(db.pantryItems.single.quantity, 750);
+      expect(db.pantryItems.single.unit, 'g');
+    });
   });
 
   group('Shopping checkoff safety', () {

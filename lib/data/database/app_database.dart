@@ -237,6 +237,25 @@ class AppDatabase extends ChangeNotifier {
     return updated;
   }
 
+  void updateIngredientCategory(
+    String ingredientId,
+    IngredientCategory category,
+  ) {
+    final ingredients = _state.ingredients.map((ingredient) {
+      if (ingredient.id != ingredientId || ingredient.category == category) {
+        return ingredient;
+      }
+      return Ingredient(
+        id: ingredient.id,
+        canonicalName: ingredient.canonicalName,
+        category: category,
+        aliases: ingredient.aliases,
+        createdAt: ingredient.createdAt,
+      );
+    }).toList();
+    _update(_state.copyWith(ingredients: ingredients));
+  }
+
   static String _normalizeEntryName(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) return trimmed;
@@ -384,6 +403,34 @@ class AppDatabase extends ChangeNotifier {
     }
   }
 
+  void updateShoppingItem(
+    String shoppingItemId, {
+    required double quantity,
+    required String unit,
+  }) {
+    final clamped = quantity.clamp(0.0, double.infinity);
+    final now = DateTime.now();
+    final existing = _state.shoppingItems
+        .where((item) => item.id == shoppingItemId)
+        .firstOrNull;
+    if (existing == null) return;
+
+    if (existing.checked) {
+      _decrementPantryInternal(
+        existing.ingredientId,
+        existing.quantity,
+        existing.unit,
+      );
+      _addOrIncrementPantryInternal(existing.ingredientId, clamped, unit);
+    }
+
+    final items = _state.shoppingItems.map((item) {
+      if (item.id != shoppingItemId) return item;
+      return item.copyWith(quantity: clamped, unit: unit, updatedAt: now);
+    }).toList();
+    _update(_state.copyWith(shoppingItems: items));
+  }
+
   // ─── Pantry mutations ─────────────────────────────────────────────────────
 
   void _addOrIncrementPantryInternal(
@@ -444,6 +491,28 @@ class AppDatabase extends ChangeNotifier {
   void addOrIncrementPantry(String ingredientId, double qty, String unit) {
     _addOrIncrementPantryInternal(ingredientId, qty, unit);
     _update(_state);
+  }
+
+  void updatePantryItem(
+    String pantryItemId, {
+    required double quantity,
+    required String unit,
+  }) {
+    final clamped = quantity.clamp(0.0, double.infinity);
+    final now = DateTime.now();
+    final items = _state.pantryItems.map((p) {
+      if (p.id != pantryItemId) return p;
+      return p.copyWith(
+        quantity: clamped,
+        initialQuantity: clamped > p.initialQuantity
+            ? clamped
+            : p.initialQuantity,
+        unit: unit,
+        lastVerifiedAt: now,
+        depletedAt: clamped == 0 ? (p.depletedAt ?? now) : null,
+      );
+    }).toList();
+    _update(_state.copyWith(pantryItems: items));
   }
 
   void updatePantryQuantity(String pantryItemId, double newQty) {

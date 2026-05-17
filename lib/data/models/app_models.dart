@@ -106,6 +106,7 @@ class PantryItem {
   PantryItem copyWith({
     double? quantity,
     double? initialQuantity,
+    String? unit,
     DateTime? lastVerifiedAt,
     Object? deletedAt = _unset,
     Object? depletedAt = _unset,
@@ -114,7 +115,7 @@ class PantryItem {
     ingredientId: ingredientId,
     quantity: quantity ?? this.quantity,
     initialQuantity: initialQuantity ?? this.initialQuantity,
-    unit: unit,
+    unit: unit ?? this.unit,
     addedAt: addedAt,
     lastVerifiedAt: lastVerifiedAt ?? this.lastVerifiedAt,
     deletedAt: identical(deletedAt, _unset)
@@ -320,11 +321,16 @@ class ShoppingItem {
     required this.updatedAt,
   });
 
-  ShoppingItem copyWith({bool? checked, DateTime? updatedAt}) => ShoppingItem(
+  ShoppingItem copyWith({
+    double? quantity,
+    String? unit,
+    bool? checked,
+    DateTime? updatedAt,
+  }) => ShoppingItem(
     id: id,
     ingredientId: ingredientId,
-    quantity: quantity,
-    unit: unit,
+    quantity: quantity ?? this.quantity,
+    unit: unit ?? this.unit,
     checked: checked ?? this.checked,
     sourceRecipeId: sourceRecipeId,
     addedAt: addedAt,
