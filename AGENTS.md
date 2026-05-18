@@ -133,95 +133,78 @@ Rules:
 <claude-mem-context>
 # Memory Context
 
-# [InStock] recent context, 2026-05-15 11:52pm GMT+2
+# [InStock] recent context, 2026-05-18 3:36am GMT+2
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (15,917t read) | 294,140t work | 95% savings
+Stats: 50 obs (17,953t read) | 247,398t work | 93% savings
 
-### May 12, 2026
-S68 Group unstaged files into logical commits with conventional messages, push to remote, then create a global smart-commit skill for reuse (May 12 at 12:54 PM)
-S69 Codebase health audit — "What do I need to fix in my code base?" for InStock Flutter app (May 12 at 12:55 PM)
 ### May 14, 2026
 S70 Fix 6 bugs in InStock Flutter app: recipe form bleed, light mode contrast, shopping list UX, unit conversion display, version number confusion, and AI UI removal (May 14 at 10:25 PM)
-711 10:36p 🔴 Fixed Light Mode Contrast in RecipeCardSm — Title and Meta Text Force White Over Images
-712 " 🔴 _MetaRow Contrast Fixed — Icons and Text Now White70 Over Recipe Card Images
-713 " 🔴 Shopping Add-Item Default Unit Changed from 'g' to 'pcs'
-714 " 🔴 Match Status Now Uses Scaled Quantity — Pantry Check Respects Current Serving Count
-715 " 🔴 Settings Version Display Simplified to "vX.Y.Z" — Build Number Removed
-716 " ✅ AI Tab Removed from AddRecipeScreen — SegmentControl Now Has Two Tabs Only
-717 10:37p ✅ AI Review State and Callbacks Fully Removed from AddRecipeScreen and _ImportTabContent
 S71 Codebase audit: identify and fix issues — removed stub AI Generate UI from recipes screen (May 14 at 10:41 PM)
 ### May 15, 2026
-718 10:31p 🔵 AI Recipe Generation Is a UI Stub in InStock
-719 " 🔴 Removed Stub AI Generate Entry Points from Recipes Screen
 S72 User asked whether Claude consistently uses the graphify graph when running tasks (May 15 at 10:31 PM)
-720 10:42p 🟣 Smart Commit Skill Invoked on InStock Repository
-721 " 🔵 InStock Dirty Worktree: Recipe UI Refactor + Docs Changes Pending Commit
-722 10:43p 🟣 Recipe Card Text Contrast Fix: White Text Over Images
-723 " 🟣 AI Features Removed from Recipe Screens
-724 " 🔴 Recipe Form State Now Resets on AddRecipeScreen Open
-725 " 🔴 Recipe Detail: Scaled Quantity Computed Once for matchStatus and Display
-726 " ✅ Minor UX Tweaks: Version Display and Default Shopping Unit
-727 " ✅ dart format Applied to Recipe and Settings Files Pre-Commit
-728 10:44p 🔵 InStock flutter analyze Passes Clean; Test Suite Running (38+ passing)
-729 " ✅ All 42 Tests Pass; Recipe/UI Files Staged for Commit (AGENTS.md Held Separately)
-730 " ✅ Committed: "fix: clean up recipe and shopping UX issues" (b1c41ed)
-731 " ✅ Committed: "docs: agent context" (67f3435)
-732 10:45p ✅ InStock Smart Commit Session Complete — Working Tree Clean
 S73 Can the graphify graph be used for code segments? — Investigation of graph.json node/edge granularity for InStock Flutter project (May 15 at 10:45 PM)
-733 11:01p 🔵 Graphify Output Structure for InStock Project
-734 " 🔵 InStock Graphify Graph Contains File-Level and Function-Level Nodes
-735 " 🔵 Graphify Nodes Have No Type Field But Include Class and Method-Level Code Segments
-736 11:02p 🔵 Graphify Graph Has No Code-to-Code Links and Minimal Source Location Data
 S74 Validating that graphify graph.json can locate the database definition file by keyword query, replacing codebase exploration (May 15 at 11:02 PM)
-737 11:07p 🔵 InStock Database Layer Fully Mapped in graphify Graph
 S75 Evaluating graphify graph.json vs direct find command for database file discovery in InStock (May 15 at 11:07 PM)
-738 11:08p 🔵 graphify graph.json is 862KB vs Instant find for File-Level Lookup
 S76 InStock Flutter recipe app: add post-save recipe editing, fix light-mode title contrast over images, clarify "Add Missing" button label (May 15 at 11:08 PM)
-739 11:26p 🟣 Recipe App: Edit, Contrast Fix, and Button Clarity Planned
-740 " 🔵 RecipeDetailScreen Architecture: Flutter/Riverpod Recipe Detail View
-741 " 🔵 InStock Database Has saveRecipe But No updateRecipe Method
-742 11:27p 🔵 InStock Uses Soft-Delete Pattern for Recipes
-743 " 🔵 RecipeReviewScreen Save Flow Uses recipeFormProvider Notifier
-744 11:28p 🔵 RecipeReviewScreen Has Widget Tests; No updateRecipe Tests Exist
-745 " 🔵 AddRecipeScreen Resets Form on Init and Pushes to Review With ParsedRecipe Extra
-746 11:29p 🔵 ParsedRecipe.fromRecipe() Factory Constructor Already Exists for Edit Bridge
-747 " 🔵 AppDatabase Persistence Uses insertOnConflictUpdate — updateRecipe Only Needs State Replacement
-748 " 🔵 RecipeIngredients Table Has No Soft-Delete — Must Be Replaced on Recipe Update
-749 11:31p ✅ Comprehensive Implementation Plan Written for Recipe Edit Feature + UI Fixes
-750 11:33p 🔵 app_controller_test.dart Does Not Use InStockDriftDb.memory() — Test Setup Pattern Unknown
-751 " 🔵 InStockDriftDb.memory() Exists; app_controller_test.dart Is a Placeholder
-752 11:34p 🔴 Fixed Light Mode Title Contrast on Recipe Detail Hero Image
-753 " 🔴 Clarified "Add Missing" Button Label to "🛒 Add to List"
-754 " ✅ Task 1 Visual Fixes Committed to Main Branch (f492a6c)
-755 " 🟣 TDD Test Written for updateRecipe Before Implementation
-756 11:35p 🟣 Implemented AppDatabase.updateRecipe() Method
-757 " 🟣 updateRecipe TDD Cycle Complete — All 43 Tests Pass, Committed
-758 11:36p 🔵 RecipeFormProvider Current State: save() Is Synchronous, No editingId Field
-759 " 🟣 RecipeFormProvider Extended with editingId, loadFromRecipe(), and Async save()
-760 " ✅ Task 3 Committed — RecipeFormProvider Edit Mode Support Shipped
-S77 InStock Flutter app: add recipe edit capability, fix title contrast in light mode, clarify "Add Missing" button text (May 15 at 11:39 PM)
-**Completed**: All 6 tasks complete across 6 commits on main:
+S77 InStock Flutter app: add recipe edit capability, fix title contrast in light mode, clarify "Add Missing" button text (May 15 at 11:31 PM)
+S78 Determine possible next steps for InStock Flutter pantry-tracking app development (May 15 at 11:39 PM)
+### May 17, 2026
+S79 Quick state check to verify knowledge of InStock project is current (May 17 at 4:54 AM)
+843 5:45a ✅ Batch 2 Fully Committed — Two Commits on Main, Only AGENTS.md Remains Unstaged
+849 10:45a 🔵 Smart Commit Skill Workflow and Guidelines
+850 " 🔵 InStock Repository Dirty Worktree State Before Smart Commit
+851 " 🟣 Quick Adjust Bottom Sheets for Shopping and Pantry Items
+852 " 🟣 New Database Mutation Methods: updateShoppingItem, updatePantryItem, updateIngredientCategory
+853 " 🔴 PantryItem and ShoppingItem copyWith() Bugs Fixed
+854 " 🟣 New Tests for Quick-Adjust Database and Widget Behavior
+### May 18, 2026
+855 2:28a 🔵 InStock Codebase Knowledge Graph Report Generated
+856 " 🔵 InStock Recent Git History and Working Tree State
+863 3:09a 🔵 InStock Flutter App — Knowledge Graph Structure
+864 3:10a 🔵 InStock Provider Architecture — Single Source Pattern
+865 " 🔵 Derived Riverpod Providers Largely Unused — Screens Bypass Them
+866 " 🔵 InStock Bootstrap Pattern — Async DB Init Before ProviderScope
+867 " 🟣 TDD Architecture Test Written for Provider Ownership Refactor
+868 3:11a 🔄 Provider Ownership Refactor — appDatabaseProvider Moved to Core
+869 " 🔄 Import Migration — All Files Switched to core/providers/app_database_provider.dart
+870 " 🔄 Provider Ownership Refactor — Verification Complete, Ready for Test Run
+871 3:12a 🟣 Architecture Test GREEN — Provider Ownership Refactor Complete
+872 " 🔄 Batch 4 Provider Refactor — flutter analyze Clean After Full Migration
+873 " 🔄 Batch 4 Provider Refactor — Full Test Suite Passes (58/58)
+874 " ✅ Knowledge Graph Updated After Batch 4 Provider Refactor
+875 3:13a 🔵 Smart-Commit Grouping Plan — Two Distinct Commit Groups Identified
+876 " 🔄 Committed: "refactor: split feature provider ownership" (cdbcab6)
+877 3:21a 🔵 InStock Flutter App — Codebase Graph Analysis
+878 " 🔵 Recipe Import Subsystem Architecture — Batch 5 Focus Area
+879 3:22a 🔵 RecipeScraper Full Implementation — Ingredient Parsing & Instruction Selection Logic
+880 " 🔵 AddRecipeScreen Two-Tab Architecture and Provider Reset Behavior
+881 3:23a 🔵 Test Infrastructure: No HTTP Mocking Library — RecipeScraper.scrape() Is Untestable Without Network
+882 " 🟣 Batch 5 TDD — RED Phase: New Failing Tests for Recipe Import Improvements
+883 3:24a 🔴 apply_patch Whitespace Sensitivity Caused Test File Patch Failure
+884 " 🟣 Batch 5 RED Phase Complete — All Test Files Successfully Written
+885 3:25a 🔵 Batch 5 RED Phase Verified — Exact Failure Modes Confirmed for All 5 New Tests
+886 " 🟣 Batch 5 GREEN Phase — recipeScraperProvider Dependency Injection Added
+887 " 🟣 Batch 5 GREEN Phase — URL Angle Bracket Stripping and Instruction Requirement in RecipeScraper
+888 3:26a 🔵 Riverpod AsyncLoading Carries Previous Value — Stale Recipe Visible During Import
+889 " 🟣 Batch 5 — Widget-Level RED Test for Stale Preview Hiding During Loading
+890 " ✅ Widget Test Scaffolding — _WidgetFakeRecipeScraper and _widgetParsedRecipe Added to widget_test.dart
+891 3:27a 🔵 Widget Test 'import tab hides stale preview' Fails at First Import Assertion
+892 " 🔴 add_recipe_screen UI Fix — Preview Hidden During Loading by Checking AsyncData Concrete Type
+893 " 🔴 Batch 5 GREEN Phase Complete — All Tests Pass After Provider Test Scope Correction
+894 3:28a 🟣 Batch 5 Complete — All 28 Tests Pass Across All Three Test Files
+895 " ✅ Batch 5 Git Status — 5 Modified Files + 1 New Untracked Test Directory
+896 " ✅ Batch 5 Static Analysis Clean — No Issues Found
+897 " 🟣 Batch 5 Full Suite Verification — 64 Tests Pass Across All 11 Test Files
+898 3:29a ✅ Knowledge Graph Updated After Batch 5 — 9 New Nodes, 14 New Edges, 1 New Community
+899 " ✅ Batch 5 Commit Diff Summary — 243 Insertions, 86 Deletions Across 6 Files
+900 3:31a 🔵 InStock Git Commit Convention — Conventional Commits with feat/fix/refactor/docs/chore
+901 " 🔵 AGENTS.md Memory Context Rotated — Older May 12-15 Observations Pruned for May 18 Context
+902 " ✅ Batch 5 Staged for Commit — 6 Files Staged, AGENTS.md Held Separately
+903 3:32a ✅ Batch 5 Committed — "fix: harden recipe import flow" (f7ecd5c)
 
-    1. f492a6c — recipe_detail_screen.dart: title color = white when imageUrl != null (contrast fix); button label changed from "+ Add Missing" to "🛒 Add to List"
-
-    2. 69670e0 — app_database.dart: added updateRecipe() method that hard-deletes old RecipeIngredient rows then upserts updated recipe + new ingredients; test/app_controller_test.dart: added updateRecipe test group
-
-    3. 87958ac — recipe_form_provider.dart: added editingId field to RecipeFormState, loadFromRecipe() method, copyWith support; save() made async Future<String>, branches on editingId to call updateRecipe vs saveRecipe
-
-    4. ebdef35 — recipe_review_screen.dart: added editingId param, guards loadFromParsed with editingId == null check, async _save() with !mounted guard, navigates to /recipes/:id on edit save vs /recipes on create, AppBar title shows "Edit Recipe" when editing
-
-    5. 4faaad3 — add_recipe_screen.dart: push extra changed from `effective` to `(parsed: effective, editingId: null as String?)`; app_router.dart: /recipes/review builder updated to cast extra as ({ParsedRecipe parsed, String? editingId}) and pass both fields to RecipeReviewScreen
-
-    6. 115c8e3 — recipe_detail_screen.dart: added _recipeToParseRecipe() helper, added onEdit VoidCallback to _HeroArea, added pencil edit button at left:60, shifted delete to left:104, wired onEdit to loadFromRecipe + context.push with editingId
-
-    All 43 tests pass throughout.
-
-**Next Steps**: All tasks are complete. No further work is pending. The full edit recipe feature is shipped and working end-to-end.
-
-
-Access 294k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 247k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>
