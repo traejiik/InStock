@@ -472,6 +472,9 @@ class _ImportTabContentState extends ConsumerState<_ImportTabContent> {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     final importState = ref.watch(recipeImportProvider);
+    final previewRecipe = importState is AsyncData<ParsedRecipe?>
+        ? importState.value
+        : null;
     final normalizedUrl = RecipeScraper.normalizeUrl(widget.urlCtrl.text);
 
     return Column(
@@ -528,7 +531,7 @@ class _ImportTabContentState extends ConsumerState<_ImportTabContent> {
                       .read(recipeImportProvider.notifier)
                       .scrape(normalizedUrl.toString()),
           ),
-        if (importState.hasError) ...[
+        if (importState.hasError && !importState.isLoading) ...[
           const SizedBox(height: 12),
           _ErrorBanner(
             onEditManually: () {
@@ -538,10 +541,10 @@ class _ImportTabContentState extends ConsumerState<_ImportTabContent> {
             },
           ),
         ],
-        if (importState.hasValue && importState.value != null) ...[
+        if (previewRecipe != null) ...[
           const SizedBox(height: 20),
           _PreviewSection(
-            parsed: importState.value!,
+            parsed: previewRecipe,
             convertMetric: widget.convertMetric,
             onMetricToggle: widget.onMetricToggle,
           ),

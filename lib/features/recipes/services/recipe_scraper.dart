@@ -292,6 +292,9 @@ class RecipeScraper {
 
   static Uri? normalizeUrl(String input) {
     var value = input.trim();
+    if (value.startsWith('<') && value.endsWith('>')) {
+      value = value.substring(1, value.length - 1).trim();
+    }
     if (value.isEmpty || value.contains(RegExp(r'\s'))) return null;
     if (!RegExp(r'^[a-zA-Z][a-zA-Z0-9+.-]*://').hasMatch(value)) {
       if (!value.contains('.') || value.startsWith('.')) return null;
@@ -309,18 +312,34 @@ class RecipeScraper {
     final pageTitle = doc.querySelector('title')?.text.trim();
 
     final fromJsonLd = _tryJsonLd(doc, sourceUrl);
-    if (fromJsonLd != null && fromJsonLd.ingredients.length >= 2) {
-      return fromJsonLd;
+    if (_isImportableRecipe(fromJsonLd)) {
+      return fromJsonLd!;
     }
 
     final fromHtml = _tryHeuristic(doc, sourceUrl);
-    if (fromHtml != null && fromHtml.ingredients.length >= 2) return fromHtml;
+    if (_isImportableRecipe(fromHtml)) return fromHtml!;
+
+    if (_hasIngredientCandidate(fromJsonLd) ||
+        _hasIngredientCandidate(fromHtml)) {
+      throw RecipeParseException(
+        'Could not extract instructions from this URL',
+        pageTitle: pageTitle,
+      );
+    }
 
     throw RecipeParseException(
       'Could not extract ingredients from this URL',
       pageTitle: pageTitle,
     );
   }
+
+  static bool _isImportableRecipe(ParsedRecipe? recipe) =>
+      recipe != null &&
+      recipe.ingredients.length >= 2 &&
+      recipe.steps.isNotEmpty;
+
+  static bool _hasIngredientCandidate(ParsedRecipe? recipe) =>
+      recipe != null && recipe.ingredients.length >= 2;
 
   static ParsedRecipe? _tryJsonLd(Document doc, String url) {
     final scripts = doc.querySelectorAll('script[type="application/ld+json"]');

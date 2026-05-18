@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +17,7 @@ import 'package:instock/features/onboarding/providers/onboarding_provider.dart';
 import 'package:instock/features/pantry/screens/pantry_screen.dart';
 import 'package:instock/features/pantry/widgets/pantry_item_row.dart';
 import 'package:instock/features/recipes/providers/recipe_form_provider.dart';
+import 'package:instock/features/recipes/providers/recipe_import_provider.dart';
 import 'package:instock/features/recipes/screens/add_recipe_screen.dart';
 import 'package:instock/features/recipes/screens/recipe_detail_screen.dart';
 import 'package:instock/features/recipes/screens/recipe_review_screen.dart';
@@ -323,6 +326,58 @@ void main() {
     expect(importButton().onTap, isNotNull);
   });
 
+  testWidgets('import tab hides stale preview while a new import is loading', (
+    tester,
+  ) async {
+    final pendingImport = Completer<ParsedRecipe>();
+    var scrapeCount = 0;
+    final scraper = _WidgetFakeRecipeScraper((url) {
+      scrapeCount += 1;
+      if (scrapeCount == 1) {
+        return Future.value(_widgetParsedRecipe(title: 'First Import'));
+      }
+      return pendingImport.future;
+    });
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [recipeScraperProvider.overrideWithValue(scraper)],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          home: const AddRecipeScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.enterText(
+      find.byType(TextField).first,
+      'https://example.com/first',
+    );
+    await tester.pump();
+    await tester.tap(find.text('Import Recipe'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Preview'), findsOneWidget);
+    expect(find.text('First Import'), findsOneWidget);
+
+    await tester.enterText(
+      find.byType(TextField).first,
+      'https://example.com/second',
+    );
+    await tester.pump();
+    await tester.tap(find.text('Import Recipe'));
+    await tester.pump();
+
+    expect(find.text('Fetching recipe…'), findsOneWidget);
+    expect(find.text('Preview'), findsNothing);
+    expect(find.text('First Import'), findsNothing);
+
+    pendingImport.complete(_widgetParsedRecipe(title: 'Second Import'));
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('legacy recipe import route opens the current add/import flow', (
     tester,
   ) async {
@@ -568,4 +623,24 @@ ParsedRecipe _parsedRecipeWithNotes() => const ParsedRecipe(
   ],
   steps: ['Cook the chicken until golden.'],
   notes: 'Leftovers keep for 3 days.',
+);
+
+class _WidgetFakeRecipeScraper extends RecipeScraper {
+  final Future<ParsedRecipe> Function(String url) scrapeHandler;
+
+  _WidgetFakeRecipeScraper(this.scrapeHandler);
+
+  @override
+  Future<ParsedRecipe> scrape(String url) => scrapeHandler(url);
+}
+
+ParsedRecipe _widgetParsedRecipe({required String title}) => ParsedRecipe(
+  title: title,
+  baseServings: 2,
+  ingredients: const [
+    ParsedIngredient(name: 'Pasta', quantity: 200, unit: 'g'),
+    ParsedIngredient(name: 'Tomato sauce', quantity: 1, unit: 'cups'),
+  ],
+  steps: const ['Cook the pasta.', 'Toss with sauce.'],
+  sourceUrl: 'https://example.com/recipe',
 );

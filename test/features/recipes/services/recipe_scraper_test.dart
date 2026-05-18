@@ -18,6 +18,14 @@ void main() {
       expect(RecipeScraper.normalizeUrl('not a url'), isNull);
       expect(RecipeScraper.normalizeUrl('ftp://example.com/recipe'), isNull);
     });
+
+    test('accepts recipe URLs pasted with surrounding angle brackets', () {
+      final uri = RecipeScraper.normalizeUrl(
+        '  <https://example.com/recipe/chicken>  ',
+      );
+
+      expect(uri.toString(), 'https://example.com/recipe/chicken');
+    });
   });
 
   group('RecipeScraper.parseHtml', () {
@@ -167,6 +175,38 @@ void main() {
       expect(converted[2].name, 'Paprika');
       expect(converted[2].quantity, 1);
       expect(converted[2].unit, 'tsp');
+    });
+
+    test('rejects structured recipes with ingredients but no instructions', () {
+      expect(
+        () => RecipeScraper.parseHtml(
+          _ingredientOnlyJsonLdHtml,
+          sourceUrl: 'https://example.com/no-steps',
+        ),
+        throwsA(
+          isA<RecipeParseException>().having(
+            (e) => e.message,
+            'message',
+            contains('instructions'),
+          ),
+        ),
+      );
+    });
+
+    test('rejects heuristic imports with ingredients but no instructions', () {
+      expect(
+        () => RecipeScraper.parseHtml(
+          _ingredientOnlyHeuristicHtml,
+          sourceUrl: 'https://example.com/no-visible-steps',
+        ),
+        throwsA(
+          isA<RecipeParseException>().having(
+            (e) => e.message,
+            'message',
+            contains('instructions'),
+          ),
+        ),
+      );
     });
   });
 }
@@ -332,5 +372,39 @@ const _messyIngredientHtml = '''
 </script>
 </head>
 <body></body>
+</html>
+''';
+
+const _ingredientOnlyJsonLdHtml = '''
+<!doctype html>
+<html>
+<head>
+<title>Ingredient Only Pasta</title>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": "Ingredient Only Pasta",
+  "recipeIngredient": ["200 g pasta", "1 cup tomato sauce"]
+}
+</script>
+</head>
+<body></body>
+</html>
+''';
+
+const _ingredientOnlyHeuristicHtml = '''
+<!doctype html>
+<html>
+<head>
+  <title>Ingredient Only Heuristic</title>
+  <meta property="og:title" content="Ingredient Only Heuristic">
+</head>
+<body>
+  <ul class="recipe-ingredients">
+    <li>200 g pasta</li>
+    <li>1 cup tomato sauce</li>
+  </ul>
+</body>
 </html>
 ''';
