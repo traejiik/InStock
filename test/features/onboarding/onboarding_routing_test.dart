@@ -2,11 +2,11 @@ import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instock/app.dart';
+import 'package:instock/core/providers/app_database_provider.dart';
 import 'package:instock/data/database/app_database.dart';
 import 'package:instock/data/database/drift_database.dart';
 import 'package:instock/data/repositories/app_flags_repository.dart';
 import 'package:instock/features/onboarding/providers/onboarding_provider.dart';
-import 'package:instock/features/shopping/providers/shopping_provider.dart';
 
 void main() {
   setUpAll(() {

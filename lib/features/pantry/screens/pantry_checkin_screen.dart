@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instock/core/theme/app_colors.dart';
 import 'package:instock/core/theme/app_text_styles.dart';
+import 'package:instock/core/providers/app_database_provider.dart';
 import 'package:instock/data/models/app_models.dart';
-import 'package:instock/features/shopping/providers/shopping_provider.dart';
 
 class PantryCheckinScreen extends ConsumerStatefulWidget {
   const PantryCheckinScreen({super.key});

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:instock/core/providers/app_database_provider.dart';
 import 'package:instock/core/theme/app_colors.dart';
 import 'package:instock/core/theme/app_text_styles.dart';
 import 'package:instock/features/recipes/providers/recipe_form_provider.dart';
 import 'package:instock/features/recipes/providers/recipe_import_provider.dart';
 import 'package:instock/features/recipes/services/recipe_scraper.dart';
-import 'package:instock/features/shopping/providers/shopping_provider.dart';
 import 'package:instock/shared/widgets/segment_control.dart';
 import 'package:instock/shared/widgets/toggle_row.dart';
 import 'package:instock/shared/widgets/unit_picker.dart';

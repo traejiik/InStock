@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:instock/core/theme/app_colors.dart';
 import 'package:instock/core/theme/app_text_styles.dart';
+import 'package:instock/core/providers/app_database_provider.dart';
 import 'package:instock/features/settings/providers/settings_provider.dart';
-import 'package:instock/features/shopping/providers/shopping_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});

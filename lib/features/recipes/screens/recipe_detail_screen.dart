@@ -4,11 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:instock/core/theme/app_colors.dart';
 import 'package:instock/core/theme/app_text_styles.dart';
 import 'package:instock/core/utils/unit_converter.dart';
+import 'package:instock/core/providers/app_database_provider.dart';
 import 'package:instock/data/database/app_database.dart';
 import 'package:instock/data/models/app_models.dart';
 import 'package:instock/features/recipes/providers/recipe_form_provider.dart';
 import 'package:instock/features/recipes/services/recipe_scraper.dart';
-import 'package:instock/features/shopping/providers/shopping_provider.dart';
 import '../widgets/ingredient_row.dart';
 import '../widgets/step_row.dart';
 

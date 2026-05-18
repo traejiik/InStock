@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'core/providers/app_database_provider.dart';
 import 'data/database/app_database.dart';
 import 'data/database/drift_database.dart';
 import 'data/repositories/app_flags_repository.dart';
 import 'features/onboarding/providers/onboarding_provider.dart';
 import 'features/settings/providers/settings_provider.dart';
-import 'features/shopping/providers/shopping_provider.dart';
 
 class InStockBootstrap extends StatefulWidget {
   const InStockBootstrap({super.key});

@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/recipe_scraper.dart';
+import '../../../core/providers/app_database_provider.dart';
 import '../../../data/database/app_database.dart';
 import '../../../data/models/app_models.dart';
-import '../../../features/shopping/providers/shopping_provider.dart';
 
 class IngredientFormRow {
   final String name;
